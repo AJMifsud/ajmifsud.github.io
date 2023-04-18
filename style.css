@@ -1,0 +1,104 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+
+#game-board {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vh;
+  background-color: green;
+  position: absolute;
+  right: 0;
+}
+
+.player-container {
+  position: absolute;
+  width: 33vh;
+  height: 33vh;
+  border: 1px solid black;
+  border-radius: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#playerbottom-container {
+  bottom: 0;
+}
+
+#playerleft-container {
+  left: 0;
+}
+
+#playertop-container {
+  top: 0;
+}
+
+#playerright-container {
+  right: 0;
+}
+
+.player-hand {
+  display: flex;
+  justify-content: center;
+  position: relative;
+  border: 1px solid black;
+  border-radius: 5px;
+  background-color: red;
+  width: 90%;
+  height: 240px;
+}
+
+#playerbottom-hand {
+}
+
+#playerleft-hand {
+	transform: rotate(90deg);
+}
+
+#playertop-hand {
+	transform: rotate(180deg);
+}
+
+#playerright-hand {
+	transform: rotate(-90deg);
+}
+
+.face-down-cards {
+  display: flex;
+  position: absolute;
+  top: 10px;
+  transform: translate(5px, -5px);
+}
+
+.face-up-cards {
+  display: flex;
+  position: absolute;
+  top: 10px
+}
+
+.playable-cards {
+  display: flex;
+  justify-content: center;
+  position: absolute;
+  bottom: 10px;
+}
+
+.card {
+  width: 67px;
+  height: 100px;
+  border-radius: 5px;
+  margin: 5px;
+  background-image: url("card_back.png");
+  background-size: cover; /* optional - adjusts the image to cover the entire element */
+}
+
+.player-name {
+  position: absolute;
+  top: 0;
+  margin-bottom: 5px;
+}
+
