@@ -16,8 +16,8 @@ body {
 
 .player-container {
   position: absolute;
-  width: 33vh;
-  height: 33vh;
+  width: 320px;
+  height: 320px;
   border: 1px solid black;
   border-radius: 5px;
   display: flex;
@@ -48,8 +48,8 @@ body {
   border: 1px solid black;
   border-radius: 5px;
   background-color: red;
-  width: 290px;
-  height: 270px;
+  width: 280px;
+  height: 260px;
 }
 
 #playerbottom-hand {
