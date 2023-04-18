@@ -1,135 +1,104 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Card Game</title>
-    <style>
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  background-color: #f0f0f0;
-  height: 100%;
-}
-
-.wrapper {
-  height: 100%;
-  display: flex;
-}
-
-.scoreboard-pane {
-  width: 300px;
-  height: 100vh;
-  background-color: #222222;
-}
-
-.game-container {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  height: 100vh;
-  width: 100vh;
-}
-
-.game-board {
-  height: 50vh;
-  width: 50vh;
-  background-color: #35654d;
-  border: 2px solid black;
-  position: relative;
-  margin: 0 auto;
-}
-
-.player {
-  position: absolute;
-  height: 25vh;
-  text-align: center;
-  font-size: 24px;
-  line-height: 20px;
-  border: 2px solid black;
-  width: 50vh;
-  background-color: #FF0000;
-}
-
-.player-top {
-  top: 0%;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.player-bottom {
-  bottom: 0%;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.player-left {
-  left: -12.5%;
-  top: 50%;
-  transform: translateY(-50%) rotate(90deg);
-}
-
-.player-right {
-  right: -12.5%;
-  top: 50%;
-  transform: translateY(-50%) rotate(-90deg);
-}
-
-.player-name {
-  font-size: 18px;
-  font-weight: bold;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-}
-
-.player-hand {
-  margin-bottom: 10px;
-}
-
-.scoreboard {
-  text-align: center;
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 10px;
-  color: #ffffff;
-  flex-grow: 1;
-}
-    </style>
-  </head>
-  <body>
-    <div class="wrapper">
-      <div class="scoreboard-pane">
-        <div class="scoreboard" id="scoreboard"></div>
+<head>
+  <title>Shithead Game</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+  <div id="game-board">
+    <div id="playerbottom-container" class="player-container">
+      <div class="player-name">Player 1</div>
+      <div id="playerbottom-hand" class="player-hand">
+        <div class="face-down-cards">
+			<div class="card"></div>
+			<div class="card"></div>
+			<div class="card"></div>
+        </div>	  
+        <div class="face-up-cards">
+		    <div class="card"></div>
+			<div class="card"></div>
+			<div class="card"></div>
+        </div>
+		<div class="playable-cards">
+			<div class="card"></div>
+			<div class="card"></div>
+			<div class="card"></div>
+			<div class="card"></div>
+			<div class="card"></div>
+			<div class="card"></div>
+			<div class="card"></div>
+			<div class="card"></div>
+			<div class="card"></div>
+        </div>
       </div>
-	  <div class="game-container" id="outer">
-      <div class="game-container" id="inner">
-        <div id="player-top" class="player player-top">
-          <div class="player-name">Player 3</div>
-          <div class="player-hand" id="player1-hand"></div>
-        </div>
-        <div id="player-left" class="player player-left">
-          <div class="player-name">Player 2</div>
-          <div class="player-hand" id="player2-hand"></div>
-        </div>
-        <div id="player-right" class="player player-right">
-          <div class="player-name">Player 4</div>
-          <div class="player-hand" id="player3-hand"></div>
-        </div>
-        <div id="player-user" class="player player-bottom">
-          <div class="player-name">Player</div>
-          <div class="player-hand" id="user-hand"></div>
-        </div>
-        <div class="game-board" id="game-board"></div>
-      </div>
-	  </div>
-      <script src="game.js"></script>
     </div>
-  </body>
- </html>
+
+    <div id="playerleft-container" class="player-container">
+      <div class="player-name">Player 2</div>
+      <div id="playerleft-hand" class="player-hand">
+        <div class="face-down-cards">
+			<div class="card"></div>
+			<div class="card"></div>
+			<div class="card"></div>
+        </div>	  
+        <div class="face-up-cards">
+		    <div class="card"></div>
+			<div class="card"></div>
+			<div class="card"></div>
+        </div>
+		<div class="playable-cards">
+			<div class="card"></div>
+			<div class="card"></div>
+			<div class="card"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="playertop-container" class="player-container">
+      <div class="player-name">Player 3</div>
+      <div id="playertop-hand" class="player-hand">
+        <div class="face-down-cards">
+			<div class="card"></div>
+			<div class="card"></div>
+			<div class="card"></div>
+        </div>	  
+        <div class="face-up-cards">
+		    <div class="card"></div>
+			<div class="card"></div>
+			<div class="card"></div>
+        </div>
+		<div class="playable-cards">
+			<div class="card"></div>
+			<div class="card"></div>
+			<div class="card"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="playerright-container" class="player-container">
+      <div class="player-name">Player 4</div>
+      <div id="playerright-hand" class="player-hand">
+        <div class="face-down-cards">
+			<div class="card"></div>
+			<div class="card"></div>
+			<div class="card"></div>
+        </div>	  
+        <div class="face-up-cards">
+		    <div class="card"></div>
+			<div class="card"></div>
+			<div class="card"></div>
+        </div>
+		<div class="playable-cards">
+			<div class="card"></div>
+			<div class="card"></div>
+			<div class="card"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="draw-pile">
+      <div class="card"></div>
+    </div>
+  </div>
+</body>
+</html>
