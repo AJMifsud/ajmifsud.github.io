@@ -1,105 +1,125 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Shithead Game</title>
-  <link rel="stylesheet" type="text/css" href="style.css">
+	<title>Shithead Game</title>
+	<link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
 <div id="wrapper">
-  <div id="sidebar">
-  </div>
+	<div id="sidebar">
+	</div>
 <div id="game-container">
-  <div id="game-board">
-    <div id="playerbottom-container" class="player-container">
-      <div class="player-name">Player 1</div>
-      <div id="playerbottom-hand" class="player-hand">
-        <div class="face-down-cards">
+	<div id="game-board">
+		<div id="playerbottom-container" class="player-container">
+			<div class="player-name">Player 1</div>
+			<div id="playerbottom-hand" class="player-hand">
+				<div class="face-down-cards">
 			<div class="card"></div>
 			<div class="card"></div>
 			<div class="card"></div>
-        </div>	  
-        <div class="face-up-cards">
-		    <div class="card"></div>
+				</div>		
+				<div class="face-up-cards">
+				<div class="card"></div>
 			<div class="card"></div>
 			<div class="card"></div>
-        </div>
+				</div>
+				<div class="playable-cards">
+					<div class="card"></div>
+					<div class="card"></div>
+					<div class="card"></div>
+				</div>
+			</div>
+		</div>
+
+		<div id="playerleft-container" class="player-container">
+			<div class="player-name">Player 2</div>
+			<div id="playerleft-hand" class="player-hand">
+				<div class="face-down-cards">
+			<div class="card"></div>
+			<div class="card"></div>
+			<div class="card"></div>
+				</div>		
+				<div class="face-up-cards">
+				<div class="card"></div>
+			<div class="card"></div>
+			<div class="card"></div>
+				</div>
 		<div class="playable-cards">
 			<div class="card"></div>
 			<div class="card"></div>
 			<div class="card"></div>
-        </div>
-      </div>
-    </div>
+				</div>
+			</div>
+		</div>
 
-    <div id="playerleft-container" class="player-container">
-      <div class="player-name">Player 2</div>
-      <div id="playerleft-hand" class="player-hand">
-        <div class="face-down-cards">
+		<div id="playertop-container" class="player-container">
+			<div class="player-name">Player 3</div>
+			<div id="playertop-hand" class="player-hand">
+				<div class="face-down-cards">
 			<div class="card"></div>
 			<div class="card"></div>
 			<div class="card"></div>
-        </div>	  
-        <div class="face-up-cards">
-		    <div class="card"></div>
+				</div>		
+				<div class="face-up-cards">
+				<div class="card"></div>
 			<div class="card"></div>
 			<div class="card"></div>
-        </div>
+				</div>
 		<div class="playable-cards">
 			<div class="card"></div>
 			<div class="card"></div>
 			<div class="card"></div>
-        </div>
-      </div>
-    </div>
+				</div>
+			</div>
+		</div>
 
-    <div id="playertop-container" class="player-container">
-      <div class="player-name">Player 3</div>
-      <div id="playertop-hand" class="player-hand">
-        <div class="face-down-cards">
+		<div id="playerright-container" class="player-container">
+			<div class="player-name">Player 4</div>
+			<div id="playerright-hand" class="player-hand">
+				<div class="face-down-cards">
 			<div class="card"></div>
 			<div class="card"></div>
 			<div class="card"></div>
-        </div>	  
-        <div class="face-up-cards">
-		    <div class="card"></div>
+				</div>		
+				<div class="face-up-cards">
+				<div class="card"></div>
 			<div class="card"></div>
 			<div class="card"></div>
-        </div>
+				</div>
 		<div class="playable-cards">
 			<div class="card"></div>
 			<div class="card"></div>
 			<div class="card"></div>
-        </div>
-      </div>
-    </div>
-
-    <div id="playerright-container" class="player-container">
-      <div class="player-name">Player 4</div>
-      <div id="playerright-hand" class="player-hand">
-        <div class="face-down-cards">
+				</div>
+			</div>
+		</div>
+		<div id="play-pile">
 			<div class="card"></div>
 			<div class="card"></div>
 			<div class="card"></div>
-        </div>	  
-        <div class="face-up-cards">
-		    <div class="card"></div>
-			<div class="card"></div>
-			<div class="card"></div>
-        </div>
-		<div class="playable-cards">
 			<div class="card"></div>
 			<div class="card"></div>
 			<div class="card"></div>
-        </div>
-      </div>
-    </div>
-
-    <div id="draw-pile">
-      <div class="card"></div>
-    </div>
-  </div>
+			<div class="card"></div>
+			<div class="card"></div>
+			<div class="card"></div>
+		</div>
+	</div>
+		<div id="draw-pile">
+			<div class="card"></div>
+		</div>
 </div>
 </div>
+	<script>
+		const playPile = document.querySelector("#play-pile");
+		const cards = Array.from(playPile.querySelectorAll(".card"));
+
+		cards.forEach(card => {
+		  const angle = Math.floor(Math.random() * 360); // generate a random angle between 0 and 359 degrees
+		  card.style.setProperty('--angle', `${angle}deg`); // set the custom CSS property to the random angle
+		  card.classList.add('rotated'); // apply the "rotated" class to the card to rotate it
+		});
+	</script>
 </body>
 </html>
 
