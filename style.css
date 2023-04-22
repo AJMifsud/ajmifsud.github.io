@@ -21,6 +21,7 @@ body {
 
 #sidebar {
 	display: flex;
+	flex-direction: column;
 	height: 988px;
 	width: 200px;
 	left: 0;
@@ -31,9 +32,6 @@ body {
 }
 
 #playerno-container {
-	margin: 30px 5px 30px 5px;
-	width: 100%;
-	align-items: center;
 }	
 
 #game-board {
