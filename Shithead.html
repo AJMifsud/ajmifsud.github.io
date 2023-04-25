@@ -123,77 +123,7 @@
 		</div>
 </div>
 </div>
-	<script>
-const playPile = document.querySelector("#play-pile");
-const cards = Array.from(playPile.querySelectorAll(".card"));
 
-cards.forEach((card) => {
-  const angle = Math.floor(Math.random() * 360); // generate a random angle between 0 and 359 degrees
-  card.style.setProperty("--angle", `${angle}deg`); // set the custom CSS property to the random angle
-  card.classList.add("rotated"); // apply the "rotated" class to the card to rotate it
-});
-
-const numPlayersSelect = document.getElementById("numPlayers");
-const playerNamesContainer = document.getElementById("playernames-container");
-const playerLeftContainer = document.getElementById("playerleft-container");
-const playerTopContainer = document.getElementById("playertop-container");
-const playerRightContainer = document.getElementById("playerright-container");
-
-function updatePlayerContainers(numPlayers) {
-  // hide all player containers by default
-  playerLeftContainer.style.display = "none";
-  playerTopContainer.style.display = "none";
-  playerRightContainer.style.display = "none";
-
-  switch (numPlayers) {
-    case "2":
-      // show only the bottom player container
-      playerLeftContainer.style.display = "none";
-      playerTopContainer.style.display = "flex";
-      playerRightContainer.style.display = "none";
-      break;
-    case "3":
-      // show only the bottom, left, and right player containers
-      playerLeftContainer.style.display = "flex";
-      playerTopContainer.style.display = "none";
-      playerRightContainer.style.display = "flex";
-      break;
-    case "4":
-      // show all player containers
-      playerLeftContainer.style.display = "flex";
-      playerTopContainer.style.display = "flex";
-      playerRightContainer.style.display = "flex";
-      break;
-    default:
-      console.error("Invalid number of players: " + numPlayers);
-      break;
-  }
-}
-
-numPlayersSelect.addEventListener("change", function () {
-  const numPlayers = this.value;
-  updatePlayerContainers(numPlayers);
-});
-
-// Remove any existing player name textboxes
-while (playerNamesContainer.firstChild) {
-  playerNamesContainer.removeChild(playerNamesContainer.firstChild);
-}
-
-// Add new player name textboxes
-for (let i = 0; i < numPlayersSelect.value; i++) {
-  const playerNameInput = document.createElement("input");
-  playerNameInput.type = "text";
-  playerNameInput.name = `player${i + 1}`;
-  playerNameInput.placeholder = `Player ${i + 1} Name`;
-  playerNamesContainer.appendChild(playerNameInput);
-}
-
-// call updatePlayerContainers with the initial value of the select
-updatePlayerContainers(numPlayersSelect.value);
-
-	</script>
     <script src="shithead.js"></script>
 </body>
 </html>
-
