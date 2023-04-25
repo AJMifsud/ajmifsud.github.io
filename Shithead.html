@@ -7,7 +7,8 @@
 <body>
 <div id="wrapper">
 	<div id="sidebar">
-	<h2 style="margin-bottom: 20px;">Game Settings</h2>	
+	<h2 style="margin-bottom: 20px;">Game Settings</h2>
+	<hr>	
 		<div id = "playerno-container">
 		<label for="players">Number of Players:</label>
 		<select name="players" id="numPlayers">
@@ -16,8 +17,17 @@
 		<option value="4">4</option>
 		</select>
 		</div>
+
 		<div id="playernames-container">
 		</div>
+		<hr>
+		<div id="dealJokers-container">
+			<label>
+			<input type="checkbox" name="withJokers" value="Yes"> Deal Jokers?
+			</label>
+			<p style="font-size: 80%; color: lightgrey;">(Two jokers will be shuffled in the deck if ticked. Jokers may assume the role of ANY card.)</p>
+		</div>
+		<hr>
 	</div>
 <div id="game-container">
 	<div id="game-board">
