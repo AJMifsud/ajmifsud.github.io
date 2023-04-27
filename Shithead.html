@@ -1,130 +1,124 @@
 <!DOCTYPE html>
 <html>
-<head>
-	<title>Shithead Game</title>
-	<link rel="stylesheet" type="text/css" href="style.css">
-</head>
-<body>
-<div id="wrapper">
-	<div id="sidebar">
-	<h2 style="margin-bottom: 20px;">Game Settings</h2>
-	<hr>	
-		<div id = "playerno-container">
-		<label for="players">Number of Players:</label>
-		<select name="players" id="numPlayers">
-		<option value="2">2</option>
-		<option value="3">3</option>
-		<option value="4">4</option>
-		</select>
-		</div>
-
-		<div id="playernames-container">
-		</div>
-		<hr>
-		<div id="dealJokers-container">
-			<label>
-			<input type="checkbox" name="withJokers" value="Yes"> Deal Jokers?
-			</label>
-			<p style="font-size: 80%; color: lightgrey;">(Two jokers will be shuffled in the deck if ticked. Jokers may assume the role of ANY card.)</p>
-		</div>
-		<hr>
-	</div>
-<div id="game-container">
-	<div id="game-board">
-		<div id="playerbottom-container" class="player-container">
-			<div class="player-name">Player 1</div>
-			<div id="playerbottom-hand" class="player-hand">
-				<div class="face-down-cards">
-			<div class="card">
-				<div class="card-front"></div>
-				<div class="card-back"></div>
-			</div>
-			<div class="card">
-				<div class="card-front"></div>
-				<div class="card-back"></div>
-			</div>
-			<div class="card">
-				<div class="card-front"></div>
-				<div class="card-back"></div>
-			</div>
-			</div>		
-				<div class="face-up-cards">
-			<div class="card">
-				<div class="card-front"></div>
-				<div class="card-back"></div>
-			</div>
-			<div class="card">
-				<div class="card-front"></div>
-				<div class="card-back"></div>
-			</div>
-			<div class="card">
-				<div class="card-front"></div>
-				<div class="card-back"></div>
-			</div>
+	<head>
+		<title>Shithead Game</title>
+		<link rel="stylesheet" type="text/css" href="style.css">
+	</head>
+	<body>
+		<div id="wrapper">
+			<div id="sidebar">
+				<h2 style="margin-bottom: 20px;">Game Settings</h2>
+				<hr>
+				<div id = "playerno-container">
+					<label for="players">Number of Players:</label>
+					<select name="players" id="numPlayers">
+						<option value="2">2</option>
+						<option value="3">3</option>
+						<option value="4">4</option>
+					</select>
 				</div>
-				<div class="playable-cards">
-			<div class="card">
-				<div class="card-front"></div>
-				<div class="card-back"></div>
+				<div id="playernames-container">
+				</div>
+				<hr>
+				<div id="dealJokers-container">
+					<label>
+					<input type="checkbox" name="withJokers" value="Yes"> Deal Jokers?
+					</label>
+					<p style="font-size: 80%; color: lightgrey;">(Two jokers will be shuffled in the deck if ticked. Jokers may assume the role of ANY card.)</p>
+				</div>
+				<hr>
 			</div>
-			<div class="card">
-				<div class="card-front"></div>
-				<div class="card-back"></div>
-			</div>
-			<div class="card">
-				<div class="card-front"></div>
-				<div class="card-back"></div>
-			</div>
+			<div id="game-container">
+				<div id="game-board">
+					<div id="playerbottom-container" class="player-container">
+						<div class="player-name">Player 1</div>
+						<div id="playerbottom-hand" class="player-hand">
+							<div class="face-down-cards">
+								<div class="card">
+									<div class="card-front"></div>
+									<div class="card-back"></div>
+								</div>
+								<div class="card">
+									<div class="card-front"></div>
+									<div class="card-back"></div>
+								</div>
+								<div class="card">
+									<div class="card-front"></div>
+									<div class="card-back"></div>
+								</div>
+							</div>
+							<div class="face-up-cards">
+								<div class="card">
+									<div class="card-front"></div>
+									<div class="card-back"></div>
+								</div>
+								<div class="card">
+									<div class="card-front"></div>
+									<div class="card-back"></div>
+								</div>
+								<div class="card">
+									<div class="card-front"></div>
+									<div class="card-back"></div>
+								</div>
+							</div>
+							<div class="playable-cards">
+								<div class="card">
+									<div class="card-front"></div>
+									<div class="card-back"></div>
+								</div>
+								<div class="card">
+									<div class="card-front"></div>
+									<div class="card-back"></div>
+								</div>
+								<div class="card">
+									<div class="card-front"></div>
+									<div class="card-back"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div id="playerleft-container" class="player-container">
+						<div class="player-name">Player 2</div>
+						<div id="playerleft-hand" class="player-hand">
+							<div class="face-down-cards">
+							</div>
+							<div class="face-up-cards">
+							</div>
+							<div class="playable-cards">
+							</div>
+						</div>
+					</div>
+					<div id="playertop-container" class="player-container">
+						<div class="player-name">Player 3</div>
+						<div id="playertop-hand" class="player-hand">
+							<div class="face-down-cards">
+							</div>
+							<div class="face-up-cards">
+							</div>
+							<div class="playable-cards">
+							</div>
+						</div>
+					</div>
+					<div id="playerright-container" class="player-container">
+						<div class="player-name">Player 4</div>
+						<div id="playerright-hand" class="player-hand">
+							<div class="face-down-cards">
+							</div>
+							<div class="face-up-cards">
+							</div>
+							<div class="playable-cards">
+							</div>
+						</div>
+					</div>
+					<div id="play-pile">
+					</div>
+				</div>
+				<div id = "drawpile-container">
+					<div id="draw-pile">
+					</div>
 				</div>
 			</div>
 		</div>
-
-		<div id="playerleft-container" class="player-container">
-			<div class="player-name">Player 2</div>
-			<div id="playerleft-hand" class="player-hand">
-				<div class="face-down-cards">
-				</div>		
-				<div class="face-up-cards">
-				</div>
-		<div class="playable-cards">
-				</div>
-			</div>
-		</div>
-
-		<div id="playertop-container" class="player-container">
-			<div class="player-name">Player 3</div>
-			<div id="playertop-hand" class="player-hand">
-				<div class="face-down-cards">
-				</div>		
-				<div class="face-up-cards">
-				</div>
-		<div class="playable-cards">
-				</div>
-			</div>
-		</div>
-
-		<div id="playerright-container" class="player-container">
-			<div class="player-name">Player 4</div>
-			<div id="playerright-hand" class="player-hand">
-				<div class="face-down-cards">
-				</div>		
-				<div class="face-up-cards">
-				</div>
-		<div class="playable-cards">
-				</div>
-			</div>
-		</div>
-		<div id="play-pile">
-		</div>
-	</div>
-		<div id = "drawpile-container">
-			<div id="draw-pile">
-				<div class="card"></div>
-			</div>
-		</div>
-</div>
-</div>
-
-    <script src="shithead.js"></script>
-</body>
+		<script src="shithead.js"></script>
+	</body>
 </html>
