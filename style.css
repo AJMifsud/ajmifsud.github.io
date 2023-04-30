@@ -1,9 +1,10 @@
 :root {
-	--player-names-0: Player 1;
-	--player-names-1: Player 2;
-	--player-names-2: Player 3;
-	--player-names-3: Player 4;
-}
+	--player-1: "Player 1";
+	--player-2: "Player 2";
+	--player-3: "Player 3";
+	--player-4: "Player 4";
+  }
+  
 
 
 body {
@@ -12,8 +13,9 @@ body {
 }
 
 #wrapper {
-	display: flex;
-	width: 100%;
+	display: inline-flex;
+	min-height: 100vh;
+	min-width: 100vw;
 	position: absolute;
 	justify-content: center;
 	align-items: center;
@@ -28,38 +30,35 @@ body {
 }
 
 #sidebar {
-	display: flex;
+	position: relative;
+	max-width: 260px;
 	flex-direction: column;
-	height: 988px;
-	width: 200px;
-	left: 0;
 	background-color: gray;
 	border: 1px solid red;
 	border-left-width: 0px;
 	border-radius: 0px 30px 30px 0px;
+	padding: 10px;
 }
-
-#playerno-container {}
 
 #game-board {
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	height: 980px;
-	width: 980px;
-	min-width: 980px;
-	min-height: 980px;
+	height: 100vh;
+	width: 100vh;
+	min-width: 100vh;
+	min-height: 100vh;
 	background-color: green;
 	position: relative;
-	border-radius: 330px;
+	border-radius: 20%;
 	border: 5px solid gold;
 	margin: 0 30px 0 30px;
 }
 
 .player-container {
 	position: absolute;
-	width: 320px;
-	height: 320px;
+	width: 33%;
+	height: 33%;
 	border: 1px solid black;
 	border-radius: 5px;
 	display: flex;
@@ -89,8 +88,8 @@ body {
 	position: relative;
 	border-radius: 5px;
 	background-color: red;
-	width: 260px;
-	height: 260px;
+	width: 80%;
+	height: 80%;
 	border: 5px solid gold;
 }
 
@@ -107,10 +106,12 @@ body {
 }
 
 .face-down-cards {
+	justify-content: center;
 	display: flex;
 	position: absolute;
-	top: 10px;
-	transform: translate(5px, -5px);
+	top: 5px;
+	width: 95%;
+	height: 40%;
 }
 
 .face-down-cards .card {
@@ -118,39 +119,42 @@ body {
 }
 
 .face-up-cards {
+	justify-content: center;
 	display: flex;
 	position: absolute;
-	top: 10px
+	top: 15px;
+	width: 95%;
+	height: 40%;
 }
 
 .playable-cards {
-	justify-content: center;
-	position: absolute;
-	bottom: 5px;
-	max-height: 110px;
-	max-width: 280px;
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(10px, max-content));
-	cursor: pointer;
+    display: flex;
+    justify-content: center;
+    position: absolute;
+    bottom: 10px;
+	width:95%;
+	height: 40%;
 }
-
+  
 .card {
-	width: 67px;
-	height: 100px;
 	border: 1px solid black;
 	border-radius: 5px;
 	margin: 5px;
 	position: relative;
 	transform-style: preserve-3d;
-	transition: transform 0.4s;
+	transition: transform 0.6s;
+	width:67px;
+	height: 100px;
 }
 
 .card-front {
-	background-image: url("card_front.png");
+	background-image: url("images/card_front.png");
+	background-size: contain;
 }
 
 .card-back {
-	background-image: url("card_back.png");
+	background-image: url("images/card_back.png");
+	background-size: contain;
 	transform: rotateY(180deg);
 }
 
@@ -169,13 +173,13 @@ body {
 }
 
 .playable-cards .card:hover {
-	transform: scale(125%) translateY(-10px);
+	transform: scale(115%) translateY(-7px);
+	cursor: pointer;
 }
 
 .card:hover {
 	transform: rotateY(180deg);
 }
-
 
 .player-name {
 	position: absolute;
@@ -186,12 +190,10 @@ body {
 }
 
 #drawpile-container {
-	display: flex;
-	flex-grow: 1;
 	position: relative;
-	height: 988px;
-	width: 200px;
-	right: 0;
+	float: right;
+	height: 75vh;
+	width: 25%;
 	background-color: gray;
 	border: 1px solid red;
 	border-radius: 30px 0px 0px 30px;
@@ -199,6 +201,7 @@ body {
 	justify-content: center;
 	align-items: center;
 	background-color: green;
+	padding: 10px;
 }
 
 #draw-pile .card {
