@@ -9,73 +9,124 @@ window.onload = function () {
 		card.classList.add("rotated");
 	});
 
+	const playerNames = ["Player 1", "Player 2", "Player 3", "Player 4"];
 	const numPlayersSelect = document.getElementById("numPlayers");
 	const playerNamesContainer = document.getElementById("playernames-container");
 	const playerLeftContainer = document.getElementById("playerleft-container");
 	const playerTopContainer = document.getElementById("playertop-container");
 	const playerRightContainer = document.getElementById("playerright-container");
 	const playerBottomContainer = document.getElementById("playerbottom-container");
-
+	
+	let orderedContainers = [];
+	
 	function updatePlayerContainers(numPlayers) {
-		playerLeftContainer.style.display = "none";
-		playerTopContainer.style.display = "none";
-		playerRightContainer.style.display = "none";
-
-		switch (numPlayers) {
-			case "2":
-				playerTopContainer.style.display = "flex";
-				playerTopContainer.querySelector('.player-name').textContent = getComputedStyle(document.documentElement).getPropertyValue('--player-names-1');
-				break;
-			case "3":
-				playerLeftContainer.style.display = "flex";
-				playerRightContainer.style.display = "flex";
-				playerRightContainer.querySelector('.player-name').textContent = getComputedStyle(document.documentElement).getPropertyValue('--player-names-2');
-				break;
-			case "4":
-				playerLeftContainer.style.display = "flex";
-				playerLeftContainer.querySelector('.player-name').textContent = getComputedStyle(document.documentElement).getPropertyValue('--player-names-1');
-				playerTopContainer.style.display = "flex";
-				playerTopContainer.querySelector('.player-name').textContent = getComputedStyle(document.documentElement).getPropertyValue('--player-names-2');
-				playerRightContainer.style.display = "flex";
-				playerRightContainer.querySelector('.player-name').textContent = getComputedStyle(document.documentElement).getPropertyValue('--player-names-3');
-				break;
-			default:
-				console.error("Invalid number of players: " + numPlayers);
-				break;
-		}
+	  playerLeftContainer.style.display = "none";
+	  playerTopContainer.style.display = "none";
+	  playerRightContainer.style.display = "none";
+	  playerBottomContainer.querySelector('.player-name').textContent = playerNames[0];
+	  orderedContainers = [];
+	
+	  switch (numPlayers) {
+		case "2":
+		  orderedContainers = [playerBottomContainer, playerTopContainer];
+		  playerTopContainer.style.display = "flex";
+		  break;
+		case "3":
+		  orderedContainers = [playerBottomContainer, playerLeftContainer, playerRightContainer];
+		  playerLeftContainer.style.display = "flex";
+		  playerRightContainer.style.display = "flex";
+		  break;
+		case "4":
+		  orderedContainers = [playerBottomContainer, playerLeftContainer, playerTopContainer, playerRightContainer];
+		  playerLeftContainer.style.display = "flex";
+		  playerTopContainer.style.display = "flex";
+		  playerRightContainer.style.display = "flex";
+		  break;
+		default:
+		  console.error("Invalid number of players: " + numPlayers);
+		  break;
+	  }
+	
+	  orderedContainers.forEach((container, index) => {
+		container.querySelector('.player-name').textContent = playerNames[index];
+	  });
+	
+	  for (let i = 0; i < numPlayers; i++) {
+		const playerNameInput = document.createElement("input");
+		playerNameInput.type = "text";
+		playerNameInput.name = `player${i + 1}`;
+		playerNameInput.placeholder = playerNames[i];
+		playerNamesContainer.appendChild(playerNameInput);
+	
+		playerNameInput.addEventListener("input", function () {
+		  document.documentElement.style.setProperty(`--player-${i + 1}`, `"${playerNameInput.value}"`);
+		  updatePlayerName(i, playerNameInput.value);
+		});
+	  }
+	
+	  for (let i = numPlayers; i < orderedContainers.length; i++) {
+		orderedContainers[i].querySelector('.player-name').textContent = '';
+	  }
 	}
-
+	
+	function updatePlayerName(playerIndex, newName) {
+	  const playerVarName = `--player-${playerIndex+1}`;
+	  document.documentElement.style.setProperty(playerVarName, `"${newName}"`);
+	  orderedContainers[playerIndex].querySelector('.player-name').textContent = newName;
+	}
+	
 	numPlayersSelect.addEventListener("change", function () {
-		const numPlayers = this.value;
-		updatePlayerContainers(numPlayers);
-
-		while (playerNamesContainer.firstChild) {
-			playerNamesContainer.removeChild(playerNamesContainer.firstChild);
-		}
-
-		for (let i = 0; i < numPlayersSelect.value; i++) {
-			const playerNameInput = document.createElement("input");
-			playerNameInput.type = "text";
-			playerNameInput.name = `player${i + 1}`;
-			playerNameInput.placeholder = `Player ${i + 1} Name`;
-			playerNamesContainer.appendChild(playerNameInput);
-
-			// Add an event listener to update the CSS variable when the input value changes
-			playerNameInput.addEventListener("input", function () {
-				document.documentElement.style.setProperty(`--player-names-${i}`, playerNameInput.value);
-			});
-		}
+	  const numPlayers = this.value;
+	  updatePlayerContainers(numPlayers);
+	
+	  while (playerNamesContainer.firstChild) {
+		playerNamesContainer.removeChild(playerNamesContainer.firstChild);
+	  }
+	
+	  for (let i = 0; i < numPlayers; i++) {
+		const playerNameInput = document.createElement("input");
+		playerNameInput.type = "text";
+		playerNameInput.name = `player${i + 1}`;
+		playerNameInput.placeholder = playerNames[i];
+		playerNamesContainer.appendChild(playerNameInput);
+	
+		playerNameInput.addEventListener("input", function () {
+		  updatePlayerName(i, playerNameInput.value);
+		});
+	  }
 	});
-
-	// Set the default values of the CSS variables
-	document.documentElement.style.setProperty('--player-names-0', 'Player 1');
-	document.documentElement.style.setProperty('--player-names-1', 'Player 2');
-	document.documentElement.style.setProperty('--player-names-2', 'Player 3');
-	document.documentElement.style.setProperty('--player-names-3', 'Player 4');
-
+	
 	updatePlayerContainers(numPlayersSelect.value);
+	
+	
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
 	function createDeck() {
 		const suits = ["hearts", "diamonds", "clubs", "spades"];
 		const values = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace"];
