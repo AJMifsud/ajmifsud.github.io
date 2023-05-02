@@ -14,8 +14,8 @@ body {
 
 #wrapper {
 	display: inline-flex;
-	min-height: 100vh;
-	min-width: 100vw;
+	min-width: 100%;
+	min-height: 100%;
 	position: absolute;
 	justify-content: center;
 	align-items: center;
@@ -23,10 +23,12 @@ body {
 }
 
 #game-container {
-	display: flex;
-	height: 100%;
-	width: 100%;
-	align-items: center;
+    display: flex;
+    height: 100%;
+    width: 100%;
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-between;
 }
 
 #sidebar {
@@ -44,15 +46,15 @@ body {
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	height: 100vh;
-	width: 100vh;
-	min-width: 100vh;
-	min-height: 100vh;
+	max-width: 95vh;
+	max-height: 95vh;
+	min-width: 95vh;
+	min-height: 95vh;
 	background-color: green;
 	position: relative;
 	border-radius: 20%;
 	border: 5px solid gold;
-	margin: 0 30px 0 30px;
+	margin: 0 100px 0 100px;
 }
 
 .player-container {
@@ -177,8 +179,13 @@ body {
 	cursor: pointer;
 }
 
-.card:hover {
-	transform: rotateY(180deg);
+.player-hand .card {
+	height: 100%;
+	width: 100%;
+}
+
+.face-down-cards .card:hover {
+	transform: rotateY(360deg);
 }
 
 .player-name {
@@ -191,7 +198,7 @@ body {
 
 #drawpile-container {
 	position: relative;
-	float: right;
+    flex-grow: 1;
 	height: 75vh;
 	width: 25%;
 	background-color: gray;
