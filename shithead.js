@@ -73,7 +73,9 @@ window.onload = function () {
 		const playerVarName = `--player-${playerIndex+1}`;
 		document.documentElement.style.setProperty(playerVarName, `"${newName}"`);
 		orderedContainers[playerIndex].querySelector('.player-name').textContent = newName;
+		playerNames[playerIndex] = newName; 
 	}
+	
 
 	numPlayersSelect.addEventListener("change", function () {
 		const numPlayers = this.value;
@@ -87,46 +89,17 @@ window.onload = function () {
 			const playerNameInput = document.createElement("input");
 			playerNameInput.type = "text";
 			playerNameInput.name = `player${i + 1}`;
-			playerNameInput.placeholder = playerNames[i];
+			playerNameInput.placeholder = `Player ${i + 1}`;
+			playerNameInput.value = playerNames[i];
 			playerNamesContainer.appendChild(playerNameInput);
 
 			playerNameInput.addEventListener("input", function () {
 				updatePlayerName(i, playerNameInput.value);
 			});
 		}
+		
 	});
 
 	updatePlayerContainers(numPlayersSelect.value);
-
-
-	function createDeck() {
-		const suits = ["hearts", "diamonds", "clubs", "spades"];
-		const values = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace"];
-		const deck = [];
-		let withJokers = "";
-		switch (withJokers) {
-			case "No":
-				// create cards without jokers
-				for (let suit of suits) {
-					for (let value of values) {
-						deck.push({
-							value,
-							suit
-						});
-					}
-				}
-				break;
-			case "Yes":
-				// create jokers
-				for (let i = 0; i < 2; i++) {
-					deck.push({
-						value: "Joker",
-						suit: "joker"
-					});
-				}
-				break;
-		}
-		return deck;
-	}
 
 }
