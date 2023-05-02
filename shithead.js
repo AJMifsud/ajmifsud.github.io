@@ -16,7 +16,8 @@ window.onload = function () {
 	const playerTopContainer = document.getElementById("playertop-container");
 	const playerRightContainer = document.getElementById("playerright-container");
 	const playerBottomContainer = document.getElementById("playerbottom-container");
-
+	const jokersCheck = document.querySelector('input[name="withJokers"]');
+	let withJokers = false;
 	let orderedContainers = [];
 
 	function updatePlayerContainers(numPlayers) {
@@ -101,5 +102,13 @@ window.onload = function () {
 	});
 
 	updatePlayerContainers(numPlayersSelect.value);
+	
+	jokersCheck.addEventListener('change', function() {
+	  if (this.checked) {
+		withJokers = true;
+	  } else {
+		withJokers = false;
+	  }
+	});
 
 }
