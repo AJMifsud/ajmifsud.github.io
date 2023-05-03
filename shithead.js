@@ -1,9 +1,9 @@
 window.onload = function () {
 
 	const playPile = document.querySelector("#play-pile");
-	const cards = Array.from(playPile.querySelectorAll(".card"));
+	const playedCards = Array.from(playPile.querySelectorAll(".card"));
 
-	cards.forEach((card) => {
+	playedCards.forEach((card) => {
 		const angle = Math.floor(Math.random() * 360);
 		card.style.setProperty("--angle", `${angle}deg`);
 		card.classList.add("rotated");
@@ -115,7 +115,7 @@ window.onload = function () {
 	// Function to update the card count display
 	function updateCardCount() {
  	const numCards = drawPile.querySelectorAll('.card').length;
-  	cardCount.textContent = `${numCards} card${numCards !== 1 ? 's' : ''}`;
+  	cardCount.textContent = `Cards in deck: ${numCards}`;
 	}
 
 	// Call the function initially and then on any change to the draw pile
