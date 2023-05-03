@@ -153,7 +153,6 @@ body {
 	margin: 5px;
 	position: relative;
 	transform-style: preserve-3d;
-	transition: transform 0.6s;
 	width:67px;
 	height: 100px;
 }
@@ -186,14 +185,17 @@ body {
 .playable-cards .card:hover {
 	transform: scale(115%) translateY(-7px);
 	cursor: pointer;
+	transition: transform 0.6s;
 }
 
 .player-hand .card {
 	height: 100%;
+	transition: transform 0.6s;
 }
 
 .face-down-cards .card:hover {
 	transform: rotateY(360deg);
+	transition: transform 0.6s;
 }
 
 .player-name {
@@ -206,10 +208,11 @@ body {
 
 #drawpile-container {
 	position: relative;
-    flex-grow: 1;
-	height: 75vh;
-	width: 25%;
-	background-color: gray;
+	display: flex;
+	min-height: 75vh;
+	min-width: 150px;
+	height: fit-content;
+	width: fit-content;
 	border: 1px solid red;
 	border-radius: 30px 0px 0px 30px;
 	border-right-width: 0px;
@@ -219,10 +222,22 @@ body {
 	padding: 10px;
 }
 
+#draw-pile {
+	display: flex;
+	position: relative;
+	height: 175px;
+	width: 125%;
+	justify-content: center;
+	align-items: center;
+}
+
 #draw-pile .card {
+	transform: rotateY(180deg);
+	position: absolute;
 	width: 100px;
 	height: 150px;
 }
+
 
 #play-pile {
 	position: absolute;
