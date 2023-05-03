@@ -17,6 +17,8 @@ window.onload = function () {
 	const playerRightContainer = document.getElementById("playerright-container");
 	const playerBottomContainer = document.getElementById("playerbottom-container");
 	const jokersCheck = document.querySelector('input[name="withJokers"]');
+	const drawPile = document.getElementById('draw-pile');
+	const cardCount = document.getElementById('card-count');
 	let withJokers = false;
 	let orderedContainers = [];
 
@@ -76,7 +78,6 @@ window.onload = function () {
 		orderedContainers[playerIndex].querySelector('.player-name').textContent = newName;
 		playerNames[playerIndex] = newName; 
 	}
-	
 
 	numPlayersSelect.addEventListener("change", function () {
 		const numPlayers = this.value;
@@ -110,5 +111,15 @@ window.onload = function () {
 		withJokers = false;
 	  }
 	});
+
+	// Function to update the card count display
+	function updateCardCount() {
+ 	const numCards = drawPile.querySelectorAll('.card').length;
+  	cardCount.textContent = `${numCards} card${numCards !== 1 ? 's' : ''}`;
+	}
+
+	// Call the function initially and then on any change to the draw pile
+	updateCardCount();
+	drawPile.addEventListener('change', updateCardCount);
 
 }
