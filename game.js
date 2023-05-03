@@ -1,6 +1,3 @@
-window.onload = function () {
-
-
 	// Define a function to create a new deck of cards
 	function createDeck() {
 		// Define arrays for the suits and values of the cards
@@ -51,6 +48,3 @@ window.onload = function () {
 
 	// Shuffle the deck
 	shuffleDeck(deck);
-
-
-}
