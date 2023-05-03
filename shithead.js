@@ -175,30 +175,44 @@ window.onload = function () {
 	//GAME LOGIC//
 	//----------//
 
-	function createDeck(withJokers) {
-		const suits = ["clubs", "diamonds", "hearts", "spades"];
-		const ranks = ["ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "jack", "queen", "king"];
-		const deck = [];
-	  
-		for (let suit of suits) {
-		  for (let rank of ranks) {
-			const card = {
-			  suit,
-			  rank,
-			  frontImage: `images/cards/${rank}_of_${suit}.png`,
-			  backImage: "images/cards/card_back.png"
-			};
-			deck.push(card);
-		  }
-		}
-	  
-		if (withJokers === "Yes") {
-		  deck.push({ rank: "joker", frontImage: "images/cards/black_joker.png"});
-		  deck.push({ rank: "joker", frontImage: "images/cards/red_joker.png"});
-		}
-	  
-		return deck;
-	  }
+// Define the necessary variables and arrays
+const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
+const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'jack', 'queen', 'king', 'ace'];
+const numPlayers = 2; // Change this to the desired number of players
+const players = [];
+let currentPlayer = 0;
+let currentCard = null;
+let pickupPile = [];
+const trickCards = [
+  { rank: '2', rule: 'A' },
+  { rank: '3', rule: 'B' },
+  { rank: '7', rule: 'C' },
+  { rank: '10', rule: 'D' }
+];
+
+function createDeck(withJokers) {
+  const deck = [];
+
+  for (let suit of suits) {
+    for (let rank of ranks) {
+      const card = {
+        suit,
+        rank,
+        frontImage: `images/cards/${rank}_of_${suit}.png`,
+        backImage: "images/cards/card_back.png"
+      };
+      deck.push(card);
+    }
+  }
+
+  if (withJokers === "Yes") {
+    deck.push({ rank: "joker", frontImage: "images/cards/black_joker.png"});
+    deck.push({ rank: "joker", frontImage: "images/cards/red_joker.png"});
+  }
+
+  return deck;
+}
+
   
 
 	// Define a function to shuffle a deck of cards
@@ -213,29 +227,29 @@ window.onload = function () {
 	function logDeckOrder(deck) {
 		console.log("Deck order:");
 		for (let i = 0; i < deck.length; i++) {
-		  console.log(`${deck[i].value} of ${deck[i].suit}`);
+		  console.log(`${deck[i].rank} of ${deck[i].suit}`);
 		}
 	  }
 	  
-	  function createCardElement(card) {
+	  function createCardElement(card, targetElement) {
 		const cardElement = document.createElement("div");
 		cardElement.classList.add("card");
-	  
+		
 		const cardFrontElement = document.createElement("div");
 		cardFrontElement.classList.add("card-front");
 		cardFrontElement.style.backgroundImage = `url(${card.frontImage})`;
-	  
+		
 		const cardBackElement = document.createElement("div");
 		cardBackElement.classList.add("card-back");
-	  
+		
 		cardElement.appendChild(cardFrontElement);
 		cardElement.appendChild(cardBackElement);
-	  
-		const drawPile = document.getElementById("draw-pile");
-		drawPile.appendChild(cardElement);
-	  
+		
+		targetElement.appendChild(cardElement);
+		
 		return cardElement;
 	  }
+	  
 	  
 
 	  dealButton.addEventListener("click", function() {
@@ -246,13 +260,40 @@ window.onload = function () {
 		logDeckOrder(deck);
 		
 		const drawPile = document.getElementById("draw-pile");
+		
+		// Define the Player class
+		class Player {
+			constructor(hand, faceDown, faceUp) {
+	  		this.hand = hand;
+	 		this.faceDown = faceDown;
+	  		this.faceUp = faceUp;
+			}
+  		}
+  
+  		// Create the player objects and add them to the players array
+  		for (let i = 0; i < numPlayers; i++) {
+		const hand = [];
+		const faceDown = [];
+		const faceUp = [];
+		players.push(new Player(hand, faceDown, faceUp));
+  		}
+  
+
+		
+		// Remove all cards from the draw pile
+		while (drawPile.firstChild) {
+		  drawPile.removeChild(drawPile.firstChild);
+		}
+		
+		// Add the new cards to the draw pile
 		for (let card of deck) {
-		  const cardElement = createCardElement(card);
+		  const cardElement = createCardElement(card, drawPile);
 		  drawPile.appendChild(cardElement);
 		}
 		
 		updateCardCount();
 	  });
+	  
 	  
 
 
