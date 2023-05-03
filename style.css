@@ -158,12 +158,11 @@ body {
 }
 
 .card-front {
-	background-image: url("images/card_front.png");
 	background-size: contain;
 }
 
 .card-back {
-	background-image: url("images/card_back.png");
+	background-image: url("images/cards/card_back.png");
 	background-size: contain;
 	transform: rotateY(180deg);
 }

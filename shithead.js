@@ -1,5 +1,9 @@
 window.onload = function () {
 
+	//-----------//
+	//PAGE LAYOUT//
+	//-----------//
+
 	const playPile = document.querySelector("#play-pile");
 	const playedCards = Array.from(playPile.querySelectorAll(".card"));
 
@@ -21,6 +25,8 @@ window.onload = function () {
 	const cardCount = document.getElementById('card-count');
 	let withJokers = false;
 	let orderedContainers = [];
+	// Get the button element by its ID
+	const dealButton = document.getElementById("dealButton");
 
 	function updatePlayerContainers(numPlayers) {
 		playerLeftContainer.style.display = "none";
@@ -121,5 +127,135 @@ window.onload = function () {
 	// Call the function initially and then on any change to the draw pile
 	updateCardCount();
 	drawPile.addEventListener('change', updateCardCount);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	//----------//
+	//GAME LOGIC//
+	//----------//
+
+	function createDeck(withJokers) {
+		const suits = ["clubs", "diamonds", "hearts", "spades"];
+		const ranks = ["ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "jack", "queen", "king"];
+		const deck = [];
+	  
+		for (let suit of suits) {
+		  for (let rank of ranks) {
+			const card = {
+			  suit,
+			  rank,
+			  frontImage: `images/cards/${rank}_of_${suit}.png`,
+			  backImage: "images/cards/card_back.png"
+			};
+			deck.push(card);
+		  }
+		}
+	  
+		if (withJokers === "Yes") {
+		  deck.push({ rank: "joker", frontImage: "images/cards/black_joker.png"});
+		  deck.push({ rank: "joker", frontImage: "images/cards/red_joker.png"});
+		}
+	  
+		return deck;
+	  }
+  
+
+	// Define a function to shuffle a deck of cards
+	function shuffleDeck(deck) {
+		for (let i = deck.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[deck[i], deck[j]] = [deck[j], deck[i]];
+		}
+	}
+
+
+	function logDeckOrder(deck) {
+		console.log("Deck order:");
+		for (let i = 0; i < deck.length; i++) {
+		  console.log(`${deck[i].value} of ${deck[i].suit}`);
+		}
+	  }
+	  
+	  function createCardElement(card) {
+		const cardElement = document.createElement("div");
+		cardElement.classList.add("card");
+	  
+		const cardFrontElement = document.createElement("div");
+		cardFrontElement.classList.add("card-front");
+		cardFrontElement.style.backgroundImage = `url(${card.frontImage})`;
+	  
+		const cardBackElement = document.createElement("div");
+		cardBackElement.classList.add("card-back");
+	  
+		cardElement.appendChild(cardFrontElement);
+		cardElement.appendChild(cardBackElement);
+	  
+		const drawPile = document.getElementById("draw-pile");
+		drawPile.appendChild(cardElement);
+	  
+		return cardElement;
+	  }
+	  
+
+	  dealButton.addEventListener("click", function() {
+		const withJokersCheckbox = document.getElementsByName("withJokers")[0];
+		const withJokers = withJokersCheckbox.checked ? "Yes" : "No";
+		const deck = createDeck(withJokers);
+		shuffleDeck(deck);
+		logDeckOrder(deck);
+		
+		const drawPile = document.getElementById("draw-pile");
+		for (let card of deck) {
+		  const cardElement = createCardElement(card);
+		  drawPile.appendChild(cardElement);
+		}
+		
+		updateCardCount();
+	  });
+	  
+
+
+
 
 }
