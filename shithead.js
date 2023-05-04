@@ -25,7 +25,6 @@ window.onload = function () {
 	const cardCount = document.getElementById('card-count');
 	let withJokers = false;
 	let orderedContainers = [];
-	// Get the button element by its ID
 	const dealButton = document.getElementById("dealButton");
 
 	function updatePlayerContainers(numPlayers) {
@@ -136,7 +135,7 @@ window.onload = function () {
 	// Define the necessary variables and arrays
 	const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
 	const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'jack', 'queen', 'king', 'ace'];
-	const numPlayers = 2; // Change this to the desired number of players
+	const numPlayers = document.getElementById('numPlayers');
 	const players = [];
 	let currentPlayer = 0;
 	let currentCard = null;
@@ -225,9 +224,12 @@ window.onload = function () {
 	}
 
 	  dealButton.addEventListener("click", function () {
+		// Get the number of players from the input field
+		const numPlayers = parseInt(document.getElementById('numPlayers').value);
 		const withJokersCheckbox = document.getElementsByName("withJokers")[0];
 		const withJokers = withJokersCheckbox.checked ? "Yes" : "No";
 		const deck = createDeck(withJokers);
+		
 		shuffleDeck(deck);
 		logDeckOrder(deck);
 	
@@ -239,6 +241,11 @@ window.onload = function () {
 				this.faceUp = faceUp;
 			}
 		}
+
+  // Clear cards from game container
+  let cards = document.querySelectorAll('.card');
+  cards.forEach(card => card.remove());
+
 	
 // Create the player objects and add them to the players array
 for (let i = 0; i < numPlayers; i++) {
@@ -283,14 +290,7 @@ for (let i = 0; i < numPlayers; i++) {
 	players.push(player);
 }
 
-updateCardCount();
-	});
-	
 
-
-}
-
-/*
 		// Remove all cards from the draw pile
 		while (drawPile.firstChild) {
 			drawPile.removeChild(drawPile.firstChild);
@@ -301,4 +301,12 @@ updateCardCount();
 			const cardElement = createCardElement(card, drawPile);
 			drawPile.appendChild(cardElement);
 		}
-		*/
+
+
+updateCardCount();
+	});
+	
+
+
+}
+
