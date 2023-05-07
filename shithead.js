@@ -25,7 +25,7 @@ window.onload = function () {
 	const cardCount = document.getElementById('card-count');
 	let withJokers = false;
 	let orderedContainers = [];
-	const dealButton = document.getElementById("dealButton");
+	const startButton = document.getElementById("startButton");
 
 	function updatePlayerContainers(numPlayers) {
 		playerLeftContainer.style.display = "none";
@@ -135,28 +135,10 @@ window.onload = function () {
 	// Define the necessary variables and arrays
 	const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
 	const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'jack', 'queen', 'king', 'ace'];
-	const numPlayers = document.getElementById('numPlayers');
 	const players = [];
 	let currentPlayer = 0;
 	let currentCard = null;
 	let burntPile = [];
-	const trickCards = [{
-			rank: '2',
-			rule: 'A'
-		},
-		{
-			rank: '3',
-			rule: 'B'
-		},
-		{
-			rank: '7',
-			rule: 'C'
-		},
-		{
-			rank: '10',
-			rule: 'D'
-		}
-	];
 
 	function createDeck(withJokers) {
 		const deck = [];
@@ -187,15 +169,12 @@ window.onload = function () {
 		return deck;
 	}
 
-
-	// Define a function to shuffle a deck of cards
 	function shuffleDeck(deck) {
 		for (let i = deck.length - 1; i > 0; i--) {
 			const j = Math.floor(Math.random() * (i + 1));
 			[deck[i], deck[j]] = [deck[j], deck[i]];
 		}
 	}
-
 
 	function logDeckOrder(deck) {
 		console.log("Deck order:");
@@ -223,90 +202,92 @@ window.onload = function () {
 		return cardElement;
 	}
 
-	  dealButton.addEventListener("click", function () {
+	// Define the Player class
+	class Player {
+		constructor(playerName, hand, faceDown, faceUp) {
+			this.name = playerName;
+			this.hand = hand;
+			this.faceDown = faceDown;
+			this.faceUp = faceUp;
+		}
+	}
+
+
+	startButton.addEventListener("click", function () {
 		// Get the number of players from the input field
 		const numPlayers = parseInt(document.getElementById('numPlayers').value);
 		const withJokersCheckbox = document.getElementsByName("withJokers")[0];
 		const withJokers = withJokersCheckbox.checked ? "Yes" : "No";
 		const deck = createDeck(withJokers);
-		
+
 		shuffleDeck(deck);
 		logDeckOrder(deck);
-	
-		// Define the Player class
-		class Player {
-			constructor(hand, faceDown, faceUp) {
-				this.hand = hand;
-				this.faceDown = faceDown;
-				this.faceUp = faceUp;
+
+		// Clear cards from game container
+		let cards = document.querySelectorAll('.card');
+		cards.forEach(card => card.remove());
+
+
+		// Create the player objects and add them to the players array
+		for (let i = 0; i < numPlayers; i++) {
+			// Get the player container element for this player index
+			const playerContainer = orderedContainers[i];
+
+			// Get the containers for the different types of cards for this player
+			const playerName = playerContainer.querySelector(".player-name");
+			const handContainer = playerContainer.querySelector(".playable-cards");
+			const faceUpContainer = playerContainer.querySelector(".face-up-cards");
+			const faceDownContainer = playerContainer.querySelector(".face-down-cards");
+
+			// Create a new player object with empty arrays for each type of card
+			const player = new Player(playerName, [], [], []);
+
+			// Set the player object's properties to reference the container elements
+			player.container = playerContainer;
+			player.playerName = playerName;
+			player.handContainer = handContainer;
+			player.faceUpContainer = faceUpContainer;
+			player.faceDownContainer = faceDownContainer;
+
+			// Deal three cards to each player's face-down-cards container
+			for (let j = 0; j < 3; j++) {
+				const card = deck.pop();
+				player.faceDown.push(card);
+				createCardElement(card, player.faceDownContainer);
 			}
+
+			// Deal three cards to each player's face-up-cards container
+			for (let j = 0; j < 3; j++) {
+				const card = deck.pop();
+				player.faceUp.push(card);
+				createCardElement(card, player.faceUpContainer);
+			}
+
+			// Deal three cards to each player's playable-cards container
+			for (let j = 0; j < 3; j++) {
+				const card = deck.pop();
+				player.hand.push(card);
+				createCardElement(card, player.handContainer);
+			}
+
+			players.push(player);
 		}
 
-  // Clear cards from game container
-  let cards = document.querySelectorAll('.card');
-  cards.forEach(card => card.remove());
 
-	
-// Create the player objects and add them to the players array
-for (let i = 0; i < numPlayers; i++) {
-	// Get the player container element for this player index
-	const playerContainer = orderedContainers[i];
-	
-	// Get the containers for the different types of cards for this player
-	const handContainer = playerContainer.querySelector(".playable-cards");
-	const faceUpContainer = playerContainer.querySelector(".face-up-cards");
-	const faceDownContainer = playerContainer.querySelector(".face-down-cards");
-	
-	// Create a new player object with empty arrays for each type of card
-	const player = new Player([], [], []);
-	
-	// Set the player object's properties to reference the container elements
-	player.container = playerContainer;
-	player.handContainer = handContainer;
-	player.faceUpContainer = faceUpContainer;
-	player.faceDownContainer = faceDownContainer;
-	
-	// Deal three cards to each player's face-down-cards container
-	for (let j = 0; j < 3; j++) {
-		const card = deck.pop();
-		player.faceDown.push(card);
-		createCardElement(card, player.faceDownContainer);
-	}
-
-	// Deal three cards to each player's face-up-cards container
-	for (let j = 0; j < 3; j++) {
-		const card = deck.pop();
-		player.faceUp.push(card);
-		createCardElement(card, player.faceUpContainer);
-	}
-
-	// Deal three cards to each player's playable-cards container
-	for (let j = 0; j < 3; j++) {
-		const card = deck.pop();
-		player.hand.push(card);
-		createCardElement(card, player.handContainer);
-	}
-
-	players.push(player);
-}
-
-
-		// Remove all cards from the draw pile
+		// Clear the draw pile
 		while (drawPile.firstChild) {
 			drawPile.removeChild(drawPile.firstChild);
 		}
 
-		// Add the new cards to the draw pile
+		// Add the remainder of cards to the draw pile
 		for (let card of deck) {
 			const cardElement = createCardElement(card, drawPile);
 			drawPile.appendChild(cardElement);
 		}
 
 
-updateCardCount();
+		
 	});
-	
 
 
 }
-
