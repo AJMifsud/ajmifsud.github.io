@@ -24,6 +24,7 @@ body {
 #sidebar {
 	position: relative;
 	max-width: 260px;
+	min-width: 165px;
 	flex-direction: column;
 	background-color: gray;
 	border: 1px solid red;
