@@ -253,15 +253,19 @@ function removeCard(cardElement) {
 
 function playerTurn(currentPlayer) {
 	return new Promise(resolve => {
-		let selectedCard = null;
-		const onClick = cardElement => {
-			selectedCard = currentPlayer.hand.find(card => cardElement.classList.contains(card.suit) && cardElement.classList.contains('rank' + card.rank));
-			if (selectedCard) {
-				resolve(selectedCard);
-			}
-		};
+	  const onClick = cardElement => {
+		const selectedCard = currentPlayer.hand.find(card => cardElement.classList.contains(card.suit) && cardElement.classList.contains('rank' + card.rank));
+		if (selectedCard) {
+		  resolve(selectedCard);
+		}
+	  };
+	  // Create a new click handler for each card in the player's hand
+	  currentPlayer.hand.forEach(card => {
+		const cardElement = createCardElement(card, playerHandElement, onClick);
+	  });
 	});
-}
+  }
+  
 
 function isCardValid(selectedCard, centerCard) {
 	// The selected card must have the same rank or the same suit as the center card
