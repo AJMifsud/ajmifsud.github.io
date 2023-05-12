@@ -236,7 +236,7 @@ body {
 	display: flex;
 	position: relative;
 	height: 175px;
-	width: 125%;
+	width: 90%;
 	justify-content: center;
 	align-items: center;
 }

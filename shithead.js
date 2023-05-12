@@ -123,263 +123,286 @@ window.onload = function () {
 		cardCount.textContent = `Cards in deck: ${numCards}`;
 	}
 
-	// Call the function initially and then on any change to the draw pile
-	updateCardCount();
-	drawPile.addEventListener('change', updateCardCount);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	
-//----------//
-//GAME LOGIC//
-//----------//
-
-// Define the necessary variables and arrays
-const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
-const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'jack', 'queen', 'king', 'ace'];
-const players = [];
-let currentPlayer = 0;
-let currentCard = null;
-let burntPile = [];
-
-// Define the Player class
-class Player {
-	constructor(playerName, hand, faceDown, faceUp) {
-		this.name = playerName;
-		this.hand = hand;
-		this.faceDown = faceDown;
-		this.faceUp = faceUp;
-	}
-}
-
-function createDeck(withJokers) {
-	const deck = [];
-
-	for (let suit of suits) {
-		for (let rank of ranks) {
-			const card = {
-				suit,
-				rank,
-				frontImage: `images/cards/${rank}_of_${suit}.png`,
-				backImage: "images/cards/card_back.png"
-			};
-			deck.push(card);
+	// Use a MutationObserver to detect changes to the drawPile container
+	const observer = new MutationObserver(function (mutationsList, observer) {
+		for (let mutation of mutationsList) {
+			if (mutation.type === 'childList') {
+				updateCardCount();
+			}
 		}
-	}
-
-	if (withJokers === "Yes") {
-		deck.push({
-			rank: "joker",
-			frontImage: "images/cards/black_joker.png"
-		});
-		deck.push({
-			rank: "joker",
-			frontImage: "images/cards/red_joker.png"
-		});
-	}
-
-	return deck;
-}
-
-function shuffleDeck(deck) {
-	for (let i = deck.length - 1; i > 0; i--) {
-		const j = Math.floor(Math.random() * (i + 1));
-		[deck[i], deck[j]] = [deck[j], deck[i]];
-	}
-}
-
-function logDeckOrder(deck) {
-	console.log("Deck order:");
-	for (let i = 0; i < deck.length; i++) {
-		console.log(`${deck[i].rank} of ${deck[i].suit}`);
-	}
-}
-
-// Define the onClick function to handle card selection
-function onClick(card) {
-	// Update the selectedCard variable with the clicked card's value
-	selectedCard = card;
-  }
-  
-
-function createCardElement(card, targetElement, onClick) {
-	const cardElement = document.createElement("div");
-	cardElement.classList.add("card", card.suit, "rank" + card.rank);
-  
-	const cardFrontElement = document.createElement("div");
-	cardFrontElement.classList.add("card-front");
-	cardFrontElement.style.backgroundImage = `url(${card.frontImage})`;
-  
-	const cardBackElement = document.createElement("div");
-	cardBackElement.classList.add("card-back");
-  
-	// Add a click event listener to the card element
-	cardElement.addEventListener("click", () => {
-	  onClick(card);
 	});
-  
-	cardElement.appendChild(cardFrontElement);
-	cardElement.appendChild(cardBackElement);
-  
-	targetElement.appendChild(cardElement);
-  
-	return cardElement;
-  }
-  
-
-function removeCard(cardElement) {
-	const parentElement = cardElement.parentNode;
-	parentElement.removeChild(cardElement);
-}
-
-
-
-function playerTurn(currentPlayer) {
-	return new Promise(resolve => {
-	  const onClick = cardElement => {
-		const selectedCard = currentPlayer.hand.find(card => cardElement.classList.contains(card.suit) && cardElement.classList.contains('rank' + card.rank));
-		if (selectedCard) {
-		  resolve(selectedCard);
-		}
-	  };
-	  // Create a new click handler for each card in the player's hand
-	  currentPlayer.hand.forEach(card => {
-		const cardElement = createCardElement(card, playerHandElement, onClick);
-	  });
+	observer.observe(drawPile, {
+		childList: true
 	});
-  }
-  
-
-function isCardValid(selectedCard, centerCard) {
-	// The selected card must have the same rank or the same suit as the center card
-	return selectedCard.rank === centerCard.rank || selectedCard.suit === centerCard.suit;
-}
 
 
-startButton.addEventListener("click", function () {
-	// Get the number of players from the input field
-	const numPlayers = parseInt(document.getElementById('numPlayers').value);
-	const withJokersCheckbox = document.getElementsByName("withJokers")[0];
-	const withJokers = withJokersCheckbox.checked ? "Yes" : "No";
-	const gameOver = "False";
+	//----------//
+	//GAME LOGIC//
+	//----------//
 
-	//Create deck with/out jokers
-	const deck = createDeck(withJokers);
-	shuffleDeck(deck);
-	// Clear cards from game container
-	let cards = document.querySelectorAll('.card');
-	cards.forEach(card => card.remove());
+	// Define the necessary variables and arrays
+	const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
+	const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'jack', 'queen', 'king', 'ace'];
 
-
-	// Create the player objects and add them to the players array
-	for (let i = 0; i < numPlayers; i++) {
-		// Get the player container element for this player index
-		const playerContainer = orderedContainers[i];
-
-		// Get the containers for the different types of cards for this player
-		const playerName = playerContainer.querySelector(".player-name");
-		const handContainer = playerContainer.querySelector(".playable-cards");
-		const faceUpContainer = playerContainer.querySelector(".face-up-cards");
-		const faceDownContainer = playerContainer.querySelector(".face-down-cards");
-
-		// Create a new player object with empty arrays for each type of card
-		const player = new Player(playerName, [], [], []);
-
-		// Set the player object's properties to reference the container elements
-		player.container = playerContainer;
-		player.playerName = playerName;
-		player.handContainer = handContainer;
-		player.faceUpContainer = faceUpContainer;
-		player.faceDownContainer = faceDownContainer;
-
-		players.push(player);
-		// Deal three cards to each player's face-down-cards container
-		for (let j = 0; j < 3; j++) {
-			const card = deck.pop();
-			player.faceDown.push(card);
-			createCardElement(card, player.faceDownContainer, onClick);
-		}
-
-		// Deal three cards to each player's face-up-cards container
-		for (let j = 0; j < 3; j++) {
-			const card = deck.pop();
-			player.faceUp.push(card);
-			createCardElement(card, player.faceUpContainer, onClick);
-		}
-
-		// Deal three cards to each player's playable-cards container
-		for (let j = 0; j < 3; j++) {
-			const card = deck.pop();
-			player.hand.push(card);
-			createCardElement(card, player.handContainer, onClick);
+	// Define the Player class
+	class Player {
+		constructor(playerName, hand, faceDown, faceUp) {
+			this.name = playerName;
+			this.hand = hand;
+			this.faceDown = faceDown;
+			this.faceUp = faceUp;
+			this.container = null;
+			this.playerName = null;
+			this.handContainer = null;
+			this.faceUpContainer = null;
+			this.faceDownContainer = null;
 		}
 	}
 
-	// Clear the draw pile
-	while (drawPile.firstChild) {
-		drawPile.removeChild(drawPile.firstChild);
+	// Define the Deck class
+	class Deck {
+		constructor(withJokers) {
+			this.cards = [];
+		}
 	}
 
-	// Add the remainder of cards to the draw pile
-	for (let card of deck) {
-		const cardElement = createCardElement(card, drawPile);
-		drawPile.appendChild(cardElement);
+	function createDeck(withJokers) {
+		const deck = [];
+
+		for (let suit of suits) {
+			for (let rank of ranks) {
+				const card = {
+					suit,
+					rank,
+					frontImage: `images/cards/${rank}_of_${suit}.png`,
+					backImage: "images/cards/card_back.png"
+				};
+				deck.push(card);
+			}
+		}
+
+		if (withJokers === "Yes") {
+			deck.push({
+				rank: "joker",
+				frontImage: "images/cards/black_joker.png"
+			});
+			deck.push({
+				rank: "joker",
+				frontImage: "images/cards/red_joker.png"
+			});
+		}
+
+		return deck;
 	}
 
-	// main game loop
-	while (gameOver === false) {
+	function shuffleDeck(deck) {
+		for (let i = deck.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[deck[i], deck[j]] = [deck[j], deck[i]];
+		}
+	}
 
-		//Loop through all players
+	function createCardElement(card, targetElement) {
+		const cardElement = document.createElement("div");
+		cardElement.classList.add("card");
+
+		const cardFrontElement = document.createElement("div");
+		cardFrontElement.classList.add("card-front");
+		cardFrontElement.style.backgroundImage = `url(${card.frontImage})`;
+
+		const cardBackElement = document.createElement("div");
+		cardBackElement.classList.add("card-back");
+
+		cardElement.appendChild(cardFrontElement);
+		cardElement.appendChild(cardBackElement);
+
+		targetElement.appendChild(cardElement);
+
+
+		// Add a reference to the underlying card value
+		cardElement.card = card;
+
+		return cardElement;
+	}
+
+
+	function removeCard(cardElement, container) {
+		console.log("cardElement:", cardElement);
+		console.log("container:", container);
+		container.removeChild(cardElement);
+	}
+
+
+	function isCardValid(selectedCard, centerCard) {
+		const rankOrder = ranks.indexOf(selectedCard.rank);
+		const centerRankOrder = ranks.indexOf(centerCard.rank);
+
+		return rankOrder >= centerRankOrder;
+	}
+
+	function dealCards(deck, players) {
+		for (let i = 0; i < players.length; i++) {
+			const player = players[i];
+
+			// Deal three cards to each player's face-down-cards container
+			for (let j = 0; j < 3; j++) {
+				const card = deck.pop();
+				player.faceDown.push(card);
+				createCardElement(card, player.faceDownContainer);
+			}
+
+			// Deal three cards to each player's face-up-cards container
+			for (let j = 0; j < 3; j++) {
+				const card = deck.pop();
+				player.faceUp.push(card);
+				createCardElement(card, player.faceUpContainer);
+			}
+
+			// Deal three cards to each player's playable-cards container
+			for (let j = 0; j < 3; j++) {
+				const card = deck.pop();
+				player.hand.push(card);
+				createCardElement(card, player.handContainer);
+			}
+		}
+	}
+
+	startButton.addEventListener("click", function () {
+		// Get the number of players from the input field
+		const numPlayers = parseInt(document.getElementById('numPlayers').value);
+		const withJokersCheckbox = document.getElementsByName("withJokers")[0];
+		const withJokers = withJokersCheckbox.checked ? "Yes" : "No";
+		const players = [];
+		let gameOver = false;
+		//Create deck with/out jokers
+		const deck = createDeck(withJokers);
+		shuffleDeck(deck);
+		// Clear cards from game container
+		let cards = document.querySelectorAll('.card');
+		cards.forEach(card => card.remove());
+
+
+		// Create the player objects and add them to the players array
 		for (let i = 0; i < numPlayers; i++) {
+			// Get the player container element for this player index
+			const playerContainer = orderedContainers[i];
 
-			// get the current player and the center card from the play pile
-			const currentPlayer = players[i];
-			const centerCard = playPile[playPile.length - 1];
-			let selectedCard = null; // initialize selectedCard to null
-			// wait for player to select a card and assign it to selectedCard
-			selectedCard = playerTurn(currentPlayer, centerCard);
+			// Get the containers for the different types of cards for this player
+			const playerName = playerContainer.querySelector(".player-name");
+			const handContainer = playerContainer.querySelector(".playable-cards");
+			const faceUpContainer = playerContainer.querySelector(".face-up-cards");
+			const faceDownContainer = playerContainer.querySelector(".face-down-cards");
 
-			// check if the selected card is valid, if not continue the loop
-			if (centerCard && !isCardValid(selectedCard, centerCard)) {
-			    console.log('Invalid card');
-			    continue;
-			}
+			// Create a new player object with empty arrays for each type of card
+			const player = new Player(playerName, [], [], []);
 
+			// Set the player object's properties to reference the container elements
+			player.container = playerContainer;
+			player.playerName = playerName.textContent;
+			player.handContainer = handContainer;
+			player.faceUpContainer = faceUpContainer;
+			player.faceDownContainer = faceDownContainer;
 
-			// add the selected card to the play pile and remove it from the player's hand
-			playPile.push(selectedCard);
-			currentPlayer.hand = removeCard(currentPlayer.hand, selectedCard);
-
-			// check if the player has won (no more cards in hand, face down or face up piles)
-			if (currentPlayer.hand.length === 0 && currentPlayer.faceDown.length === 0 && currentPlayer.faceUp.length === 0) {
-				console.log('Player ' + currentPlayer.name + ' has won!');
-				gameOver = true;
-			}
-
-			// move on to the next player
-			currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+			players.push(player);
 		}
-	}
+
+		// Deal cards to players
+		dealCards(deck, players);
+
+		// Log player names to console
+		for (let i = 0; i < numPlayers; i++) {
+			console.log(`Player ${i + 1}: ${players[i].playerName}`);
+		}
+
+		// Clear the draw pile
+		while (drawPile.firstChild) {
+			drawPile.removeChild(drawPile.firstChild);
+		}
+
+		// Add the remainder of cards to the draw pile
+		for (let card of deck) {
+			const cardElement = createCardElement(card, drawPile);
+			drawPile.appendChild(cardElement);
+		}
+		updateCardCount();
 
 
-});
+		async function playGame() {
+
+			// Set the center card to the first card in the deck
+			console.log("Deck size: " + deck.length)
+			const centerCard = deck.pop();
+			const drawpileTopCard = drawPile.lastChild;
+			createCardElement(centerCard, playPile)
+			removeCard(drawpileTopCard, drawPile);
+			updateCardCount();
+			console.log("Deck size: " + deck.length)
+
+
+			// Play the game until there is a winner
+			while (!gameOver) {
+				// Loop through each player and allow them to play a card
+				for (let i = 0; i < numPlayers; i++) {
+					const player = players[i];
+					console.log(`${player.playerName}'s turn`);
+
+					function cardClick() {
+						return new Promise(resolve => {
+						  const cardElements = player.handContainer.querySelectorAll('.card');
+						  cardElements.forEach(cardElem => {
+							cardElem.addEventListener('click', () => {
+							  resolve({ cardElement: cardElem, card: cardElem.card });
+							});
+						  });
+						});
+					  }						
+				
+					  async function playTurn(player, selectedCardElement, centerCard) {
+					  
+						// Get the selected card from the player's hand
+						const selectedCard = selectedCardElement.card;
+					  
+						// Remove the selected card from the player's hand
+						player.hand.splice(selectedCard);
+					  
+						// Remove the selected card element from the player's hand container
+						removeCard(selectedCardElement.cardElement, player.handContainer);
+					  
+						// Add the selected card to the play pile
+						createCardElement(selectedCard, playPile);
+					  
+						// Check if the player has won the game
+						if (player.hand.length === 0) {
+						  gameOver = true;
+						  console.log(`${player.playerName} wins!`);
+						  return;
+						}
+					  
+						// Update the center card
+						centerCard.value = selectedCard.value;
+						centerCard.suit = selectedCard.suit;
+						updateCardElement(centerCard, playPile.lastChild);
+					  
+						// Update the card count and go to the next turn
+						updateCardCount();
+					  }
+					  
+
+					// Allow the player to click on a card
+					const selectedCardElement = await cardClick();
+					playTurn(player, selectedCardElement, centerCard);
+
+
+					if (gameOver) {
+						break;
+					}
+				}
+			}
+		}
+		playGame();
+
+
+	});
 
 
 }
