@@ -277,6 +277,23 @@ window.onload = function () {
 		gameLog.scrollTop = gameLog.scrollHeight;
 	}
 
+	function pickup(playedcards, player) {
+		// loop through each card in playedcards array
+		for (let i = 0; i < playedcards.length; i++) {
+		  // add card to the player's hand
+		  player.hand.push(playedcards[i]);
+		  createCardElement(playedcards[i], player.handContainer);
+		}
+		// clear the playedcards array
+		if (playedcards.length > 0) {
+		  playedcards.splice(0, playedcards.length);
+		}		
+		while (playPile.firstChild) {
+		  playPile.removeChild(playPile.firstChild);
+		}
+	  }
+	  
+	  
 
 	startButton.addEventListener("click", function () {
 
@@ -386,9 +403,30 @@ window.onload = function () {
 
 						console.log("Selected card: ", selectedCard);
 
+						let canPlay = false;
+
+						if (centerCard) {
+							// Check if any of the cards in the player's hand have a higher rank than the center card
+							player.hand.forEach(card => {
+							  if (selectedCardRank >= ranks.indexOf(centerCard.rank)) {
+								canPlay = true;
+							  }
+							});
+						  }
+
+						if (!centerCard){
+							canPlay = true;
+						}	
+
+						if (canPlay == false){
+							pickup(playedCards, player)
+							appendToGameLog(players[i].playerName + " picked up the play pile!")
+							return;
+						}	
+
 						if (!centerCard || selectedCardRank >= ranks.indexOf(centerCard.rank)) {
 							// If there is no center card or the selected card has a higher rank than the center card:
-
+							canPlay = true;
 							isSelectedValid = true;
 							// Get the index of the selected card in the player's hand and remove it
 							const selectedCardIndex = player.hand.indexOf(selectedCard);
@@ -439,7 +477,6 @@ window.onload = function () {
 							return;
 						}
 
-
 						if (player.hand.length === 0) {
 							gameOver = true;
 							console.log(`${player.playerName} wins!`);
@@ -456,6 +493,7 @@ window.onload = function () {
 					}
 
 
+					
 					if (gameOver) {
 						break;
 					}
