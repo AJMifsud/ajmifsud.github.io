@@ -4,14 +4,13 @@ window.onload = function () {
 	//PAGE LAYOUT//
 	//-----------//
 
-	const playPile = document.querySelector("#play-pile");
-	let playedCards = Array.from(playPile.querySelectorAll(".card"));
-
-	playedCards.forEach((card) => {
-		const angle = Math.floor(Math.random() * 360);
-		card.style.setProperty("--angle", `${angle}deg`);
-		card.classList.add("rotated");
-	});
+	function rotatePlayedCard(card) {
+		if (playPile.contains(card)) {
+		  const angle = Math.floor(Math.random() * 360);
+		  card.style.setProperty("--angle", `${angle}deg`);
+		  card.classList.add("rotated");
+		}
+	  }	  
 
 	const playerNames = ["Player 1", "Player 2", "Player 3", "Player 4"];
 	const numPlayersSelect = document.getElementById("numPlayers");
@@ -26,6 +25,7 @@ window.onload = function () {
 	let withJokers = false;
 	let orderedContainers = [];
 	const startButton = document.getElementById("startButton");
+	const playPile = document.querySelector("#play-pile");
 
 	function updatePlayerContainers(numPlayers) {
 		playerLeftContainer.style.display = "none";
@@ -117,24 +117,6 @@ window.onload = function () {
 		}
 	});
 
-	// Function to update the card count display
-	function updateCardCount() {
-		const numCards = drawPile.querySelectorAll('.card').length;
-		cardCount.textContent = `Cards in deck: ${numCards}`;
-	}
-
-	// Use a MutationObserver to detect changes to the drawPile container
-	const observer = new MutationObserver(function (mutationsList, observer) {
-		for (let mutation of mutationsList) {
-			if (mutation.type === 'childList') {
-				updateCardCount();
-			}
-		}
-	});
-	observer.observe(drawPile, {
-		childList: true
-	});
-
 
 	//----------//
 	//GAME LOGIC//
@@ -168,6 +150,8 @@ window.onload = function () {
 
 	function createDeck(withJokers) {
 		const deck = [];
+
+		
 
 		for (let suit of suits) {
 			for (let rank of ranks) {
@@ -227,8 +211,7 @@ window.onload = function () {
 
 
 	function removeCard(cardElement, container) {
-		console.log("cardElement:", cardElement);
-		console.log("container:", container);
+		console.log("Removed ", cardElement, "From", container);
 		container.removeChild(cardElement);
 	}
 
@@ -267,6 +250,37 @@ window.onload = function () {
 		}
 	}
 
+	function createGameLog() {
+		// Get a reference to the sidebar element
+		const sidebar = document.getElementById('sidebar');
+	  
+		// Remove any existing game log element
+		let gameLog = document.getElementById('game-log');
+		if (gameLog) {
+		  sidebar.removeChild(gameLog);
+		}
+	  
+		// Create a new div element for the game log
+		gameLog = document.createElement('div');
+		gameLog.id = 'game-log';
+		gameLog.innerText = '### Game Log ###' ;
+		gameLog.innerText += '\nNew Game\n';
+
+		// Append the new console log element to the sidebar
+		sidebar.appendChild(gameLog);
+	  }
+
+	  function appendToGameLog(message) {
+		// Get a reference to the game log element
+		const gameLog = document.getElementById('game-log');
+		
+		
+		// Append the message to the game log
+		gameLog.innerText += `\n${message}`;
+		gameLog.scrollTop = gameLog.scrollHeight;
+	  }
+	  
+
 	startButton.addEventListener("click", function () {
 		// Get the number of players from the input field
 		const numPlayers = parseInt(document.getElementById('numPlayers').value);
@@ -274,13 +288,23 @@ window.onload = function () {
 		const withJokers = withJokersCheckbox.checked ? "Yes" : "No";
 		const players = [];
 		let gameOver = false;
+
+		createGameLog();
+
 		//Create deck with/out jokers
 		const deck = createDeck(withJokers);
 		shuffleDeck(deck);
+
 		// Clear cards from game container
 		let cards = document.querySelectorAll('.card');
 		cards.forEach(card => card.remove());
 
+		// Function to update the card count display
+		function updateCardCount() {
+		//const numCards = drawPile.querySelectorAll('.card').length;
+		const numCards = deck.length;
+		cardCount.textContent = `Cards in deck: ${numCards}`;
+	}
 
 		// Create the player objects and add them to the players array
 		for (let i = 0; i < numPlayers; i++) {
@@ -313,6 +337,7 @@ window.onload = function () {
 		for (let i = 0; i < numPlayers; i++) {
 			console.log(`Player ${i + 1}: ${players[i].playerName}`);
 		}
+  
 
 		// Clear the draw pile
 		while (drawPile.firstChild) {
@@ -331,12 +356,7 @@ window.onload = function () {
 
 			// Set the center card to the first card in the deck
 			console.log("Deck size: " + deck.length)
-			const centerCard = deck.pop();
-			const drawpileTopCard = drawPile.lastChild;
-			createCardElement(centerCard, playPile)
-			removeCard(drawpileTopCard, drawPile);
-			updateCardCount();
-			console.log("Deck size: " + deck.length)
+			let centerCard;
 
 
 			// Play the game until there is a winner
@@ -345,48 +365,89 @@ window.onload = function () {
 				for (let i = 0; i < numPlayers; i++) {
 					const player = players[i];
 					console.log(`${player.playerName}'s turn`);
+					appendToGameLog(players[i].playerName + "'s turn");
 
 					function cardClick() {
 						return new Promise(resolve => {
-						  const cardElements = player.handContainer.querySelectorAll('.card');
-						  cardElements.forEach(cardElem => {
-							cardElem.addEventListener('click', () => {
-							  resolve({ cardElement: cardElem, card: cardElem.card });
+							const cardElements = player.handContainer.querySelectorAll('.card');
+							cardElements.forEach(cardElem => {
+								cardElem.addEventListener('click', () => {
+									resolve({
+										cardElement: cardElem,
+										card: cardElem.card
+									});
+								});
 							});
-						  });
 						});
-					  }						
-				
-					  async function playTurn(player, selectedCardElement, centerCard) {
-					  
-						// Get the selected card from the player's hand
+					}
+
+					async function playTurn(player, selectedCardElement, centerCard) {
 						const selectedCard = selectedCardElement.card;
+						const selectedCardRank = ranks.indexOf(selectedCard.rank);
+						
+						console.log("Selected card: ", selectedCard);
 					  
-						// Remove the selected card from the player's hand
-						player.hand.splice(selectedCard);
+						if (!centerCard || selectedCardRank >= ranks.indexOf(centerCard.rank)) {
+							// If there is no center card or the selected card has a higher rank than the center card:
+						  
+							// Get the index of the selected card in the player's hand and remove it
+							const selectedCardIndex = player.hand.indexOf(selectedCard);
+							player.hand.splice(selectedCardIndex, 1);
+						  
+							// Log the played card to the game log
+							appendToGameLog(players[i].playerName + " played " + selectedCard.rank + " of " + selectedCard.suit);
+						  
+							// Remove the card element from the player's hand and add it to the play pile
+							removeCard(selectedCardElement.cardElement, player.handContainer);
+							createCardElement(selectedCard, playPile);
+						  
+							// Rotate the played card to make it easier to see
+							rotatePlayedCard(playPile.lastChild);
+						  
+							if (deck.length > 0) {
+							  // If there are still cards in the deck:
+						  
+							  // Draw a new card from the deck and add it to the player's hand
+							  const card = deck.pop();
+							  player.hand.push(card);
+						  
+							  // Add the new card to the player's hand on the screen
+							  createCardElement(card, player.handContainer);
+						  
+							  // Update the card count display
+							  updateCardCount();
+						  
+							  // Remove the top card from the draw pile
+							  removeCard(drawPile.lastChild, drawPile);
+						  
+							  // Log the new deck size to the console
+							  console.log("Deck size: " + deck.length);
+							}
+						  } else {
+							// If the selected card is not higher than the center card:
+						  
+							// Log an error message to the console
+							console.log("Selected card must be a higher rank than the center card.");
+							
+							appendToGameLog("Selected card must be an equal to or higher in rank than the center card.");
+						  
+							// Exit the function without doing anything else
+							return;
+						  }
+						  
 					  
-						// Remove the selected card element from the player's hand container
-						removeCard(selectedCardElement.cardElement, player.handContainer);
-					  
-						// Add the selected card to the play pile
-						createCardElement(selectedCard, playPile);
-					  
-						// Check if the player has won the game
 						if (player.hand.length === 0) {
 						  gameOver = true;
 						  console.log(`${player.playerName} wins!`);
 						  return;
 						}
 					  
-						// Update the center card
-						centerCard.value = selectedCard.value;
-						centerCard.suit = selectedCard.suit;
-						updateCardElement(centerCard, playPile.lastChild);
+						centerCard = selectedCard;
 					  
-						// Update the card count and go to the next turn
 						updateCardCount();
 					  }
 					  
+
 
 					// Allow the player to click on a card
 					const selectedCardElement = await cardClick();

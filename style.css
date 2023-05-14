@@ -262,3 +262,13 @@ body {
 	transform: rotateZ(calc(var(--angle) * -1));
 	z-index: calc(var(--index) * -1);
 }
+
+#game-log {
+    border: 1px solid black;
+    background-color: white;
+    border-radius: 5px;
+    padding: 10px 5px;
+    margin: 10px 5px;
+	max-height: 350px;
+	overflow-y: scroll;
+}
