@@ -209,7 +209,6 @@ window.onload = function () {
 
 
 	function removeCard(cardElement, container) {
-		console.log("Removed ", cardElement, "From", container);
 		container.removeChild(cardElement);
 	}
 
@@ -353,17 +352,20 @@ window.onload = function () {
 
 			// Set the center card to the first card in the deck
 			console.log("Deck size: " + deck.length)
-			let centerCard;
-
+			let centerCard = playedCards[playedCards.length - 1];
+			let isSelectedValid = false;
 
 			// Play the game until there is a winner
 			while (!gameOver) {
 				// Loop through each player and allow them to play a card
 				for (let i = 0; i < numPlayers; i++) {
+					isSelectedValid = false;
 					const player = players[i];
 					console.log(`${player.playerName}'s turn`);
 					appendToGameLog(players[i].playerName + "'s turn");
 
+					
+					console.log("Last played card: ", centerCard);
 					function cardClick() {
 						return new Promise(resolve => {
 							const cardElements = player.handContainer.querySelectorAll('.card');
@@ -387,6 +389,7 @@ window.onload = function () {
 						if (!centerCard || selectedCardRank >= ranks.indexOf(centerCard.rank)) {
 							// If there is no center card or the selected card has a higher rank than the center card:
 
+							isSelectedValid = true;
 							// Get the index of the selected card in the player's hand and remove it
 							const selectedCardIndex = player.hand.indexOf(selectedCard);
 							player.hand.splice(selectedCardIndex, 1);
@@ -399,9 +402,10 @@ window.onload = function () {
 							removeCard(selectedCardElement.cardElement, player.handContainer);
 							createCardElement(selectedCard, playPile);
 
-
 							// Rotate the played card to make it easier to see
 							rotatePlayedCard(playPile.lastChild);
+							
+							centerCard = playedCards[playedCards.length - 1];
 
 							if (deck.length > 0) {
 								// If there are still cards in the deck:
@@ -424,11 +428,12 @@ window.onload = function () {
 							}
 						} else {
 							// If the selected card is not higher than the center card:
-
+							isSelectedValid = false;
 							// Log an error message to the console
 							console.log("Selected card must be a higher rank than the center card.");
 
 							appendToGameLog("Selected card must be an equal to or higher in rank than the center card.");
+							
 
 							// Exit the function without doing anything else
 							return;
@@ -441,20 +446,22 @@ window.onload = function () {
 							return;
 						}
 
-						centerCard = playedCards[playedCards.length - 1];
-
 						updateCardCount();
 					}
 
-
-					// Allow the player to click on a card
-					const selectedCardElement = await cardClick();
-					playTurn(player, selectedCardElement, centerCard);
+					while (isSelectedValid == false){
+						// Allow the player to click on a card
+						const selectedCardElement = await cardClick();
+						playTurn(player, selectedCardElement, centerCard);
+					}
 
 
 					if (gameOver) {
 						break;
 					}
+
+					centerCard = playedCards[playedCards.length - 1];
+
 				}
 			}
 		}
