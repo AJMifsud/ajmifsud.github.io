@@ -124,6 +124,7 @@ window.onload = function () {
 	// Define the necessary variables and arrays
 	const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
 	const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'jack', 'queen', 'king', 'ace'];
+	
 
 	// Define the Player class
 	class Player {
@@ -295,6 +296,7 @@ window.onload = function () {
 		const withJokers = withJokersCheckbox.checked ? "Yes" : "No";
 		const players = [];
 		const playedCards = [];
+		const trickCards = ["2", "3", "7", "10"];
 		let gameOver = false;
 		createGameLog();
 
@@ -404,13 +406,14 @@ window.onload = function () {
 						if (centerCard) {
 							// Check if any of the cards in the player's hand have an equal rank to or a higher rank than the center card
 							player.hand.forEach(card => {
-							  if (ranks.indexOf(card.rank) >= ranks.indexOf(centerCard.rank)) {
-								canPlay = true;
-							  }
+								if (ranks.indexOf(card.rank) >= ranks.indexOf(centerCard.rank) || trickCards.includes(card.rank)) {
+									canPlay = true;
+								}
 							});
-						  }
+						}
+						
 
-						if (!centerCard || selectedCardRank >= ranks.indexOf(centerCard.rank)) {
+						if (!centerCard || selectedCardRank >= ranks.indexOf(centerCard.rank) || trickCards.includes(selectedCard.rank)) {
 							// If there is no center card or the selected card has an equal rank to or a higher rank than the center card:
 							canPlay = true;
 							isSelectedValid = true;
