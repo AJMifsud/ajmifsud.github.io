@@ -590,7 +590,7 @@ window.onload = function () {
 				}
 
 				// Modify the border width and color
-				player.container.style.borderWidth = '1px';   // Set the border width to 2 pixels
+				player.container.style.borderWidth = '0px';   // Set the border width to 2 pixels
 				player.container.style.borderColor = 'black';  // Set the border color to red
 
 				// Move to the next player's turn
