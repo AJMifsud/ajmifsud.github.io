@@ -588,6 +588,7 @@ window.onload = function () {
 				player.container.style.borderWidth = '0px';   // Set the border width to 2 pixels
 				player.container.style.borderColor = 'black';  // Set the border color to red
 
+				// Check for winner
 				if (player.hand.length === 0) {
 					gameOver = true;
 					console.log(`${player.playerName} wins!`);
