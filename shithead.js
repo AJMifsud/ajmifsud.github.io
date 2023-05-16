@@ -363,6 +363,7 @@ window.onload = function () {
 		}
 
 		updateDrawPileCount();
+		updateBurnPileCount();
 
 		async function playGame() {
 
@@ -525,7 +526,7 @@ window.onload = function () {
 							break;
 						case "3":
 							// Increment the player counter before it is incremented again, skipping the next player
-							appendToGameLog(players[currentPlayerIndex].playerName + " skipped " + players[currentPlayerIndex + 1].playerName + "'s turn!")
+							appendToGameLog(players[currentPlayerIndex].playerName + " skipped " + players[(currentPlayerIndex + 1) % numPlayers].playerName + "'s turn!")
 							currentPlayerIndex = currentPlayerIndex + 1;
 							centerCard = undefined;
 							break;
