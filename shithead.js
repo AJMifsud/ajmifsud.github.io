@@ -21,7 +21,9 @@ window.onload = function () {
 	const playerBottomContainer = document.getElementById("playerbottom-container");
 	const jokersCheck = document.querySelector('input[name="withJokers"]');
 	const drawPile = document.getElementById('draw-pile');
-	const cardCount = document.getElementById('card-count');
+	const drawpileCount = document.getElementById('drawpile-count');
+	const burnPile = document.getElementById('burn-pile');
+	const burnpileCount = document.getElementById('burnpile-count');
 	let orderedContainers = [];
 	const startButton = document.getElementById("startButton");
 	const playPile = document.querySelector("#play-pile");
@@ -48,9 +50,6 @@ window.onload = function () {
 				playerLeftContainer.style.display = "flex";
 				playerTopContainer.style.display = "flex";
 				playerRightContainer.style.display = "flex";
-				break;
-			default:
-				console.error("Invalid number of players: " + numPlayers);
 				break;
 		}
 
@@ -124,7 +123,7 @@ window.onload = function () {
 	// Define the necessary variables and arrays
 	const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
 	const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'jack', 'queen', 'king', 'ace'];
-	
+
 
 	// Define the Player class
 	class Player {
@@ -273,20 +272,18 @@ window.onload = function () {
 	function pickup(playedcards, player) {
 		// loop through each card in playedcards array
 		for (let i = 0; i < playedcards.length; i++) {
-		  // add card to the player's hand
-		  player.hand.push(playedcards[i]);
-		  createCardElement(playedcards[i], player.handContainer);
+			// add card to the player's hand
+			player.hand.push(playedcards[i]);
+			createCardElement(playedcards[i], player.handContainer);
 		}
 		// clear the playedcards array
 		if (playedcards.length > 0) {
-		  playedcards.splice(0, playedcards.length);
-		}		
-		while (playPile.firstChild) {
-		  playPile.removeChild(playPile.firstChild);
+			playedcards.splice(0, playedcards.length);
 		}
-	  }
-	  
-	  
+		while (playPile.firstChild) {
+			playPile.removeChild(playPile.firstChild);
+		}
+	}
 
 	startButton.addEventListener("click", function () {
 
@@ -296,6 +293,7 @@ window.onload = function () {
 		const withJokers = withJokersCheckbox.checked ? "Yes" : "No";
 		const players = [];
 		const playedCards = [];
+		const burntCards = [];
 		const trickCards = ["2", "3", "7", "10"];
 		let gameOver = false;
 		createGameLog();
@@ -308,13 +306,19 @@ window.onload = function () {
 		let cards = document.querySelectorAll('.card');
 		cards.forEach(card => card.remove());
 
-		// Function to update the card count display
-		function updateCardCount() {
-			//const numCards = drawPile.querySelectorAll('.card').length;
+		// Function to update the draw pile card count display
+		function updateDrawPileCount() {
 			const numCards = deck.length;
-			cardCount.textContent = `Cards in deck: ${numCards}`;
+			drawpileCount.textContent = `Cards in deck: ${numCards}`;
 		}
 
+		// Function to update the burnt pile card count display
+		function updateBurnPileCount() {
+			const numCards = burntCards.length;
+			burnpileCount.textContent = `Cards burnt: ${numCards}`;
+		}
+
+		
 		// Create the player objects and add them to the players array
 		for (let i = 0; i < numPlayers; i++) {
 			// Get the player container element for this player index
@@ -357,7 +361,8 @@ window.onload = function () {
 			const cardElement = createCardElement(card, drawPile);
 			drawPile.appendChild(cardElement);
 		}
-		updateCardCount();
+
+		updateDrawPileCount();
 
 		async function playGame() {
 
@@ -365,78 +370,80 @@ window.onload = function () {
 			console.log("Deck size: " + deck.length)
 			let centerCard = playedCards[playedCards.length - 1];
 			let isSelectedValid = false;
+			let isTrickCard = false;
 			let currentPlayerIndex = 0;
 
 			// Play the game until there is a winner
 			while (!gameOver) {
 
-					isSelectedValid = false;
-					const player = players[currentPlayerIndex];
-					console.log(`${player.playerName}'s turn`);
-					appendToGameLog(players[currentPlayerIndex].playerName + "'s turn");
+				let selectedCard = undefined;
+				isSelectedValid = false;
+				const player = players[currentPlayerIndex];
+				console.log(`${player.playerName}'s turn`);
+				appendToGameLog(players[currentPlayerIndex].playerName + "'s turn");
 
-					
-					console.log("Card to beat: ", centerCard);
-					function cardClick() {
-						return new Promise(resolve => {
-							const cardElements = player.handContainer.querySelectorAll('.card');
-							cardElements.forEach(cardElem => {
-								cardElem.addEventListener('click', () => {
-									resolve({
-										cardElement: cardElem,
-										card: cardElem.card
-									});
+
+				console.log("Card to beat: ", centerCard);
+
+				function cardClick() {
+					return new Promise(resolve => {
+						const cardElements = player.handContainer.querySelectorAll('.card');
+						cardElements.forEach(cardElem => {
+							cardElem.addEventListener('click', () => {
+								resolve({
+									cardElement: cardElem,
+									card: cardElem.card
 								});
 							});
 						});
+					});
+				}
+
+				async function playTurn(player, selectedCardElement, centerCard) {
+					selectedCard = selectedCardElement.card;
+					const selectedCardRank = ranks.indexOf(selectedCard.rank);
+
+					console.log("Selected card: ", selectedCard);
+
+					let canPlay = false;
+
+					if (centerCard) {
+						// Check if any of the cards in the player's hand have an equal rank to or a higher rank than the center card
+						player.hand.forEach(card => {
+							if (ranks.indexOf(card.rank) >= ranks.indexOf(centerCard.rank) || trickCards.includes(card.rank)) {
+								canPlay = true;
+							}
+						});
 					}
 
-					async function playTurn(player, selectedCardElement, centerCard) {
-						const selectedCard = selectedCardElement.card;
-						const selectedCardRank = ranks.indexOf(selectedCard.rank);
+					if (trickCards.includes(selectedCard.rank)) {
+						isTrickCard = true;
+					}
 
-						console.log("Selected card: ", selectedCard);
+					if (!centerCard || selectedCardRank >= ranks.indexOf(centerCard.rank) || trickCards.includes(selectedCard.rank)) {
+						// If there is no center card or the selected card has an equal rank to or a higher rank than the center card:
+						canPlay = true;
+						isSelectedValid = true;
+						// Get the index of the selected card in the player's hand and remove it
+						const selectedCardIndex = player.hand.indexOf(selectedCard);
+						player.hand.splice(selectedCardIndex, 1);
+						playedCards.push(selectedCard);
 
-						let canPlay = false;
+						// Log the played card to the game log
+						appendToGameLog(players[currentPlayerIndex].playerName + " played " + selectedCard.rank + " of " + selectedCard.suit);
 
-						if (!centerCard){
-							canPlay = true;
-						}		
+						// Remove the card element from the player's hand and add it to the play pile
+						removeCard(selectedCardElement.cardElement, player.handContainer);
+						createCardElement(selectedCard, playPile);
 
-						if (centerCard) {
-							// Check if any of the cards in the player's hand have an equal rank to or a higher rank than the center card
-							player.hand.forEach(card => {
-								if (ranks.indexOf(card.rank) >= ranks.indexOf(centerCard.rank) || trickCards.includes(card.rank)) {
-									canPlay = true;
-								}
-							});
-						}
-						
+						// Rotate the played card to make it easier to see
+						rotatePlayedCard(playPile.lastChild);
 
-						if (!centerCard || selectedCardRank >= ranks.indexOf(centerCard.rank) || trickCards.includes(selectedCard.rank)) {
-							// If there is no center card or the selected card has an equal rank to or a higher rank than the center card:
-							canPlay = true;
-							isSelectedValid = true;
-							// Get the index of the selected card in the player's hand and remove it
-							const selectedCardIndex = player.hand.indexOf(selectedCard);
-							player.hand.splice(selectedCardIndex, 1);
-							playedCards.push(selectedCard);
+						centerCard = playedCards[playedCards.length - 1];
 
-							// Log the played card to the game log
-							appendToGameLog(players[currentPlayerIndex].playerName + " played " + selectedCard.rank + " of " + selectedCard.suit);
-
-							// Remove the card element from the player's hand and add it to the play pile
-							removeCard(selectedCardElement.cardElement, player.handContainer);
-							createCardElement(selectedCard, playPile);
-
-							// Rotate the played card to make it easier to see
-							rotatePlayedCard(playPile.lastChild);
-							
-							centerCard = playedCards[playedCards.length - 1];
-
-							if (deck.length > 0) {
-								// If there are still cards in the deck:
-								if (player.hand.length < 3) {
+						if (deck.length > 0) {
+							// If there are still cards in the deck:
+							if (player.hand.length < 3) {
 								// Draw a new card from the deck and add it to the player's hand
 								const card = deck.pop();
 								player.hand.push(card);
@@ -445,7 +452,7 @@ window.onload = function () {
 								createCardElement(card, player.handContainer);
 
 								// Update the card count display
-								updateCardCount();
+								updateDrawPileCount();
 
 								// Remove the top card from the draw pile
 								removeCard(drawPile.lastChild, drawPile);
@@ -453,47 +460,96 @@ window.onload = function () {
 								// Log the new deck size to the console
 								console.log("Deck size: " + deck.length);
 							}
-							}
-						} else {
-							// If the selected card is not higher than the center card:
-							isSelectedValid = false;
-							// Log an error message to the console
-							console.log("Selected card must be a higher rank than the center card.");
-
-							appendToGameLog("Selected card must be an equal to or higher in rank than the center card.");
 						}
+					} else {
+						// If the selected card is not higher than the center card:
+						isSelectedValid = false;
+						// Log an error message to the console
+						console.log("Selected card must be a higher rank than the center card.");
 
-						if (canPlay == false){
-							pickup(playedCards, player)
-							appendToGameLog(players[currentPlayerIndex].playerName + " picked up the play pile!")
+						appendToGameLog("Selected card must be an equal to or higher in rank than the center card.");
+					}
+
+					if (canPlay == false) {
+						pickup(playedCards, player)
+						appendToGameLog(players[currentPlayerIndex].playerName + " picked up the play pile!")
+						centerCard = undefined;
+						isSelectedValid = true;
+					}
+
+					if (player.hand.length === 0) {
+						gameOver = true;
+						console.log(`${player.playerName} wins!`);
+						appendToGameLog(players[currentPlayerIndex].playerName + " is the winner!")
+						return;
+					}
+
+					updateDrawPileCount();
+					return;
+				}
+
+				function burnCards(playedcards) {
+					// loop through each card in playedcards array
+					for (let i = 0; i < playedcards.length; i++) {
+						// add card to the player's hand
+						burntCards.push(playedcards[i]);
+						createCardElement(playedcards[i], burnPile);
+						updateBurnPileCount();
+					}
+					// clear the playedcards array
+					if (playedcards.length > 0) {
+						playedcards.splice(0, playedcards.length);
+					}
+					while (playPile.firstChild) {
+						playPile.removeChild(playPile.firstChild);
+					}
+				}
+
+				while (isSelectedValid == false) {
+					// Allow the player to click on a card
+					const selectedCardElement = await cardClick();
+					playTurn(player, selectedCardElement, centerCard);
+				}
+
+				// Assign the last played card to the center card
+				centerCard = playedCards[playedCards.length - 1];
+
+				// Code to handle trick cards goes here
+				function handleTrickCards(selectedCard) {
+					switch (selectedCard.rank) {
+						case "2":
+							// Decrement the player counter before it is incremented again, ergo, player goes again
+							appendToGameLog(players[currentPlayerIndex].playerName + " can play again")
+							currentPlayerIndex = currentPlayerIndex - 1;
 							centerCard = undefined;
-							isSelectedValid = true;
-						}
-
-						if (player.hand.length === 0) {
-							gameOver = true;
-							console.log(`${player.playerName} wins!`);
-							appendToGameLog(players[currentPlayerIndex].playerName + " is the winner!")
-							return;
-						}
-
-						updateCardCount();
-						return;						
+							break;
+						case "3":
+							// Increment the player counter before it is incremented again, skipping the next player
+							appendToGameLog(players[currentPlayerIndex].playerName + " skipped " + players[currentPlayerIndex + 1].playerName + "'s turn!")
+							currentPlayerIndex = currentPlayerIndex + 1;
+							centerCard = undefined;
+							break;
+						case "7":
+							centerCard = undefined;
+							break;
+						case "10":
+							burnCards(playedCards);
+							appendToGameLog(players[currentPlayerIndex].playerName + " burnt the deck!")
+							centerCard = undefined;
+							break;
 					}
+				}
 
-					while (isSelectedValid == false){
-						// Allow the player to click on a card
-						const selectedCardElement = await cardClick();
-						playTurn(player, selectedCardElement, centerCard);
-					}
-					centerCard = playedCards[playedCards.length - 1];
+				if (isTrickCard === true) {
+					handleTrickCards(selectedCard);
+				}
 
-					// Move to the next player's turn
-					currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
-					
-					if (gameOver) {
-						break;
-					}
+				// Move to the next player's turn
+				currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
+
+				if (gameOver) {
+					break;
+				}
 			}
 		}
 
