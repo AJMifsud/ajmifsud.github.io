@@ -269,23 +269,7 @@ window.onload = function () {
 		gameLog.scrollTop = gameLog.scrollHeight;
 	}
 
-	function pickup(playedcards, player) {
-		// loop through each card in playedcards array
-		for (let i = 0; i < playedcards.length; i++) {
-			// add card to the player's hand
-			player.hand.push(playedcards[i]);
-			createCardElement(playedcards[i], player.handContainer);
-		}
-		// clear the playedcards array
-		if (playedcards.length > 0) {
-			playedcards.splice(0, playedcards.length);
-		}
-		while (playPile.firstChild) {
-			playPile.removeChild(playPile.firstChild);
-		}
-		appendToGameLog(players[currentPlayerIndex].playerName + " picked up the play pile!")
-		centerCard = undefined;
-	}
+
 
 	startButton.addEventListener("click", function () {
 
@@ -385,8 +369,8 @@ window.onload = function () {
 				console.log(`${player.playerName}'s turn`);
 				appendToGameLog(players[currentPlayerIndex].playerName + "'s turn");
 				// Modify the border width and color
-				player.container.style.borderWidth = '3px';   // Set the border width to 2 pixels
-				player.container.style.borderColor = 'white';  // Set the border color to red
+				player.container.style.borderWidth = '3px';   // Set the border width to 3 pixels
+				player.container.style.borderColor = 'white';  // Set the border color to white
 
 				console.log("Card to beat: ", centerCard);
 
@@ -485,13 +469,6 @@ window.onload = function () {
 						isSelectedValid = true;
 					}
 
-					if (player.hand.length === 0) {
-						gameOver = true;
-						console.log(`${player.playerName} wins!`);
-						appendToGameLog(players[currentPlayerIndex].playerName + " is the winner!")
-						return;
-					}
-
 					updateDrawPileCount();
 					return;
 
@@ -533,6 +510,24 @@ window.onload = function () {
 								console.log("Deck size: " + deck.length);
 							}
 						}
+					}
+
+					function pickup(playedcards, player) {
+						// loop through each card in playedcards array
+						for (let i = 0; i < playedcards.length; i++) {
+							// add card to the player's hand
+							player.hand.push(playedcards[i]);
+							createCardElement(playedcards[i], player.handContainer);
+						}
+						// clear the playedcards array
+						if (playedcards.length > 0) {
+							playedcards.splice(0, playedcards.length);
+						}
+						while (playPile.firstChild) {
+							playPile.removeChild(playPile.firstChild);
+						}
+						appendToGameLog(players[currentPlayerIndex].playerName + " picked up the play pile!")
+						centerCard = undefined;
 					}
 
 				}
@@ -592,6 +587,13 @@ window.onload = function () {
 				// Modify the border width and color
 				player.container.style.borderWidth = '0px';   // Set the border width to 2 pixels
 				player.container.style.borderColor = 'black';  // Set the border color to red
+
+				if (player.hand.length === 0) {
+					gameOver = true;
+					console.log(`${player.playerName} wins!`);
+					appendToGameLog(players[currentPlayerIndex].playerName + " is the winner!")
+					return;
+				}
 
 				// Move to the next player's turn
 				currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;

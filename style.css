@@ -21,6 +21,22 @@ body {
 	background-color: black;
 }
 
+#sidebar-container {
+	height: 100vh;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
+#gamerules {
+	display: flex;
+	position: relative;
+	top: 0;
+	justify-content: center;
+	align-items: center;
+}
+
 #sidebar {
 	position: relative;
 	max-width: 260px;
@@ -74,6 +90,7 @@ body {
 	position: absolute;
 	width: 33%;
 	height: 33%;
+	border: 0px solid;
 	border-radius: 5px;
 	display: flex;
 	justify-content: center;
