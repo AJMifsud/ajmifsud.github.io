@@ -283,6 +283,8 @@ window.onload = function () {
 		while (playPile.firstChild) {
 			playPile.removeChild(playPile.firstChild);
 		}
+		appendToGameLog(players[currentPlayerIndex].playerName + " picked up the play pile!")
+		centerCard = undefined;
 	}
 
 	startButton.addEventListener("click", function () {
@@ -318,7 +320,7 @@ window.onload = function () {
 			burnpileCount.textContent = `Cards burnt: ${numCards}`;
 		}
 
-		
+
 		// Create the player objects and add them to the players array
 		for (let i = 0; i < numPlayers; i++) {
 			// Get the player container element for this player index
@@ -382,7 +384,9 @@ window.onload = function () {
 				const player = players[currentPlayerIndex];
 				console.log(`${player.playerName}'s turn`);
 				appendToGameLog(players[currentPlayerIndex].playerName + "'s turn");
-
+				// Modify the border width and color
+				player.container.style.borderWidth = '3px';   // Set the border width to 2 pixels
+				player.container.style.borderColor = 'white';  // Set the border color to red
 
 				console.log("Card to beat: ", centerCard);
 
@@ -407,24 +411,91 @@ window.onload = function () {
 					console.log("Selected card: ", selectedCard);
 
 					let canPlay = false;
-
-					if (centerCard) {
-						// Check if any of the cards in the player's hand have an equal rank to or a higher rank than the center card
-						player.hand.forEach(card => {
-							if (ranks.indexOf(card.rank) >= ranks.indexOf(centerCard.rank) || trickCards.includes(card.rank)) {
-								canPlay = true;
-							}
-						});
-					}
+					isTrickCard = false;
 
 					if (trickCards.includes(selectedCard.rank)) {
 						isTrickCard = true;
+						canPlay = true;
 					}
 
-					if (!centerCard || selectedCardRank >= ranks.indexOf(centerCard.rank) || trickCards.includes(selectedCard.rank)) {
-						// If there is no center card or the selected card has an equal rank to or a higher rank than the center card:
-						canPlay = true;
+					if (centerCard) {
+						if (centerCard.rank === "7") {
+							player.hand.forEach(card => {
+								if (ranks.indexOf(card.rank) > ranks.indexOf(centerCard.rank) & !isTrickCard) {
+									canPlay = false;
+								}
+							});
+							if (ranks.indexOf(selectedCard.rank) < ranks.indexOf(centerCard.rank)) {
+								canPlay = true;
+								isSelectedValid = true;
+								playCard();
+								if (isTrickCard === true) {
+									handleTrickCards(selectedCard);
+								}
+								return;
+							} else if (isTrickCard === true) {
+								isSelectedValid = true;
+								playCard();
+								handleTrickCards(selectedCard)
+								return;
+							} else {
+								// Log an error message to the console
+								console.log("Selected card must be either below a 7 or a trick card.");
+								appendToGameLog("Selected card must be either below a 7 or a trick card.");
+								return;
+							}
+						} else {
+							// Check if any of the cards in the player's hand have an equal rank to or a higher rank than the center card
+							player.hand.forEach(card => {
+								if (ranks.indexOf(card.rank) >= ranks.indexOf(centerCard.rank) || trickCards.includes(card.rank)) {
+									canPlay = true;
+								}
+							});
+							if (selectedCardRank >= ranks.indexOf(centerCard.rank) || trickCards.includes(selectedCard.rank)) {
+								// If there is no center card or the selected card has an equal rank to or a higher rank than the center card:
+								canPlay = true;
+								isSelectedValid = true;
+								playCard();
+								if (isTrickCard === true) {
+									handleTrickCards(selectedCard);
+								}
+								return;
+							} else {
+								// If the selected card is not higher than the center card:
+								isSelectedValid = false;
+								// Log an error message to the console
+								console.log("Selected card must be a higher rank than the center card.");
+	
+								appendToGameLog("Selected card must be an equal to or higher in rank than the center card.");
+							}
+						}
+
+					} else {
+							canPlay = true;
+							isSelectedValid = true;
+							playCard();
+							if (isTrickCard === true) {
+								handleTrickCards(selectedCard);
+							}
+							return;
+					}
+
+					if (canPlay == false) {
+						pickup(playedCards, player)
 						isSelectedValid = true;
+					}
+
+					if (player.hand.length === 0) {
+						gameOver = true;
+						console.log(`${player.playerName} wins!`);
+						appendToGameLog(players[currentPlayerIndex].playerName + " is the winner!")
+						return;
+					}
+
+					updateDrawPileCount();
+					return;
+
+					function playCard() {
 						// Get the index of the selected card in the player's hand and remove it
 						const selectedCardIndex = player.hand.indexOf(selectedCard);
 						player.hand.splice(selectedCardIndex, 1);
@@ -462,31 +533,8 @@ window.onload = function () {
 								console.log("Deck size: " + deck.length);
 							}
 						}
-					} else {
-						// If the selected card is not higher than the center card:
-						isSelectedValid = false;
-						// Log an error message to the console
-						console.log("Selected card must be a higher rank than the center card.");
-
-						appendToGameLog("Selected card must be an equal to or higher in rank than the center card.");
 					}
 
-					if (canPlay == false) {
-						pickup(playedCards, player)
-						appendToGameLog(players[currentPlayerIndex].playerName + " picked up the play pile!")
-						centerCard = undefined;
-						isSelectedValid = true;
-					}
-
-					if (player.hand.length === 0) {
-						gameOver = true;
-						console.log(`${player.playerName} wins!`);
-						appendToGameLog(players[currentPlayerIndex].playerName + " is the winner!")
-						return;
-					}
-
-					updateDrawPileCount();
-					return;
 				}
 
 				function burnCards(playedcards) {
@@ -527,7 +575,7 @@ window.onload = function () {
 						case "3":
 							// Increment the player counter before it is incremented again, skipping the next player
 							appendToGameLog(players[currentPlayerIndex].playerName + " skipped " + players[(currentPlayerIndex + 1) % numPlayers].playerName + "'s turn!")
-							currentPlayerIndex = currentPlayerIndex + 1;
+							currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
 							centerCard = undefined;
 							break;
 						case "7":
@@ -541,9 +589,9 @@ window.onload = function () {
 					}
 				}
 
-				if (isTrickCard === true) {
-					handleTrickCards(selectedCard);
-				}
+				// Modify the border width and color
+				player.container.style.borderWidth = '1px';   // Set the border width to 2 pixels
+				player.container.style.borderColor = 'black';  // Set the border color to red
 
 				// Move to the next player's turn
 				currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
