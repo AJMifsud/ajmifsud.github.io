@@ -654,6 +654,23 @@ window.onload = function () {
 				player.container.style.borderWidth = '0px';   // Set the border width to 2 pixels
 				player.container.style.borderColor = 'black';  // Set the border color to red
 
+				if (
+					playedCards.length >= 4 &&
+					playedCards[playedCards.length - 1].rank === playedCards[playedCards.length - 2].rank &&
+					playedCards[playedCards.length - 2].rank === playedCards[playedCards.length - 3].rank &&
+					playedCards[playedCards.length - 3].rank === playedCards[playedCards.length - 4].rank
+				  ) {
+					appendToGameLog("Four of a kind detected! ")
+					appendToGameLog(players[currentPlayerIndex].playerName + " can play again!")
+					currentPlayerIndex = currentPlayerIndex - 1;
+				  }
+				  
+
+				// Check for empty hand
+				//if (player.hand.length === 0) {
+
+					//return;
+				//}
 				// Check for winner
 				if (player.hand.length === 0) {
 					gameOver = true;
