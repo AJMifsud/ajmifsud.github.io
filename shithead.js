@@ -283,8 +283,28 @@ window.onload = function () {
 				player.hand.push(card);
 				createCardElement(card, player.handContainer);
 			}
+			
+			// Order the cards in the player's hand
+			orderHand(player);
 		}
 	}
+
+	function orderHand(player) {
+		// Remove card elements from the hand container
+		while (player.handContainer.firstChild) {
+		  removeCard(player.handContainer.firstChild, player.handContainer);
+		}
+	  
+		// Order the cards in the hand by rank
+		player.hand.sort((a, b) => ranks.indexOf(a.rank) - ranks.indexOf(b.rank));
+
+	  
+		// Add the card elements back to the hand container in the new order
+		player.hand.forEach(card => {
+		  createCardElement(card, player.handContainer);
+		});
+	  }
+	  
 
 	function createGameLog() {
 		// Get a reference to the sidebar element
@@ -418,6 +438,7 @@ window.onload = function () {
 				// Modify the border width and color
 				player.container.style.borderWidth = '3px';   // Set the border width to 3 pixels
 				player.container.style.borderColor = 'white';  // Set the border color to white
+				
 
 				console.log("Card to beat: ", centerCard);
 
@@ -575,7 +596,7 @@ window.onload = function () {
 						}
 						appendToGameLog(players[currentPlayerIndex].playerName + " picked up the play pile!")
 						centerCard = undefined;
-					}
+					}	
 
 				}
 
@@ -628,6 +649,7 @@ window.onload = function () {
 					}
 				}
 
+				orderHand(player);
 				// Modify the border width and color
 				player.container.style.borderWidth = '0px';   // Set the border width to 2 pixels
 				player.container.style.borderColor = 'black';  // Set the border color to red
