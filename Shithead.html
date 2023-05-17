@@ -10,10 +10,10 @@
 			<div id="rules-container">
 				<img id="close-rules" src="images/close_icon.png" alt="Close rules container">
 				<div>
-					<h1><u>Shithead!</u></h1>
-					<br>
-					<p>Welcome to shithead! A card game for 2 to 4 players!<br><br><br>
-						At the start of the game, each player is dealt three cards facing down. These cards cannot be viewed or played until later in the game.<br><br>
+					<h1><u>Shithead!</u></h1><br>
+					<p>Welcome to shithead! A card game for 2 to 4 players!<br><br><br></p>
+					<h2>Game Rules</h2>
+					<p>At the start of the game, each player is dealt three cards facing down. These cards cannot be viewed or played until later in the game.<br><br>
 						Each player is then dealt three cards facing up, which are placed on top of their "face down" cards. Like the face down cards, these cards cannot be played until later in the game.<br><br>
 						Finally, each player is dealt three more cards to go into their hand, and the remainder of the deck becomes the draw pile<br><br><br>
 						Each turn, a player must select a card from their hand to play. The selected card must always be equal to or higher than the rank of the card on the top of the play pile, with "Ace" being the highest.<br><br>
@@ -30,22 +30,31 @@
 
 						<div class="trick-card">				
 							<img src="images/cards/2_of_clubs.png" alt="2">
-							<div class="card-desc"><h3>2</h3></div>
+							<div class="card-desc">
+								When a 2 is played, the player who played it is able to play again, playing any card from their current selection.
+							</div>
+
 						</div>
 
 						<div class="trick-card">	
 							<img src="images/cards/3_of_diamonds.png" alt="3">
-							<div class="card-desc"><h3>3</h3></div>
+							<div class="card-desc">
+								When a 3 is played, the next player in the rotation has their turn skipped. (For example, in a 3 player game, if Player 1 plays a 3, in then skips player 2 and becomes player 3's turn.)
+							</div>
 						</div>
 
 						<div class="trick-card">
 							<img src="images/cards/7_of_hearts.png" alt="7">
-							<div class="card-desc"><h3>7</h3></div>
+							<div class="card-desc">
+								When a 7 is played, the next player in the rotation MUST play a card with a rank below 7 or a trick card.
+							</div>
 						</div>
 
 						<div class="trick-card">
 							<img src="images/cards/10_of_spades.png" alt="10">
-							<div class="card-desc"><h3>10</h3></div>
+							<div class="card-desc">
+								When a 10 is played, the pile of played cards is scrapped from the deck and placed into the burn pile. These cards are out of play for the remainder of the game and cannot be recalled.
+							</div>
 						</div>
 
 					</div>

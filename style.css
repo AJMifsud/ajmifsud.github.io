@@ -88,8 +88,10 @@ body {
 }
 
 .card-desc{
-	border: 2px solid red;
-	width: 100%;
+    width: fit-content;
+    display: flex;
+    align-content: center;
+    flex-wrap: wrap;
 }
 
 #close-rules {

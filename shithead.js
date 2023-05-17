@@ -34,7 +34,9 @@ window.onload = function () {
 
 	function assignNames (){
 		playerNames = []
-		const names = ["Ashley", "Christie", "Jemma", "Toby", "Andy"];
+		const names = ["Andy", "Ashley", "Christie", "Jemma", "Toby", "Charlie", 
+					"Stafford", "Matt", "Helena", "Natasha", "Edison", "Hannah",
+					"Harry", "Adam"];
 			while (playerNames.length < 4) {
 			  const randomIndex = Math.floor(Math.random() * names.length);
 			  const randomName = names[randomIndex];
@@ -100,26 +102,25 @@ window.onload = function () {
 	}
 
 	numPlayersSelect.addEventListener("change", function () {
+		
 		const numPlayers = this.value;
 		updatePlayerContainers(numPlayers);
 
-		while (playerNamesContainer.firstChild) {
+			while (playerNamesContainer.firstChild) {
 			playerNamesContainer.removeChild(playerNamesContainer.firstChild);
-		}
+			}
 
-		for (let i = 0; i < numPlayers; i++) {
-			const playerNameInput = document.createElement("input");
-			playerNameInput.type = "text";
-			playerNameInput.name = `player${i + 1}`;
-			playerNameInput.placeholder = `Player ${i + 1}`;
-			playerNameInput.value = playerNames[i];
-			playerNamesContainer.appendChild(playerNameInput);
-
-			playerNameInput.addEventListener("input", function () {
+			for (let i = 0; i < numPlayers; i++) {
+				const playerNameInput = document.createElement("input");
+				playerNameInput.type = "text";
+				playerNameInput.name = `player${i + 1}`;
+				playerNameInput.placeholder = `Player ${i + 1}`;
+				playerNameInput.value = playerNames[i];
+				playerNamesContainer.appendChild(playerNameInput);
+				playerNameInput.addEventListener("input", function () {
 				updatePlayerName(i, playerNameInput.value);
-			});
-		}
-
+				});
+			}
 	});
 
 	updatePlayerContainers(numPlayersSelect.value);
@@ -142,6 +143,24 @@ window.onload = function () {
 
 	randomiseNamesButton.addEventListener("click", function() {
 		assignNames();
+		numPlayers = numPlayersSelect.value;
+		updatePlayerContainers(numPlayers);
+
+			while (playerNamesContainer.firstChild) {
+			playerNamesContainer.removeChild(playerNamesContainer.firstChild);
+			}
+
+			for (let i = 0; i < numPlayers; i++) {
+				const playerNameInput = document.createElement("input");
+				playerNameInput.type = "text";
+				playerNameInput.name = `player${i + 1}`;
+				playerNameInput.placeholder = `Player ${i + 1}`;
+				playerNameInput.value = playerNames[i];
+				playerNamesContainer.appendChild(playerNameInput);
+				playerNameInput.addEventListener("input", function () {
+				updatePlayerName(i, playerNameInput.value);
+				});
+			}
 	}); 
 
 	//----------//
@@ -599,9 +618,6 @@ window.onload = function () {
 							// Increment the player counter before it is incremented again, skipping the next player
 							appendToGameLog(players[currentPlayerIndex].playerName + " skipped " + players[(currentPlayerIndex + 1) % numPlayers].playerName + "'s turn!")
 							currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
-							centerCard = undefined;
-							break;
-						case "7":
 							centerCard = undefined;
 							break;
 						case "10":
