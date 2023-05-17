@@ -667,10 +667,20 @@ window.onload = function () {
 				  
 
 				// Check for empty hand
-				//if (player.hand.length === 0) {
+				if (player.hand.length === 0) {
+						for (let i = 0; i < player.faceUp.length; i++) {
+							// add card to the player's hand
+							player.hand.push(player.faceUp[i]);
+							createCardElement(player.faceUp[i], player.handContainer);
+						}
+						// clear the face up array
+							player.faceUp.splice(0, player.faceUp.length);
 
-					//return;
-				//}
+						while (player.faceUpContainer.firstChild) {
+							player.faceUpContainer.removeChild(player.faceUpContainer.firstChild);
+						}
+				}
+
 				// Check for winner
 				if (player.hand.length === 0) {
 					gameOver = true;
