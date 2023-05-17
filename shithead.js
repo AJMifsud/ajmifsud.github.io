@@ -12,13 +12,16 @@ window.onload = function () {
 		}
 	}
 
-	const playerNames = ["Player 1", "Player 2", "Player 3", "Player 4"];
 	const numPlayersSelect = document.getElementById("numPlayers");
 	const playerNamesContainer = document.getElementById("playernames-container");
+	const randomiseNamesButton = document.getElementById("randomise-names-button");
 	const playerLeftContainer = document.getElementById("playerleft-container");
 	const playerTopContainer = document.getElementById("playertop-container");
 	const playerRightContainer = document.getElementById("playerright-container");
 	const playerBottomContainer = document.getElementById("playerbottom-container");
+	const openRulesButton = document.getElementById('open-rules');
+	const closeRulesButton = document.getElementById('close-rules');
+	const rulesContainer = document.getElementById('rules-container');
 	const jokersCheck = document.querySelector('input[name="withJokers"]');
 	const drawPile = document.getElementById('draw-pile');
 	const drawpileCount = document.getElementById('drawpile-count');
@@ -27,6 +30,20 @@ window.onload = function () {
 	let orderedContainers = [];
 	const startButton = document.getElementById("startButton");
 	const playPile = document.querySelector("#play-pile");
+	let playerNames = ["Player 1", "Player 2", "Player 3", "Player 4"];
+
+	function assignNames (){
+		playerNames = []
+		const names = ["Ashley", "Christie", "Jemma", "Toby", "Andy"];
+			while (playerNames.length < 4) {
+			  const randomIndex = Math.floor(Math.random() * names.length);
+			  const randomName = names[randomIndex];
+			
+			  if (!playerNames.includes(randomName)) {
+				playerNames.push(randomName);
+			  }
+			}
+		}
 
 	function updatePlayerContainers(numPlayers) {
 		playerLeftContainer.style.display = "none";
@@ -115,6 +132,17 @@ window.onload = function () {
 		}
 	});
 
+	closeRulesButton.addEventListener('click', function() {
+		rulesContainer.style.display = 'none';
+	  });
+
+	openRulesButton.addEventListener('click', function() {
+		rulesContainer.style.display = 'flex';
+	  });
+
+	randomiseNamesButton.addEventListener("click", function() {
+		assignNames();
+	}); 
 
 	//----------//
 	//GAME LOGIC//

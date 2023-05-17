@@ -7,33 +7,87 @@
 	</head>
 	<body>
 		<div id="wrapper">
-			<div id="sidebar-container">
-				<div id="gamerules">
+			<div id="rules-container">
+				<img id="close-rules" src="images/close_icon.png" alt="Close rules container">
+				<div>
+					<h1><u>Shithead!</u></h1>
+					<br>
+					<p>Welcome to shithead! A card game for 2 to 4 players!<br><br><br>
+						At the start of the game, each player is dealt three cards facing down. These cards cannot be viewed or played until later in the game.<br><br>
+						Each player is then dealt three cards facing up, which are placed on top of their "face down" cards. Like the face down cards, these cards cannot be played until later in the game.<br><br>
+						Finally, each player is dealt three more cards to go into their hand, and the remainder of the deck becomes the draw pile<br><br><br>
+						Each turn, a player must select a card from their hand to play. The selected card must always be equal to or higher than the rank of the card on the top of the play pile, with "Ace" being the highest.<br><br>
+						If there is no cards in the play pile, any card may be played<br><br>
+						Every time a player plays a card from their hand, if the number of cards in their hand drops below three, they must draw a card from the draw pile until they have three cards in their hand.<br><br>
+						(On this page, this is done automatically)<br><br>
+						If a player cannot play higher than the last played card, they must pick up all of the cards in the play pile and add them to their hand. (This is also done automatically)<br><br>
+						However! Players can act strategically by using "trick" cards!<br><br>
+						Trick cards are cards with a rank of either "2", "3", "7", or "10", and can be played on top of ANY card, regardless to whether it is higher in rank or not.<br><br>
+						In addition to being able to be played at any time, each trick card has its own special ability!
+					</p>
+					<h2>Trick Card Abilities</h2>
+					<div id="trick-cards-desc">
+
+						<div class="trick-card">				
+							<img src="images/cards/2_of_clubs.png" alt="2">
+							<div class="card-desc"><h3>2</h3></div>
+						</div>
+
+						<div class="trick-card">	
+							<img src="images/cards/3_of_diamonds.png" alt="3">
+							<div class="card-desc"><h3>3</h3></div>
+						</div>
+
+						<div class="trick-card">
+							<img src="images/cards/7_of_hearts.png" alt="7">
+							<div class="card-desc"><h3>7</h3></div>
+						</div>
+
+						<div class="trick-card">
+							<img src="images/cards/10_of_spades.png" alt="10">
+							<div class="card-desc"><h3>10</h3></div>
+						</div>
+
+					</div>
+					<p>
+						After the draw pile has run out of cards, and players have depleted the cards in their hand, they may then begin using the face up cards they were dealt at the start of the game.<br><br>
+						Once these cards have been depleted, players are then able to select cards from their face down collection. But beware, these cards are a mystery until they have been played<br><br>
+						Once the player has selected which of the face down cards they would like to play, they cannot recall the card. The result of this play comes down to luck.<br><br><br>
+						If a player manages to play all of the cards from their hand, face up collection and face down collection, they are out of the game and cannot lose.<br><br>
+						The last player remaining with any cards in their hand, face up collection or face down collection while all other players are out is declared the <b><u>SHITHEAD!</u></b>
+					</p>
+				</div>
+			</div>
+			<div id="left-container">
+				<div id="open-rules">
 					Game Rules
 				</div>
-			<div id="sidebar">
-				<h2 style="margin-bottom: 20px;">Game Settings</h2>
-				<hr>
-				<div id = "playerno-container">
-					<label for="players">Number of Players:</label>
-					<select name="players" id="numPlayers">
-						<option value="2">2</option>
-						<option value="3">3</option>
-						<option value="4">4</option>
-					</select>
+				<div id="sidebar-container">
+					<div id="sidebar">
+						<h2 style="margin-bottom: 20px;">Game Settings</h2>
+						<hr>
+						<div id = "playerno-container">
+							<label for="players">Number of Players:</label>
+							<select name="players" id="numPlayers">
+								<option value="2">2</option>
+								<option value="3">3</option>
+								<option value="4">4</option>
+							</select>
+						</div>
+						<div id="playernames-container">
+						</div>
+						<button id="randomise-names-button">Randomise<br>Player Names</button>
+						<hr>
+						<div id="dealJokers-container">
+							<label>
+							<input type="checkbox" name="withJokers" disabled> Deal Jokers?
+							</label>
+							<p style="font-size: 80%; color: grey;">(Two jokers will be shuffled in the deck if ticked. Jokers may assume the role of ANY card.)</p>
+						</div>
+						<hr>
+						<button id="startButton">Start Game</button>
+					</div>
 				</div>
-				<div id="playernames-container">
-				</div>
-				<hr>
-				<div id="dealJokers-container">
-					<label>
-					<input type="checkbox" name="withJokers" disabled> Deal Jokers?
-					</label>
-					<p style="font-size: 80%; color: lightgrey;">(Two jokers will be shuffled in the deck if ticked. Jokers may assume the role of ANY card.)</p>
-				</div>
-				<hr>
-				<button id="startButton">Start Game</button>
-			</div>
 			</div>
 			<div id="game-container">
 				<div id="game-board">
