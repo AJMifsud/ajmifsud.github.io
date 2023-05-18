@@ -496,6 +496,7 @@ window.onload = function () {
 						while (player.faceUpContainer.firstChild) {
 							player.faceUpContainer.removeChild(player.faceUpContainer.firstChild);
 						}
+					player.faceUpContainer.style.display = "none";
 				}
 
 				// Check for winner
@@ -562,7 +563,6 @@ window.onload = function () {
 							player.hand.forEach(card => {
 								if (ranks.indexOf(card.rank) > ranks.indexOf(centerCard.rank) & !isTrickCard) {
 									canPlay = false;
-									return;
 								}
 							});
 							if (ranks.indexOf(selectedCard.rank) < ranks.indexOf(centerCard.rank)) {
@@ -582,7 +582,6 @@ window.onload = function () {
 								// Log an error message to the console
 								console.log("Selected card must be either below a 7 or a trick card.");
 								appendToGameLog("Selected card must be either below a 7 or a trick card.");
-								return;
 							}
 						} else {
 							// Check if any of the cards in the player's hand have an equal rank to or a higher rank than the center card
@@ -688,17 +687,17 @@ window.onload = function () {
 
 				}
 
-				function burnCards(playedcards) {
+				function burnCards(playedCards) {
 					// loop through each card in playedcards array
-					for (let i = 0; i < playedcards.length; i++) {
+					for (let i = 0; i < playedCards.length; i++) {
 						// add card to the player's hand
-						burntCards.push(playedcards[i]);
-						createCardElement(playedcards[i], burnPile);
+						burntCards.push(playedCards[i]);
+						createCardElement(playedCards[i], burnPile);
 						updateBurnPileCount();
 					}
 					// clear the playedcards array
-					if (playedcards.length > 0) {
-						playedcards.splice(0, playedcards.length);
+					if (playedCards.length > 0) {
+						playedCards.splice(0, playedCards.length);
 					}
 					while (playPile.firstChild) {
 						playPile.removeChild(playPile.firstChild);
