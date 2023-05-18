@@ -442,24 +442,25 @@ window.onload = function () {
 
 				console.log("Card to beat: ", centerCard);
 
-				while (isSelectedValid == false) {
 				if (player.hand.length === 0 && player.faceUp.length === 0){
 					appendToGameLog(players[currentPlayerIndex].playerName + " must select a face down card to reveal")
 					// Allow the player to click on a card
-					const selectedFaceDown = await faceDownCardClick();
+					const selectedFaceDownCard = await faceDownCardClick();
 
 					// Get the index of the selected card in the player's face down cards and remove it then replace it in the player's hand
-					const selectedCardIndex = player.hand.indexOf(selectedCard);
-					player.hand.splice(selectedCardIndex, 1);
-					player.hand.push(selectedCard);
+					const selectedCardIndex = player.faceDown.indexOf(selectedFaceDownCard);
+					player.faceDown.splice(selectedCardIndex, 1);
+					player.hand.push(selectedFaceDownCard);
 					// Remove the card element from the player's face down container and add it to the player hand container
-					removeCard(selectedFaceDown.cardElement, player.faceDownContainer);
-					createCardElement(selectedFaceDown.card, player.handContainer);
-				} else {
-						// Allow the player to click on a card
-						const selectedCardElement = await handCardClick();
-						playTurn(player, selectedCardElement, centerCard);
-					}
+					removeCard(selectedFaceDownCard.cardElement, player.faceDownContainer);
+					createCardElement(selectedFaceDownCard.card, player.handContainer);
+				}
+
+
+				while (isSelectedValid == false) {
+					// Allow the player to click on a card
+					const selectedCardElement = await handCardClick();
+					playTurn(player, selectedCardElement, centerCard);
 				}
 
 				// Assign the last played card to the center card
@@ -478,8 +479,8 @@ window.onload = function () {
 				  ) {
 					appendToGameLog("Four of a kind detected! ")
 					appendToGameLog(players[currentPlayerIndex].playerName + " can play again!")
-					currentPlayerIndex = currentPlayerIndex - 1;
 					burnCards();
+					currentPlayerIndex = currentPlayerIndex - 1;
 				  }
 				  
 				// Check for empty hand to enable face-up cards
@@ -562,7 +563,9 @@ window.onload = function () {
 								if (ranks.indexOf(card.rank) > ranks.indexOf(centerCard.rank) & !isTrickCard) {
 									canPlay = false;
 									return;
-								} else if (ranks.indexOf(selectedCard.rank) < ranks.indexOf(centerCard.rank)) {
+								}
+							});
+							if (ranks.indexOf(selectedCard.rank) < ranks.indexOf(centerCard.rank)) {
 								canPlay = true;
 								isSelectedValid = true;
 								playCard();
@@ -581,7 +584,6 @@ window.onload = function () {
 								appendToGameLog("Selected card must be either below a 7 or a trick card.");
 								return;
 							}
-						});
 						} else {
 							// Check if any of the cards in the player's hand have an equal rank to or a higher rank than the center card
 							player.hand.forEach(card => {
