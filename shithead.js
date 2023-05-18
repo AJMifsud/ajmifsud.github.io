@@ -442,9 +442,95 @@ window.onload = function () {
 
 				console.log("Card to beat: ", centerCard);
 
-				function cardClick() {
+				while (isSelectedValid == false) {
+				if (player.hand.length === 0 && player.faceUp.length === 0){
+					appendToGameLog(players[currentPlayerIndex].playerName + " must select a face down card to reveal")
+					// Allow the player to click on a card
+					const selectedFaceDown = await faceDownCardClick();
+
+					// Get the index of the selected card in the player's face down cards and remove it then replace it in the player's hand
+					const selectedCardIndex = player.hand.indexOf(selectedCard);
+					player.hand.splice(selectedCardIndex, 1);
+					player.hand.push(selectedCard);
+					// Remove the card element from the player's face down container and add it to the player hand container
+					removeCard(selectedFaceDown.cardElement, player.faceDownContainer);
+					createCardElement(selectedFaceDown.card, player.handContainer);
+				} else {
+						// Allow the player to click on a card
+						const selectedCardElement = await handCardClick();
+						playTurn(player, selectedCardElement, centerCard);
+					}
+				}
+
+				// Assign the last played card to the center card
+				centerCard = playedCards[playedCards.length - 1];
+
+				orderHand(player);
+				// Modify the border width and color
+				player.container.style.borderWidth = '0px';   // Set the border width to 2 pixels
+				player.container.style.borderColor = 'black';  // Set the border color to red
+
+				if (
+					playedCards.length >= 4 &&
+					playedCards[playedCards.length - 1].rank === playedCards[playedCards.length - 2].rank &&
+					playedCards[playedCards.length - 2].rank === playedCards[playedCards.length - 3].rank &&
+					playedCards[playedCards.length - 3].rank === playedCards[playedCards.length - 4].rank
+				  ) {
+					appendToGameLog("Four of a kind detected! ")
+					appendToGameLog(players[currentPlayerIndex].playerName + " can play again!")
+					currentPlayerIndex = currentPlayerIndex - 1;
+					burnCards();
+				  }
+				  
+				// Check for empty hand to enable face-up cards
+				if (player.hand.length === 0) {
+						for (let i = 0; i < player.faceUp.length; i++) {
+							// add card to the player's hand
+							player.hand.push(player.faceUp[i]);
+							createCardElement(player.faceUp[i], player.handContainer);
+						}
+						// clear the face up array
+							player.faceUp.splice(0, player.faceUp.length);
+
+						while (player.faceUpContainer.firstChild) {
+							player.faceUpContainer.removeChild(player.faceUpContainer.firstChild);
+						}
+				}
+
+				// Check for winner
+				if (player.hand.length === 0 && player.faceUp.length === 0 && player.faceDown.length === 0) {
+					gameOver = true;
+					console.log(`${player.playerName} wins!`);
+					appendToGameLog(players[currentPlayerIndex].playerName + " is the winner!")
+					return;
+				}
+
+				// Move to the next player's turn
+				currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
+
+				if (gameOver) {
+					break;
+				}
+
+				
+				
+				function handCardClick() {
 					return new Promise(resolve => {
 						const cardElements = player.handContainer.querySelectorAll('.card');
+						cardElements.forEach(cardElem => {
+							cardElem.addEventListener('click', () => {
+								resolve({
+									cardElement: cardElem,
+									card: cardElem.card
+								});
+							});
+						});
+					});
+				}
+
+				function faceDownCardClick() {
+					return new Promise(resolve => {
+						const cardElements = player.faceDownContainer.querySelectorAll('.card');
 						cardElements.forEach(cardElem => {
 							cardElem.addEventListener('click', () => {
 								resolve({
@@ -475,9 +561,8 @@ window.onload = function () {
 							player.hand.forEach(card => {
 								if (ranks.indexOf(card.rank) > ranks.indexOf(centerCard.rank) & !isTrickCard) {
 									canPlay = false;
-								}
-							});
-							if (ranks.indexOf(selectedCard.rank) < ranks.indexOf(centerCard.rank)) {
+									return;
+								} else if (ranks.indexOf(selectedCard.rank) < ranks.indexOf(centerCard.rank)) {
 								canPlay = true;
 								isSelectedValid = true;
 								playCard();
@@ -496,6 +581,7 @@ window.onload = function () {
 								appendToGameLog("Selected card must be either below a 7 or a trick card.");
 								return;
 							}
+						});
 						} else {
 							// Check if any of the cards in the player's hand have an equal rank to or a higher rank than the center card
 							player.hand.forEach(card => {
@@ -617,16 +703,6 @@ window.onload = function () {
 					}
 				}
 
-				while (isSelectedValid == false) {
-					// Allow the player to click on a card
-					const selectedCardElement = await cardClick();
-					playTurn(player, selectedCardElement, centerCard);
-				}
-
-				// Assign the last played card to the center card
-				centerCard = playedCards[playedCards.length - 1];
-
-				// Code to handle trick cards goes here
 				function handleTrickCards(selectedCard) {
 					switch (selectedCard.rank) {
 						case "2":
@@ -647,53 +723,6 @@ window.onload = function () {
 							centerCard = undefined;
 							break;
 					}
-				}
-
-				orderHand(player);
-				// Modify the border width and color
-				player.container.style.borderWidth = '0px';   // Set the border width to 2 pixels
-				player.container.style.borderColor = 'black';  // Set the border color to red
-
-				if (
-					playedCards.length >= 4 &&
-					playedCards[playedCards.length - 1].rank === playedCards[playedCards.length - 2].rank &&
-					playedCards[playedCards.length - 2].rank === playedCards[playedCards.length - 3].rank &&
-					playedCards[playedCards.length - 3].rank === playedCards[playedCards.length - 4].rank
-				  ) {
-					appendToGameLog("Four of a kind detected! ")
-					appendToGameLog(players[currentPlayerIndex].playerName + " can play again!")
-					currentPlayerIndex = currentPlayerIndex - 1;
-				  }
-				  
-
-				// Check for empty hand
-				if (player.hand.length === 0) {
-						for (let i = 0; i < player.faceUp.length; i++) {
-							// add card to the player's hand
-							player.hand.push(player.faceUp[i]);
-							createCardElement(player.faceUp[i], player.handContainer);
-						}
-						// clear the face up array
-							player.faceUp.splice(0, player.faceUp.length);
-
-						while (player.faceUpContainer.firstChild) {
-							player.faceUpContainer.removeChild(player.faceUpContainer.firstChild);
-						}
-				}
-
-				// Check for winner
-				if (player.hand.length === 0) {
-					gameOver = true;
-					console.log(`${player.playerName} wins!`);
-					appendToGameLog(players[currentPlayerIndex].playerName + " is the winner!")
-					return;
-				}
-
-				// Move to the next player's turn
-				currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
-
-				if (gameOver) {
-					break;
 				}
 			}
 		}
