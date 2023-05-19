@@ -29,7 +29,8 @@ window.onload = function () {
 	const burnpileCount = document.getElementById('burnpile-count');
 	let orderedContainers = [];
 	const startButton = document.getElementById("startButton");
-	const playPile = document.querySelector("#play-pile");
+	const playPile = document.getElementById('play-pile');
+	const playpileCount = document.getElementById('playpile-count');
 	let playerNames = ["Player 1", "Player 2", "Player 3", "Player 4"];
 
 	function assignNames (){
@@ -359,6 +360,12 @@ window.onload = function () {
 		let cards = document.querySelectorAll('.card');
 		cards.forEach(card => card.remove());
 
+		// Function to update the play pile card count display
+		function updatePlayPileCount() {
+			const numCards = playedCards.length;
+			playpileCount.textContent = `Cards in play pile : ${numCards}`;
+		}		
+
 		// Function to update the draw pile card count display
 		function updateDrawPileCount() {
 			const numCards = deck.length;
@@ -465,6 +472,9 @@ window.onload = function () {
 
 				// Assign the last played card to the center card
 				centerCard = playedCards[playedCards.length - 1];
+
+				// Update the number of played cards
+				updatePlayPileCount();
 
 				orderHand(player);
 				// Modify the border width and color
@@ -616,6 +626,7 @@ window.onload = function () {
 					}
 
 					updateDrawPileCount();
+					updatePlayPileCount()
 					return;
 
 					function playCard() {
