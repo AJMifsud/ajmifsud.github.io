@@ -248,7 +248,6 @@ window.onload = function () {
 
 		targetElement.appendChild(cardElement);
 
-
 		// Add a reference to the underlying card value
 		cardElement.card = card;
 
@@ -457,7 +456,7 @@ window.onload = function () {
 					// Get the index of the selected card in the player's face down cards and remove it then replace it in the player's hand
 					const selectedCardIndex = player.faceDown.indexOf(selectedFaceDownCard);
 					player.faceDown.splice(selectedCardIndex, 1);
-					player.hand.push(selectedFaceDownCard);
+					player.hand.push(selectedFaceDownCard.card);
 					// Remove the card element from the player's face down container and add it to the player hand container
 					removeCard(selectedFaceDownCard.cardElement, player.faceDownContainer);
 					createCardElement(selectedFaceDownCard.card, player.handContainer);
@@ -556,8 +555,12 @@ window.onload = function () {
 				}
 
 				async function playTurn(player, selectedCardElement, centerCard) {
+					const selectedCards = []
 					selectedCard = selectedCardElement.card;
 					const selectedCardRank = ranks.indexOf(selectedCard.rank);
+					selectedCards.push(selectedCard);
+					const remainingCards = player.hand.filter(card => card !== selectedCard);
+					const hasEqualRank = remainingCards.some(card => card.rank === selectedCard.rank);
 
 					console.log("Selected card: ", selectedCard);
 
@@ -570,55 +573,90 @@ window.onload = function () {
 					}
 
 					if (centerCard) {
+						// If there is a center card:
 						canPlay = false;
+						// Set the variable canPlay to false by default.
+					
 						if (centerCard.rank === "7") {
+							// If the center card's rank is "7":
+					
+							// Check each card in the player's hand:
 							player.hand.forEach(card => {
 								if (ranks.indexOf(card.rank) < ranks.indexOf(centerCard.rank) && !isTrickCard) {
+									// If the rank of the card is lower than the center card's rank
+									// and it is not a trick card:
 									canPlay = true;
+									// Set canPlay to true.
 								}
 							});
+					
 							if (ranks.indexOf(selectedCard.rank) < ranks.indexOf(centerCard.rank) || isTrickCard) {
+								// If the rank of the selected card is lower than the center card's rank
+								// or it is a trick card:
 								canPlay = true;
+								// Set canPlay to true.
 								isSelectedValid = true;
+								// Set isSelectedValid to true.
 								playCard();
-								if (isTrickCard) {
-									handleTrickCards(selectedCard);
-								}
+								// Call the playCard function.
 								return;
+								// Exit the current function.
 							} else {
 								console.log("Selected card must be either below a 7 or a trick card.");
+								// Log an error message to the console.
 								appendToGameLog("Selected card must be either below a 7 or a trick card.");
+								// Append an error message to the game log.
 							}
 						} else {
+							// If the center card's rank is not "7":
+					
+							// Check each card in the player's hand:
 							player.hand.forEach(card => {
 								if (ranks.indexOf(card.rank) >= ranks.indexOf(centerCard.rank) || trickCards.includes(card.rank)) {
+									// If the rank of the card is equal to or higher than the center card's rank
+									// or it is a trick card:
 									canPlay = true;
+									// Set canPlay to true.
 								}
 							});
+					
 							if (selectedCardRank >= ranks.indexOf(centerCard.rank) || trickCards.includes(selectedCard.rank)) {
+								// If the rank of the selected card is equal to or higher than the center card's rank
+								// or it is a trick card:
 								canPlay = true;
+								// Set canPlay to true.
 								isSelectedValid = true;
+								// Set isSelectedValid to true.
 								playCard();
-								if (isTrickCard) {
-									handleTrickCards(selectedCard);
-								}
+								// Call the playCard function.
 								return;
+								// Exit the current function.
 							} else {
 								isSelectedValid = false;
+								// Set isSelectedValid to false.
 								console.log("Selected card must be a higher rank than the center card.");
+								// Log an error message to the console.
 								appendToGameLog("Selected card must be an equal to or higher in rank than the center card.");
+								// Append an error message to the game log.
 							}
 						}
 					} else {
+						// If there is no center card:
 						canPlay = true;
+						// Set canPlay to true.
 						isSelectedValid = true;
+						// Set isSelectedValid to true.
 						playCard();
-						if (isTrickCard) {
-							handleTrickCards(selectedCard);
-						}
+						// Call the playCard function.
 						return;
+						// Exit the current function.
 					}
- 					
+						
+					if (hasEqualRank) {
+						console.log("Another card in your hand has the same rank as the selected card.");
+						appendToGameLog("Another card in your hand has the same rank as the selected card.");
+					}
+
 
 					if (canPlay == false) {
 						pickup(playedCards, player)
@@ -666,6 +704,10 @@ window.onload = function () {
 								// Log the new deck size to the console
 								console.log("Deck size: " + deck.length);
 							}
+						}
+
+						if (isTrickCard) {
+							handleTrickCards(selectedCard);
 						}
 					}
 
