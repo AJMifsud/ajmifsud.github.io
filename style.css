@@ -391,3 +391,16 @@ body {
 	overflow-y: scroll;
 	font-family: monospace;
 }
+
+#play-selected-button {
+	position: absolute;
+	padding: 10px;
+	border: 0px solid;
+	border-radius: 5px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	bottom: 12.5%;
+	right: 25%;
+	display: none;
+}
