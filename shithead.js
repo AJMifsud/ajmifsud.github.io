@@ -184,6 +184,7 @@ window.onload = function () {
 	let centerCard = undefined;
 	let isSelectedValid = false;
 	let isTrickCard = false;
+	let matchFour = false
 
 
 	// Define the Player class
@@ -429,36 +430,12 @@ window.onload = function () {
 				const cardElement = createCardElement(card, drawPile);
 				drawPile.appendChild(cardElement);
 			}
+			
+			// Update the card count display
+			updateDrawPileCount();
 	}
 
 	async function playTurn(player, selectedCardElement, centerCard) {
-				
-		function secondCardClick() {
-			return new Promise(resolve => {
-				const cardElements = player.handContainer.querySelectorAll('.card');
-				cardElements.forEach(cardElem => {
-					cardElem.addEventListener('click', () => {
-						resolve({
-							cardElement: cardElem,
-							card: cardElem.card
-						});
-					});
-				});
-			});
-		}
-
-		skipCount = 0;
-		let selectedCards = []
-		selectedCard = selectedCardElement.card;
-		const selectedCardRank = ranks.indexOf(selectedCard.rank);
-		selectedCards.push(selectedCard);
-		const remainingCards = player.hand.filter(card => card !== selectedCard);
-		const hasEqualRank = remainingCards.some(card => card.rank === selectedCard.rank);
-
-		console.log("Selected card: ", selectedCard);
-
-		let canPlay = false;
-		isTrickCard = false;
 
 		function playCards() {
 			selectedCards.forEach(card => {
@@ -499,15 +476,29 @@ window.onload = function () {
 			centerCard = undefined;
 		}
 
+		skipCount = 0;
+		let selectedCards = []
+		selectedCard = selectedCardElement.card;
+		const selectedCardRank = ranks.indexOf(selectedCard.rank);
+		selectedCards.push(selectedCard);
+		const remainingCards = player.hand.filter(card => card !== selectedCard);
+		const hasEqualRank = remainingCards.some(card => card.rank === selectedCard.rank);
+		matchFour = false;
+
+		console.log("Selected card: ", selectedCard);
+
+		let canPlay = false;
+		isTrickCard = false;
+
+
+
 		// Play next card if duplicate rank is in hand
 		if (hasEqualRank) {
-			(async () => {
 				  console.log("Another card in your hand has the same rank as the selected card.");
 				  appendToGameLog("Another card in your hand has the same rank as the selected card.");
 				// Add your await statement here 
-				selectedCards.push(await secondCardClick());
-				appendToGameLog("Should wait here.")
-			})();
+				nextCard = await firstCardClick(player)
+				selectedCards.push(nextCard);
 		}
 		  
 		
@@ -541,8 +532,6 @@ window.onload = function () {
 					// Set canPlay to true.
 					isSelectedValid = true;
 					// Set isSelectedValid to true.
-					playCards();
-					// Call the playCard function.
 				} else {
 					console.log("Selected card must be either below a 7 or a trick card.");
 					// Log an error message to the console.
@@ -569,8 +558,6 @@ window.onload = function () {
 					// Set canPlay to true.
 					isSelectedValid = true;
 					// Set isSelectedValid to true.
-					playCards();
-					// Call the playCard function.
 				} else {
 					isSelectedValid = false;
 					// Set isSelectedValid to false.
@@ -586,8 +573,10 @@ window.onload = function () {
 			// Set canPlay to true.
 			isSelectedValid = true;
 			// Set isSelectedValid to true.
+		}
+
+		if (canPlay && isSelectedValid){
 			playCards();
-			// Call the playCard function.
 		}
 
 		// Pickup on unplayable hand
@@ -618,139 +607,6 @@ window.onload = function () {
 			}
 		}
 		return;	
-	}
-
-	async function playGame() {
-		
-		initialiseGame();
-		
-		currentPlayerIndex = 0;
-
-		// Play the game until there is a winner
-		while (!gameOver) {
-
-			function firstCardClick() {
-				return new Promise(resolve => {
-					const cardElements = player.handContainer.querySelectorAll('.card');
-					cardElements.forEach(cardElem => {
-						cardElem.addEventListener('click', () => {
-							resolve({
-								cardElement: cardElem,
-								card: cardElem.card
-							});
-						});
-					});
-				});
-			}
-
-		
-			function faceDownCardClick() {
-				return new Promise(resolve => {
-					const cardElements = player.faceDownContainer.querySelectorAll('.card');
-					cardElements.forEach(cardElem => {
-						cardElem.addEventListener('click', () => {
-							resolve({
-								cardElement: cardElem,
-								card: cardElem.card
-							});
-						});
-					});
-				});
-			}
-
-			isSelectedValid = false;
-			const player = players[currentPlayerIndex];
-			console.log(`${player.playerName}'s turn`);
-			appendToGameLog(players[currentPlayerIndex].playerName + "'s turn");
-			// Modify the border width and color
-			player.container.style.borderWidth = '3px';   // Set the border width to 3 pixels
-			player.container.style.borderColor = 'white';  // Set the border color to white
-			
-
-			console.log("Card to beat: ", centerCard);
-
-			if (player.hand.length === 0 && player.faceUp.length === 0){
-				appendToGameLog(players[currentPlayerIndex].playerName + " must select a face down card to reveal")
-				// Allow the player to click on a card
-				const selectedFaceDownCard = await faceDownCardClick();
-
-				// Get the index of the selected card in the player's face down cards and remove it then replace it in the player's hand
-				const selectedCardIndex = player.faceDown.indexOf(selectedFaceDownCard);
-				player.faceDown.splice(selectedCardIndex, 1);
-				player.hand.push(selectedFaceDownCard.card);
-				// Remove the card element from the player's face down container and add it to the player hand container
-				removeCard(selectedFaceDownCard.cardElement, player.faceDownContainer);
-				createCardElement(selectedFaceDownCard.card, player.handContainer);
-			}
-
-
-			while (isSelectedValid == false) {
-				// Allow the player to click on a card
-				const selectedCardElement = await firstCardClick();
-				playTurn(player, selectedCardElement, centerCard);
-			}
-
-			// Assign the last played card to the center card
-			centerCard = playedCards[playedCards.length - 1];
-
-			// Update the number of played cards
-			updatePlayPileCount();
-
-			orderHand(player);
-			// Modify the border width and color
-			player.container.style.borderWidth = '0px';   // Set the border width to 2 pixels
-			player.container.style.borderColor = 'black';  // Set the border color to red
-			  
-			// Check for empty hand to enable face-up cards
-			if (player.hand.length === 0) {
-					for (let i = 0; i < player.faceUp.length; i++) {
-						// add card to the player's hand
-						player.hand.push(player.faceUp[i]);
-						createCardElement(player.faceUp[i], player.handContainer);
-					}
-					// clear the face up array
-						player.faceUp.splice(0, player.faceUp.length);
-
-					while (player.faceUpContainer.firstChild) {
-						player.faceUpContainer.removeChild(player.faceUpContainer.firstChild);
-					}
-				player.faceUpContainer.style.display = "none";
-			}
-
-			// Check for winner
-			if (player.hand.length === 0 && player.faceUp.length === 0 && player.faceDown.length === 0) {
-				gameOver = true;
-				console.log(`${player.playerName} wins!`);
-				appendToGameLog(players[currentPlayerIndex].playerName + " is the winner!")
-				return;
-			}
-
-			
-			// Check for 4 of a kind
-			if (
-				playedCards.length >= 4 &&
-				playedCards[playedCards.length - 1].rank === playedCards[playedCards.length - 2].rank &&
-				playedCards[playedCards.length - 2].rank === playedCards[playedCards.length - 3].rank &&
-				playedCards[playedCards.length - 3].rank === playedCards[playedCards.length - 4].rank
-			  ) {
-				appendToGameLog("Four of a kind detected! ")
-				appendToGameLog(players[currentPlayerIndex].playerName + " can play again!")
-				burnCards();
-			  }
-
-			  			
-			// Determine next Player
-			if (isTrickCard) {
-				handleTrickCards(selectedCard);
-			} else if (isSelectedValid) {
-				// Move to the next player's turn
-				currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
-			}
-			  
-			if (gameOver) {
-				break;
-			}
-		}
 	}
 
 	function burnCards(playedCards) {
@@ -795,12 +651,158 @@ window.onload = function () {
 		}
 	}
 
-	startButton.addEventListener("click", async function () {
+	async function firstCardClick(player) {
+		return new Promise(resolve => {
+		  const cardElements = player.handContainer.querySelectorAll('.card');
+	  
+		  function handleClick(event) {
+			const cardElem = event.currentTarget;
+			const card = cardElem.card;
+	  
+			// Remove the event listener
+			cardElements.forEach(cardElem => {
+			  cardElem.removeEventListener('click', handleClick);
+			});
+	  
+			resolve({
+			  cardElement: cardElem,
+			  card: card
+			});
+		  }
+	  
+		  cardElements.forEach(cardElem => {
+			cardElem.addEventListener('click', handleClick);
+		  });
+		});
+	  }
 
+	async function playGame() {
 		
+		initialiseGame();
+		currentPlayerIndex = 0;
+
+		// Play the game until there is a winner
+		while (!gameOver) {
+
+			function faceDownCardClick() {
+				return new Promise(resolve => {
+					const cardElements = player.faceDownContainer.querySelectorAll('.card');
+					cardElements.forEach(cardElem => {
+						cardElem.addEventListener('click', () => {
+							resolve({
+								cardElement: cardElem,
+								card: cardElem.card
+							});
+						});
+					});
+				});
+			}
+
+			isSelectedValid = false;
+			const player = players[currentPlayerIndex];
+			console.log(`${player.playerName}'s turn`);
+			appendToGameLog(players[currentPlayerIndex].playerName + "'s turn");
+			// Modify the border width and color
+			player.container.style.borderWidth = '3px';   // Set the border width to 3 pixels
+			player.container.style.borderColor = 'white';  // Set the border color to white
+			
+
+			console.log("Card to beat: ", centerCard);
+
+			if (player.hand.length === 0 && player.faceUp.length === 0){
+				appendToGameLog(players[currentPlayerIndex].playerName + " must select a face down card to reveal")
+				// Allow the player to click on a card
+				const selectedFaceDownCard = await faceDownCardClick();
+
+				// Get the index of the selected card in the player's face down cards and remove it then replace it in the player's hand
+				const selectedCardIndex = player.faceDown.indexOf(selectedFaceDownCard);
+				player.faceDown.splice(selectedCardIndex, 1);
+				player.hand.push(selectedFaceDownCard.card);
+				// Remove the card element from the player's face down container and add it to the player hand container
+				removeCard(selectedFaceDownCard.cardElement, player.faceDownContainer);
+				createCardElement(selectedFaceDownCard.card, player.handContainer);
+			}
+
+
+			while (isSelectedValid == false) {
+				// Allow the player to click on a card
+				const selectedCardElement = await firstCardClick(player);
+				playTurn(player, selectedCardElement, centerCard);
+			}
+
+			// Assign the last played card to the center card
+			centerCard = playedCards[playedCards.length - 1];
+
+			// Update the number of played cards
+			updatePlayPileCount();
+
+			orderHand(player);
+			// Modify the border width and color
+			player.container.style.borderWidth = '0px';   // Set the border width to 2 pixels
+			player.container.style.borderColor = 'black';  // Set the border color to red
+			  
+			// Check for empty hand to enable face-up cards
+			if (player.hand.length === 0) {
+					for (let i = 0; i < player.faceUp.length; i++) {
+						// add card to the player's hand
+						player.hand.push(player.faceUp[i]);
+						createCardElement(player.faceUp[i], player.handContainer);
+					}
+					// clear the face up array
+						player.faceUp.splice(0, player.faceUp.length);
+
+					while (player.faceUpContainer.firstChild) {
+						player.faceUpContainer.removeChild(player.faceUpContainer.firstChild);
+					}
+				player.faceUpContainer.style.display = "none";
+			}
+
+			// Check for 4 of a kind
+			if (
+				playedCards.length >= 4 &&
+				playedCards[playedCards.length - 1].rank === playedCards[playedCards.length - 2].rank &&
+				playedCards[playedCards.length - 2].rank === playedCards[playedCards.length - 3].rank &&
+				playedCards[playedCards.length - 3].rank === playedCards[playedCards.length - 4].rank
+			  ) {
+				appendToGameLog("Four of a kind detected! ")
+				appendToGameLog(players[currentPlayerIndex].playerName + " can play again!")
+				burnCards();
+				matchFour = true;
+			  }
+
+			// Check for winner
+			if (player.hand.length === 0 && player.faceUp.length === 0 && player.faceDown.length === 0) {
+				appendToGameLog(players[currentPlayerIndex].playerName + " has played all of their cards!")
+				// Remove the player from the array
+   	 			players.splice(currentPlayerIndex, 1);
+				if (!isTrickCard){
+					currentPlayerIndex = (currentPlayerIndex - 1) % numPlayers;
+				}
+				numPlayers = players.length;
+			}
+
+			if(players.length == 1){
+				gameOver = true;
+				appendToGameLog(players[0].playerName + " is the SHITHEAD!")
+				break;
+			}
+			  			
+			// Determine next Player
+			if (isTrickCard && !matchFour) {
+				handleTrickCards(selectedCard);
+			} else if (isSelectedValid) {
+				// Move to the next player's turn
+				currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
+			}
+			  
+			if (gameOver) {
+				break;
+			}
+		}
+	}
+
+	startButton.addEventListener("click", async function () {		
 		playGame();
-
-
 	});
 
 
