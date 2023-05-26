@@ -766,7 +766,7 @@ window.onload = function () {
 			  ) {
 				appendToGameLog("Four of a kind detected! ")
 				appendToGameLog(players[currentPlayerIndex].playerName + " can play again!")
-				burnCards();
+				burnCards(playedCards);
 				matchFour = true;
 			  }
 
