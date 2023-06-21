@@ -33,20 +33,21 @@ window.onload = function () {
 	const playpileCount = document.getElementById('playpile-count');
 	let playerNames = ["Player 1", "Player 2", "Player 3", "Player 4"];
 
-	function assignNames (){
+	function assignNames() {
 		playerNames = []
-		const names = ["Andy", "Ashley", "Christie", "Jemma", "Toby", "Charlie", 
-					"Stafford", "Matt", "Helena", "Natasha", "Edison", "Hannah",
-					"Harry", "Adam", "Marin", "Bertie", "Jack", "Ella"];
-			while (playerNames.length < 4) {
-			  const randomIndex = Math.floor(Math.random() * names.length);
-			  const randomName = names[randomIndex];
-			
-			  if (!playerNames.includes(randomName)) {
+		const names = ["Andy", "Ashley", "Christie", "Jemma", "Toby", "Charlie",
+			"Stafford", "Matt", "Helena", "Natasha", "Edison", "Hannah",
+			"Harry", "Adam", "Marin", "Bertie", "Jack", "Ella"
+		];
+		while (playerNames.length < 4) {
+			const randomIndex = Math.floor(Math.random() * names.length);
+			const randomName = names[randomIndex];
+
+			if (!playerNames.includes(randomName)) {
 				playerNames.push(randomName);
-			  }
 			}
 		}
+	}
 
 	function updatePlayerContainers(numPlayers) {
 		playerLeftContainer.style.display = "none";
@@ -103,25 +104,25 @@ window.onload = function () {
 	}
 
 	numPlayersSelect.addEventListener("change", function () {
-		
+
 		const numPlayers = this.value;
 		updatePlayerContainers(numPlayers);
 
-			while (playerNamesContainer.firstChild) {
+		while (playerNamesContainer.firstChild) {
 			playerNamesContainer.removeChild(playerNamesContainer.firstChild);
-			}
+		}
 
-			for (let i = 0; i < numPlayers; i++) {
-				const playerNameInput = document.createElement("input");
-				playerNameInput.type = "text";
-				playerNameInput.name = `player${i + 1}`;
-				playerNameInput.placeholder = `Player ${i + 1}`;
-				playerNameInput.value = playerNames[i];
-				playerNamesContainer.appendChild(playerNameInput);
-				playerNameInput.addEventListener("input", function () {
+		for (let i = 0; i < numPlayers; i++) {
+			const playerNameInput = document.createElement("input");
+			playerNameInput.type = "text";
+			playerNameInput.name = `player${i + 1}`;
+			playerNameInput.placeholder = `Player ${i + 1}`;
+			playerNameInput.value = playerNames[i];
+			playerNamesContainer.appendChild(playerNameInput);
+			playerNameInput.addEventListener("input", function () {
 				updatePlayerName(i, playerNameInput.value);
-				});
-			}
+			});
+		}
 	});
 
 	updatePlayerContainers(numPlayersSelect.value);
@@ -134,35 +135,35 @@ window.onload = function () {
 		}
 	});
 
-	closeRulesButton.addEventListener('click', function() {
+	closeRulesButton.addEventListener('click', function () {
 		rulesContainer.style.display = 'none';
-	  });
+	});
 
-	openRulesButton.addEventListener('click', function() {
+	openRulesButton.addEventListener('click', function () {
 		rulesContainer.style.display = 'flex';
-	  });
+	});
 
-	randomiseNamesButton.addEventListener("click", function() {
+	randomiseNamesButton.addEventListener("click", function () {
 		assignNames();
 		numPlayers = numPlayersSelect.value;
 		updatePlayerContainers(numPlayers);
 
-			while (playerNamesContainer.firstChild) {
+		while (playerNamesContainer.firstChild) {
 			playerNamesContainer.removeChild(playerNamesContainer.firstChild);
-			}
+		}
 
-			for (let i = 0; i < numPlayers; i++) {
-				const playerNameInput = document.createElement("input");
-				playerNameInput.type = "text";
-				playerNameInput.name = `player${i + 1}`;
-				playerNameInput.placeholder = `Player ${i + 1}`;
-				playerNameInput.value = playerNames[i];
-				playerNamesContainer.appendChild(playerNameInput);
-				playerNameInput.addEventListener("input", function () {
+		for (let i = 0; i < numPlayers; i++) {
+			const playerNameInput = document.createElement("input");
+			playerNameInput.type = "text";
+			playerNameInput.name = `player${i + 1}`;
+			playerNameInput.placeholder = `Player ${i + 1}`;
+			playerNameInput.value = playerNames[i];
+			playerNamesContainer.appendChild(playerNameInput);
+			playerNameInput.addEventListener("input", function () {
 				updatePlayerName(i, playerNameInput.value);
-				});
-			}
-	}); 
+			});
+		}
+	});
 
 	//----------//
 	//GAME LOGIC//
@@ -298,7 +299,7 @@ window.onload = function () {
 				player.hand.push(card);
 				createCardElement(card, player.handContainer);
 			}
-			
+
 			// Order the cards in the player's hand
 			orderHand(player);
 		}
@@ -307,18 +308,18 @@ window.onload = function () {
 	function orderHand(player) {
 		// Remove card elements from the hand container
 		while (player.handContainer.firstChild) {
-		  removeCard(player.handContainer.firstChild, player.handContainer);
+			removeCard(player.handContainer.firstChild, player.handContainer);
 		}
-	  
+
 		// Order the cards in the hand by rank
 		player.hand.sort((a, b) => ranks.indexOf(a.rank) - ranks.indexOf(b.rank));
 
-	  
+
 		// Add the card elements back to the hand container in the new order
 		player.hand.forEach(card => {
-		  createCardElement(card, player.handContainer);
+			createCardElement(card, player.handContainer);
 		});
-	}  
+	}
 
 	function createGameLog() {
 		// Get a reference to the sidebar element
@@ -352,90 +353,90 @@ window.onload = function () {
 
 	// Function to update the play pile card count display
 	function updatePlayPileCount() {
-			const numCards = playedCards.length;
-			playpileCount.textContent = `Cards in play pile : ${numCards}`;
-	}		
+		const numCards = playedCards.length;
+		playpileCount.textContent = `Cards in play pile : ${numCards}`;
+	}
 
 	// Function to update the draw pile card count display
 	function updateDrawPileCount() {
-			const numCards = deck.length;
-			drawpileCount.textContent = `Cards in deck: ${numCards}`;
+		const numCards = deck.length;
+		drawpileCount.textContent = `Cards in deck: ${numCards}`;
 	}
 
 	// Function to update the burnt pile card count display
 	function updateBurnPileCount() {
-			const numCards = burntCards.length;
-			burnpileCount.textContent = `Cards burnt: ${numCards}`;
+		const numCards = burntCards.length;
+		burnpileCount.textContent = `Cards burnt: ${numCards}`;
 	}
 
-	function initialiseGame(){
-			deck = [];
-			numPlayers = numPlayersSelect.value;
-			playedCards = [];
-			burntCards = [];
-			players = [];
-			
-			
-			// Get the number of players from the input field
-			numPlayers = parseInt(document.getElementById('numPlayers').value);
-			createGameLog();
-	
-			//Create deck with/out jokers
-			deck = createDeck(withJokers);
-			shuffleDeck(deck);
-	
-			// Clear cards from game container
-			let cards = document.querySelectorAll('.card');
-			cards.forEach(card => card.remove());
-			updateDrawPileCount();
-			updateBurnPileCount();
-			updatePlayPileCount();
-	
-			// Create the player objects and add them to the players array
-			for (let i = 0; i < numPlayers; i++) {
-				// Get the player container element for this player index
-				const playerContainer = orderedContainers[i];
-	
-				// Get the containers for the different types of cards for this player
-				const playerName = playerContainer.querySelector(".player-name");
-				const handContainer = playerContainer.querySelector(".playable-cards");
-				const faceUpContainer = playerContainer.querySelector(".face-up-cards");
-				const faceDownContainer = playerContainer.querySelector(".face-down-cards");
-	
-				// Create a new player object with empty arrays for each type of card
-				const player = new Player(playerName, [], [], []);
-	
-				// Set the player object's properties to reference the container elements
-				player.container = playerContainer;
-				player.playerName = playerName.textContent;
-				player.handContainer = handContainer;
-				player.faceUpContainer = faceUpContainer;
-				player.faceDownContainer = faceDownContainer;
-	
-				players.push(player);
-			}
-	
-			// Deal cards to players
-			dealCards(deck, players);
-	
-			// Log player names to console
-			for (let i = 0; i < numPlayers; i++) {
-				console.log(`Player ${i + 1}: ${players[i].playerName}`);
-			}
-	
-			// Clear the draw pile
-			while (drawPile.firstChild) {
-				drawPile.removeChild(drawPile.firstChild);
-			}
-	
-			// Add the remainder of cards to the draw pile
-			for (let card of deck) {
-				const cardElement = createCardElement(card, drawPile);
-				drawPile.appendChild(cardElement);
-			}
-			
-			// Update the card count display
-			updateDrawPileCount();
+	function initialiseGame() {
+		deck = [];
+		numPlayers = numPlayersSelect.value;
+		playedCards = [];
+		burntCards = [];
+		players = [];
+
+
+		// Get the number of players from the input field
+		numPlayers = parseInt(document.getElementById('numPlayers').value);
+		createGameLog();
+
+		//Create deck with/out jokers
+		deck = createDeck(withJokers);
+		shuffleDeck(deck);
+
+		// Clear cards from game container
+		let cards = document.querySelectorAll('.card');
+		cards.forEach(card => card.remove());
+		updateDrawPileCount();
+		updateBurnPileCount();
+		updatePlayPileCount();
+
+		// Create the player objects and add them to the players array
+		for (let i = 0; i < numPlayers; i++) {
+			// Get the player container element for this player index
+			const playerContainer = orderedContainers[i];
+
+			// Get the containers for the different types of cards for this player
+			const playerName = playerContainer.querySelector(".player-name");
+			const handContainer = playerContainer.querySelector(".playable-cards");
+			const faceUpContainer = playerContainer.querySelector(".face-up-cards");
+			const faceDownContainer = playerContainer.querySelector(".face-down-cards");
+
+			// Create a new player object with empty arrays for each type of card
+			const player = new Player(playerName, [], [], []);
+
+			// Set the player object's properties to reference the container elements
+			player.container = playerContainer;
+			player.playerName = playerName.textContent;
+			player.handContainer = handContainer;
+			player.faceUpContainer = faceUpContainer;
+			player.faceDownContainer = faceDownContainer;
+
+			players.push(player);
+		}
+
+		// Deal cards to players
+		dealCards(deck, players);
+
+		// Log player names to console
+		for (let i = 0; i < numPlayers; i++) {
+			console.log(`Player ${i + 1}: ${players[i].playerName}`);
+		}
+
+		// Clear the draw pile
+		while (drawPile.firstChild) {
+			drawPile.removeChild(drawPile.firstChild);
+		}
+
+		// Add the remainder of cards to the draw pile
+		for (let card of deck) {
+			const cardElement = createCardElement(card, drawPile);
+			drawPile.appendChild(cardElement);
+		}
+
+		// Update the card count display
+		updateDrawPileCount();
 	}
 
 	async function playTurn(player, centerCard) {
@@ -443,19 +444,19 @@ window.onload = function () {
 		function playCards() {
 			let i = 0;
 			selectedCards.forEach(card => {
-			  const selectedCardHandIndex = player.hand.indexOf(card);
-			  player.hand.splice(selectedCardHandIndex, 1);
-			  const selectedCardIndex = selectedCards.indexOf(card);
-			  //selectedCards.splice(selectedCardIndex, 1);
-			  playedCards.push(card);
-			  appendToGameLog(players[currentPlayerIndex].playerName + " played " + card.rank + " of " + card.suit);
-			  removeCard(selectedCardElements[i].cardElement, player.handContainer);
-			  createCardElement(card, playPile);
-			  rotatePlayedCard(playPile.lastChild);
-			  if (card.rank === "3"){
-				skipCount++;
-			  }
-			  i++;
+				const selectedCardHandIndex = player.hand.indexOf(card);
+				player.hand.splice(selectedCardHandIndex, 1);
+				const selectedCardIndex = selectedCards.indexOf(card);
+				//selectedCards.splice(selectedCardIndex, 1);
+				playedCards.push(card);
+				appendToGameLog(players[currentPlayerIndex].playerName + " played " + card.rank + " of " + card.suit);
+				removeCard(selectedCardElements[i].cardElement, player.handContainer);
+				createCardElement(card, playPile);
+				rotatePlayedCard(playPile.lastChild);
+				if (card.rank === "3") {
+					skipCount++;
+				}
+				i++;
 			});
 			centerCard = playedCards[playedCards.length - 1];
 			//playCardButton.style.display = "none";
@@ -480,7 +481,7 @@ window.onload = function () {
 			centerCard = undefined;
 		}
 
-		
+
 		selectedCards = []
 		selectedCardElements = []
 
@@ -502,20 +503,33 @@ window.onload = function () {
 		// Select next card if duplicate rank is in hand
 		if (hasEqualRank) {
 			appendToGameLog("Another card in your hand has the same rank as the selected card.");
-			let nextCardElement = await firstCardClick(player)
-			// If the next selected card is the same rank as the first selected
-			if (nextCardElement.card.rank == selectedCard.rank){
-				// If the card has not already been selected
-				if (!selectedCards.includes(nextCardElement.card)){
-					selectedCardElements.push(nextCardElement)
-					selectedCards.push(nextCardElement.card);
+
+			while (true) {
+				let nextCardElement = await firstCardClick(player);
+
+				// If the next selected card is the same rank as the first selected
+				if (nextCardElement.card.rank === selectedCard.rank) {
+					// If the card has not already been selected
+					if (!selectedCards.includes(nextCardElement.card)) {
+						selectedCardElements.push(nextCardElement);
+						selectedCards.push(nextCardElement.card);
+					} else {
+						appendToGameLog("You have already selected this card.");
+						break; // Exit the loop if the player selects a card they have already chosen
+					}
+				} else {
+					appendToGameLog("Next selected card must be the same rank as the first selected card.");
+					break; // Exit the loop if the player selects a card with a different rank
 				}
-			} else {
-				appendToGameLog("Second selected card must be the same rank as the first selected card.");
+
+				// Exit the loop if all cards with the same rank have been selected
+				if (selectedCards.filter(card => card.rank === selectedCard.rank).length === remainingCards.length) {
+					break;
+				}
 			}
 		}
-		  
-		
+
+
 		if (trickCards.includes(selectedCard.rank)) {
 			isTrickCard = true;
 			canPlay = true;
@@ -525,10 +539,10 @@ window.onload = function () {
 			// If there is a center card:
 			canPlay = false;
 			// Set the variable canPlay to false by default.
-		
+
 			if (centerCard.rank === "7") {
 				// If the center card's rank is "7":
-		
+
 				// Check each card in the player's hand:
 				player.hand.forEach(card => {
 					if (ranks.indexOf(card.rank) < ranks.indexOf(centerCard.rank) && !isTrickCard) {
@@ -538,7 +552,7 @@ window.onload = function () {
 						// Set canPlay to true.
 					}
 				});
-		
+
 				if (ranks.indexOf(selectedCard.rank) < ranks.indexOf(centerCard.rank) || isTrickCard) {
 					// If the rank of the selected card is lower than the center card's rank
 					// or it is a trick card:
@@ -554,7 +568,7 @@ window.onload = function () {
 				}
 			} else {
 				// If the center card's rank is not "7":
-		
+
 				// Check each card in the player's hand:
 				player.hand.forEach(card => {
 					if (ranks.indexOf(card.rank) >= ranks.indexOf(centerCard.rank) || trickCards.includes(card.rank)) {
@@ -564,7 +578,7 @@ window.onload = function () {
 						// Set canPlay to true.
 					}
 				});
-		
+
 				if (selectedCardRank >= ranks.indexOf(centerCard.rank) || trickCards.includes(selectedCard.rank)) {
 					// If the rank of the selected card is equal to or higher than the center card's rank
 					// or it is a trick card:
@@ -589,7 +603,7 @@ window.onload = function () {
 			// Set isSelectedValid to true.
 		}
 
-		if (canPlay && isSelectedValid){
+		if (canPlay && isSelectedValid) {
 			playCards();
 		}
 
@@ -620,7 +634,7 @@ window.onload = function () {
 				console.log("Deck size: " + deck.length);
 			}
 		}
-		return;	
+		return;
 	}
 
 	function burnCards(playedCards) {
@@ -667,31 +681,31 @@ window.onload = function () {
 
 	async function firstCardClick(player) {
 		return new Promise(resolve => {
-		  const cardElements = player.handContainer.querySelectorAll('.card');
-	  
-		  function handleClick(event) {
-			const cardElem = event.currentTarget;
-			const card = cardElem.card;
-	  
-			// Remove the event listener
+			const cardElements = player.handContainer.querySelectorAll('.card');
+
+			function handleClick(event) {
+				const cardElem = event.currentTarget;
+				const card = cardElem.card;
+
+				// Remove the event listener
+				cardElements.forEach(cardElem => {
+					cardElem.removeEventListener('click', handleClick);
+				});
+
+				resolve({
+					cardElement: cardElem,
+					card: card
+				});
+			}
+
 			cardElements.forEach(cardElem => {
-			  cardElem.removeEventListener('click', handleClick);
+				cardElem.addEventListener('click', handleClick);
 			});
-	  
-			resolve({
-			  cardElement: cardElem,
-			  card: card
-			});
-		  }
-	  
-		  cardElements.forEach(cardElem => {
-			cardElem.addEventListener('click', handleClick);
-		  });
 		});
-	  }
+	}
 
 	async function playGame() {
-		
+
 		initialiseGame();
 		currentPlayerIndex = 0;
 
@@ -717,13 +731,13 @@ window.onload = function () {
 			console.log(`${player.playerName}'s turn`);
 			appendToGameLog(players[currentPlayerIndex].playerName + "'s turn");
 			// Modify the border width and color
-			player.container.style.borderWidth = '3px';   // Set the border width to 3 pixels
-			player.container.style.borderColor = 'white';  // Set the border color to white
-			
+			player.container.style.borderWidth = '3px'; // Set the border width to 3 pixels
+			player.container.style.borderColor = 'white'; // Set the border color to white
+
 
 			console.log("Card to beat: ", centerCard);
 
-			if (player.hand.length === 0 && player.faceUp.length === 0){
+			if (player.hand.length === 0 && player.faceUp.length === 0) {
 				appendToGameLog(players[currentPlayerIndex].playerName + " must select a face down card to reveal")
 				// Allow the player to click on a card
 				const selectedFaceDownCard = await faceDownCardClick();
@@ -750,22 +764,22 @@ window.onload = function () {
 
 			orderHand(player);
 			// Modify the border width and color
-			player.container.style.borderWidth = '0px';   // Set the border width to 2 pixels
-			player.container.style.borderColor = 'black';  // Set the border color to red
-			  
+			player.container.style.borderWidth = '0px'; // Set the border width to 2 pixels
+			player.container.style.borderColor = 'black'; // Set the border color to red
+
 			// Check for empty hand to enable face-up cards
 			if (player.hand.length === 0) {
-					for (let i = 0; i < player.faceUp.length; i++) {
-						// add card to the player's hand
-						player.hand.push(player.faceUp[i]);
-						createCardElement(player.faceUp[i], player.handContainer);
-					}
-					// clear the face up array
-						player.faceUp.splice(0, player.faceUp.length);
+				for (let i = 0; i < player.faceUp.length; i++) {
+					// add card to the player's hand
+					player.hand.push(player.faceUp[i]);
+					createCardElement(player.faceUp[i], player.handContainer);
+				}
+				// clear the face up array
+				player.faceUp.splice(0, player.faceUp.length);
 
-					while (player.faceUpContainer.firstChild) {
-						player.faceUpContainer.removeChild(player.faceUpContainer.firstChild);
-					}
+				while (player.faceUpContainer.firstChild) {
+					player.faceUpContainer.removeChild(player.faceUpContainer.firstChild);
+				}
 				player.faceUpContainer.style.display = "none";
 			}
 
@@ -775,45 +789,48 @@ window.onload = function () {
 				playedCards[playedCards.length - 1].rank === playedCards[playedCards.length - 2].rank &&
 				playedCards[playedCards.length - 2].rank === playedCards[playedCards.length - 3].rank &&
 				playedCards[playedCards.length - 3].rank === playedCards[playedCards.length - 4].rank
-			  ) {
-				appendToGameLog("Four of a kind detected! ")
+			) {
+				appendToGameLog("Four of a kind detected!")
 				appendToGameLog(players[currentPlayerIndex].playerName + " can play again!")
 				burnCards(playedCards);
+				centerCard = undefined;
 				matchFour = true;
-			  }
+			}
 
 			// Check for winner
 			if (player.hand.length === 0 && player.faceUp.length === 0 && player.faceDown.length === 0) {
 				appendToGameLog(players[currentPlayerIndex].playerName + " has played all of their cards!")
 				// Remove the player from the array
-   	 			players.splice(currentPlayerIndex, 1);
-				if (!isTrickCard){
+				players.splice(currentPlayerIndex, 1);
+				if (!isTrickCard) {
 					currentPlayerIndex = (currentPlayerIndex - 1) % numPlayers;
 				}
 				numPlayers = players.length;
 			}
 
-			if(players.length == 1){
+			if (players.length == 1) {
 				gameOver = true;
 				appendToGameLog(players[0].playerName + " is the SHITHEAD!")
 				break;
 			}
-			  			
+
 			// Determine next Player
 			if (isTrickCard && !matchFour) {
 				handleTrickCards();
 			} else if (isSelectedValid) {
-				// Move to the next player's turn
-				currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
+				if (!matchFour) {
+					// Move to the next player's turn
+					currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
+				}
 			}
-			  
+
 			if (gameOver) {
 				break;
 			}
 		}
 	}
 
-	startButton.addEventListener("click", async function () {		
+	startButton.addEventListener("click", async function () {
 		playGame();
 	});
 
