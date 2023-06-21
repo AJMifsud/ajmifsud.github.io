@@ -182,6 +182,7 @@ window.onload = function () {
 	let gameOver = false;
 	let currentPlayerIndex = 0;
 	let centerCard = undefined;
+	let selectedCardElements = [];
 	let selectedCards = []
 	let isSelectedValid = false;
 	let isTrickCard = false;
@@ -481,33 +482,37 @@ window.onload = function () {
 
 		
 		selectedCards = []
+		selectedCardElements = []
 
 		// Allow the player to click on a card
-		let selectedCardElements = [await firstCardClick(player)];
-		
-		skipCount = 0;
+		let firstSelectedCard = await firstCardClick(player);
+		console.log("Selected card: ", firstSelectedCard.card);
+		selectedCardElements.push(firstSelectedCard)
+		selectedCards.push(firstSelectedCard.card);
 		let selectedCard = selectedCardElements[0].card;
 		const selectedCardRank = ranks.indexOf(selectedCard.rank);
-		selectedCards.push(selectedCard);
 		const remainingCards = player.hand.filter(card => card !== selectedCard);
 		const hasEqualRank = remainingCards.some(card => card.rank === selectedCard.rank);
+
+		skipCount = 0;
 		matchFour = false;
-
-		console.log("Selected card: ", selectedCard);
-
 		let canPlay = false;
 		isTrickCard = false;
 
-
-
-		// Play next card if duplicate rank is in hand
+		// Select next card if duplicate rank is in hand
 		if (hasEqualRank) {
-				  console.log("Another card in your hand has the same rank as the selected card.");
-				  appendToGameLog("Another card in your hand has the same rank as the selected card.");
-				// Add your await statement here 
-				let nextCardElement = await firstCardClick(player)
-				selectedCardElements.push(nextCardElement)
-				selectedCards.push(nextCardElement.card);
+			appendToGameLog("Another card in your hand has the same rank as the selected card.");
+			let nextCardElement = await firstCardClick(player)
+			// If the next selected card is the same rank as the first selected
+			if (nextCardElement.card.rank == selectedCard.rank){
+				// If the card has not already been selected
+				if (!selectedCards.includes(nextCardElement.card)){
+					selectedCardElements.push(nextCardElement)
+					selectedCards.push(nextCardElement.card);
+				}
+			} else {
+				appendToGameLog("Second selected card must be the same rank as the first selected card.");
+			}
 		}
 		  
 		
