@@ -182,6 +182,7 @@ window.onload = function () {
 	let gameOver = false;
 	let currentPlayerIndex = 0;
 	let centerCard = undefined;
+	let selectedCards = []
 	let isSelectedValid = false;
 	let isTrickCard = false;
 	let matchFour = false
@@ -373,6 +374,7 @@ window.onload = function () {
 			burntCards = [];
 			players = [];
 			
+			
 			// Get the number of players from the input field
 			numPlayers = parseInt(document.getElementById('numPlayers').value);
 			createGameLog();
@@ -435,27 +437,28 @@ window.onload = function () {
 			updateDrawPileCount();
 	}
 
-	async function playTurn(player, selectedCardElement, centerCard) {
+	async function playTurn(player, centerCard) {
 
 		function playCards() {
+			let i = 0;
 			selectedCards.forEach(card => {
 			  const selectedCardHandIndex = player.hand.indexOf(card);
 			  player.hand.splice(selectedCardHandIndex, 1);
 			  const selectedCardIndex = selectedCards.indexOf(card);
-			  selectedCards.splice(selectedCardIndex, 1);
+			  //selectedCards.splice(selectedCardIndex, 1);
 			  playedCards.push(card);
 			  appendToGameLog(players[currentPlayerIndex].playerName + " played " + card.rank + " of " + card.suit);
-			  removeCard(selectedCardElement.cardElement, player.handContainer);
+			  removeCard(selectedCardElements[i].cardElement, player.handContainer);
 			  createCardElement(card, playPile);
 			  rotatePlayedCard(playPile.lastChild);
 			  if (card.rank === "3"){
 				skipCount++;
 			  }
+			  i++;
 			});
 			centerCard = playedCards[playedCards.length - 1];
 			//playCardButton.style.display = "none";
 			//selecting = false;
-			selectedCards = [];
 		}
 
 		function pickup(playedcards, player) {
@@ -476,9 +479,14 @@ window.onload = function () {
 			centerCard = undefined;
 		}
 
+		
+		selectedCards = []
+
+		// Allow the player to click on a card
+		let selectedCardElements = [await firstCardClick(player)];
+		
 		skipCount = 0;
-		let selectedCards = []
-		selectedCard = selectedCardElement.card;
+		let selectedCard = selectedCardElements[0].card;
 		const selectedCardRank = ranks.indexOf(selectedCard.rank);
 		selectedCards.push(selectedCard);
 		const remainingCards = player.hand.filter(card => card !== selectedCard);
@@ -497,8 +505,9 @@ window.onload = function () {
 				  console.log("Another card in your hand has the same rank as the selected card.");
 				  appendToGameLog("Another card in your hand has the same rank as the selected card.");
 				// Add your await statement here 
-				nextCard = await firstCardClick(player)
-				selectedCards.push(nextCard);
+				let nextCardElement = await firstCardClick(player)
+				selectedCardElements.push(nextCardElement)
+				selectedCards.push(nextCardElement.card);
 		}
 		  
 		
@@ -586,9 +595,9 @@ window.onload = function () {
 		}
 
 		// Draw cards up to 3 in hand
+		// If there are still cards in the deck:
 		if (deck.length > 0) {
-			// If there are still cards in the deck:
-			if (player.hand.length < 3) {
+			while (player.hand.length < 3) {
 				// Draw a new card from the deck and add it to the player's hand
 				const card = deck.pop();
 				player.hand.push(card);
@@ -626,8 +635,8 @@ window.onload = function () {
 		}
 	}
 
-	function handleTrickCards(selectedCard) {
-		switch (selectedCard.rank) {
+	function handleTrickCards() {
+		switch (selectedCards[0].rank) {
 			case "2":
 				appendToGameLog(players[currentPlayerIndex].playerName + " can play again")
 				centerCard = undefined;
@@ -725,9 +734,7 @@ window.onload = function () {
 
 
 			while (isSelectedValid == false) {
-				// Allow the player to click on a card
-				const selectedCardElement = await firstCardClick(player);
-				playTurn(player, selectedCardElement, centerCard);
+				await playTurn(player, centerCard);
 			}
 
 			// Assign the last played card to the center card
@@ -789,7 +796,7 @@ window.onload = function () {
 			  			
 			// Determine next Player
 			if (isTrickCard && !matchFour) {
-				handleTrickCards(selectedCard);
+				handleTrickCards();
 			} else if (isSelectedValid) {
 				// Move to the next player's turn
 				currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
