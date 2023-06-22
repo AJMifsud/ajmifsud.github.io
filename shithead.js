@@ -414,6 +414,10 @@ window.onload = function () {
 			player.faceUpContainer = faceUpContainer;
 			player.faceDownContainer = faceDownContainer;
 
+			// Modify the border width and color
+			player.container.style.borderWidth = '0px'; // Set the border width to 2 pixels
+			player.container.style.borderColor = 'black'; // Set the border color to red
+
 			players.push(player);
 		}
 
@@ -438,6 +442,8 @@ window.onload = function () {
 
 		// Update the card count display
 		updateDrawPileCount();
+
+		switchCardLoop(players[0]);
 	}
 
 	async function playTurn(player, centerCard) {
@@ -702,6 +708,7 @@ window.onload = function () {
 			function handleClick(event) {
 				const cardElem = event.currentTarget;
 				const card = cardElem.card;
+				cardElem.style.transform = "scale(1.15) translateY(-7px)";
 
 				// Remove the event listener
 				cardElements.forEach(cardElem => {
@@ -748,29 +755,41 @@ window.onload = function () {
 		});
 	}
 
+
+	// Recursive function to loop the switchCard function
+	async function switchCardLoop(player) {
+		while (startButton.style.display !== "none") {
+			await switchCard(player);
+		}
+	}
+
 	async function switchCard(player) {
 		const handCard = await firstCardClick(player);
 		const faceUpCard = await faceUpCardClick(player);
 	  
 		// Remove card from hand container
 		removeCard(handCard.cardElement, player.handContainer);
+		const selectedHandCardIndex = player.hand.indexOf(handCard.card);
+		player.hand.splice(selectedHandCardIndex, 1);
 	  
 		// Remove card from face-up container
 		removeCard(faceUpCard.cardElement, player.faceUpContainer);
-	  
+		const selectedFaceUpCardIndex = player.faceUp.indexOf(handCard.card);
+		player.faceUp.splice(selectedFaceUpCardIndex, 1);
+
 		// Add card to hand container
-		player.hand.push(handCard.card);
-		createCardElement(handCard.card, player.handContainer);
+		player.hand.push(faceUpCard.card);
+		createCardElement(faceUpCard.card, player.handContainer);
 	  
 		// Add card to face-up container
-		player.faceUp.push(faceUpCard.card);
-		createCardElement(faceUpCard.card, player.faceUpContainer);
+		player.faceUp.push(handCard.card);
+		createCardElement(handCard.card, player.faceUpContainer);
 	  }
 	  
 
 	async function playGame() {
 		currentPlayerIndex = 0;
-
+		
 		// Play the game until there is a winner
 		while (!gameOver) {
 
