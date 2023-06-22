@@ -28,7 +28,8 @@ window.onload = function () {
 	const burnPile = document.getElementById('burn-pile');
 	const burnpileCount = document.getElementById('burnpile-count');
 	let orderedContainers = [];
-	const startButton = document.getElementById("startButton");
+	const dealButton = document.getElementById("deal-button");
+	const startButton = document.getElementById("start-button");
 	const playPile = document.getElementById('play-pile');
 	const playpileCount = document.getElementById('playpile-count');
 	let playerNames = ["Player 1", "Player 2", "Player 3", "Player 4"];
@@ -129,9 +130,9 @@ window.onload = function () {
 
 	jokersCheck.addEventListener('change', function () {
 		if (this.checked) {
-			withJokers = true;
+			withJokers = "Yes";
 		} else {
-			withJokers = false;
+			withJokers = "No";
 		}
 	});
 
@@ -172,7 +173,7 @@ window.onload = function () {
 	// Define the necessary variables and arrays
 	const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
 	const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'jack', 'queen', 'king', 'ace'];
-	const withJokersCheckbox = document.getElementsByName("withJokers")[0];
+	const withJokersCheckbox = document.getElementsByName("withJokers");
 	let withJokers = withJokersCheckbox.checked ? "Yes" : "No";
 	let deck = [];
 	let numPlayers = numPlayersSelect.value;
@@ -459,8 +460,6 @@ window.onload = function () {
 				i++;
 			});
 			centerCard = playedCards[playedCards.length - 1];
-			//playCardButton.style.display = "none";
-			//selecting = false;
 		}
 
 		function pickup(playedcards, player) {
@@ -481,6 +480,18 @@ window.onload = function () {
 			centerCard = undefined;
 		}
 
+		if (player.hand.length === 0 && player.faceUp.length === 0) {
+			appendToGameLog(players[currentPlayerIndex].playerName + " must select a face down card to reveal")
+			// Allow the player to click on a card
+			const selectedFaceDownCard = await faceDownCardClick(player);
+			// Get the index of the selected card in the player's face down cards and remove it then replace it in the player's hand
+			const selectedCardIndex = player.faceDown.indexOf(selectedFaceDownCard);
+			player.faceDown.splice(selectedCardIndex, 1);
+			player.hand.push(selectedFaceDownCard.card);
+			// Remove the card element from the player's face down container and add it to the player hand container
+			removeCard(selectedFaceDownCard.cardElement, player.faceDownContainer);
+			createCardElement(selectedFaceDownCard.card, player.handContainer);
+		}
 
 		selectedCards = []
 		selectedCardElements = []
@@ -605,6 +616,8 @@ window.onload = function () {
 
 		if (canPlay && isSelectedValid) {
 			playCards();
+			// Update the number of played cards
+			updatePlayPileCount();
 		}
 
 		// Pickup on unplayable hand
@@ -634,6 +647,9 @@ window.onload = function () {
 				console.log("Deck size: " + deck.length);
 			}
 		}
+		orderHand(player);
+
+		
 		return;
 	}
 
@@ -704,53 +720,71 @@ window.onload = function () {
 		});
 	}
 
-	async function playGame() {
+	function faceUpCardClick(player) {
+		return new Promise(resolve => {
+			const cardElements = player.faceUpContainer.querySelectorAll('.card');
+			cardElements.forEach(cardElem => {
+				cardElem.addEventListener('click', () => {
+					resolve({
+						cardElement: cardElem,
+						card: cardElem.card
+					});
+				});
+			});
+		});
+	}
 
-		initialiseGame();
+	function faceDownCardClick(player) {
+		return new Promise(resolve => {
+			const cardElements = player.faceDownContainer.querySelectorAll('.card');
+			cardElements.forEach(cardElem => {
+				cardElem.addEventListener('click', () => {
+					resolve({
+						cardElement: cardElem,
+						card: cardElem.card
+					});
+				});
+			});
+		});
+	}
+
+	async function switchCard(player) {
+		const handCard = await firstCardClick(player);
+		const faceUpCard = await faceUpCardClick(player);
+	  
+		// Remove card from hand container
+		removeCard(handCard.cardElement, player.handContainer);
+	  
+		// Remove card from face-up container
+		removeCard(faceUpCard.cardElement, player.faceUpContainer);
+	  
+		// Add card to hand container
+		player.hand.push(handCard.card);
+		createCardElement(handCard.card, player.handContainer);
+	  
+		// Add card to face-up container
+		player.faceUp.push(faceUpCard.card);
+		createCardElement(faceUpCard.card, player.faceUpContainer);
+	  }
+	  
+
+	async function playGame() {
 		currentPlayerIndex = 0;
 
 		// Play the game until there is a winner
 		while (!gameOver) {
 
-			function faceDownCardClick() {
-				return new Promise(resolve => {
-					const cardElements = player.faceDownContainer.querySelectorAll('.card');
-					cardElements.forEach(cardElem => {
-						cardElem.addEventListener('click', () => {
-							resolve({
-								cardElement: cardElem,
-								card: cardElem.card
-							});
-						});
-					});
-				});
-			}
-
 			isSelectedValid = false;
 			const player = players[currentPlayerIndex];
 			console.log(`${player.playerName}'s turn`);
 			appendToGameLog(players[currentPlayerIndex].playerName + "'s turn");
+
 			// Modify the border width and color
 			player.container.style.borderWidth = '3px'; // Set the border width to 3 pixels
 			player.container.style.borderColor = 'white'; // Set the border color to white
 
 
 			console.log("Card to beat: ", centerCard);
-
-			if (player.hand.length === 0 && player.faceUp.length === 0) {
-				appendToGameLog(players[currentPlayerIndex].playerName + " must select a face down card to reveal")
-				// Allow the player to click on a card
-				const selectedFaceDownCard = await faceDownCardClick();
-
-				// Get the index of the selected card in the player's face down cards and remove it then replace it in the player's hand
-				const selectedCardIndex = player.faceDown.indexOf(selectedFaceDownCard);
-				player.faceDown.splice(selectedCardIndex, 1);
-				player.hand.push(selectedFaceDownCard.card);
-				// Remove the card element from the player's face down container and add it to the player hand container
-				removeCard(selectedFaceDownCard.cardElement, player.faceDownContainer);
-				createCardElement(selectedFaceDownCard.card, player.handContainer);
-			}
-
 
 			while (isSelectedValid == false) {
 				await playTurn(player, centerCard);
@@ -759,10 +793,6 @@ window.onload = function () {
 			// Assign the last played card to the center card
 			centerCard = playedCards[playedCards.length - 1];
 
-			// Update the number of played cards
-			updatePlayPileCount();
-
-			orderHand(player);
 			// Modify the border width and color
 			player.container.style.borderWidth = '0px'; // Set the border width to 2 pixels
 			player.container.style.borderColor = 'black'; // Set the border color to red
@@ -830,8 +860,14 @@ window.onload = function () {
 		}
 	}
 
-	startButton.addEventListener("click", async function () {
+	dealButton.addEventListener("click", function () {
+		initialiseGame();
+		startButton.style.display = "flex";
+	});
+
+	startButton.addEventListener("click", function () {
 		playGame();
+		startButton.style.display = "none";
 	});
 
 

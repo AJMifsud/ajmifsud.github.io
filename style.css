@@ -392,7 +392,7 @@ body {
 	font-family: monospace;
 }
 
-#play-selected-button {
+#start-button {
 	position: absolute;
 	padding: 10px;
 	border: 0px solid;
@@ -400,7 +400,7 @@ body {
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	bottom: 12.5%;
-	right: 25%;
+	bottom: 15%;
+	right: 20%;
 	display: none;
 }
