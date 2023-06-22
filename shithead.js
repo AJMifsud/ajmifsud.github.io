@@ -503,7 +503,7 @@ window.onload = function () {
 		selectedCardElements = []
 
 		// Allow the player to click on a card
-		let firstSelectedCard = await firstCardClick(player);
+		let firstSelectedCard = await handCardClick(player);
 		console.log("Selected card: ", firstSelectedCard.card);
 		selectedCardElements.push(firstSelectedCard)
 		selectedCards.push(firstSelectedCard.card);
@@ -522,7 +522,7 @@ window.onload = function () {
 			appendToGameLog("Another card in your hand has the same rank as the selected card.");
 
 			while (true) {
-				let nextCardElement = await firstCardClick(player);
+				let nextCardElement = await handCardClick(player);
 
 				// If the next selected card is the same rank as the first selected
 				if (nextCardElement.card.rank === selectedCard.rank) {
@@ -636,6 +636,7 @@ window.onload = function () {
 		// If there are still cards in the deck:
 		if (deck.length > 0) {
 			while (player.hand.length < 3) {
+				if (deck.length > 0) {
 				// Draw a new card from the deck and add it to the player's hand
 				const card = deck.pop();
 				player.hand.push(card);
@@ -651,6 +652,7 @@ window.onload = function () {
 
 				// Log the new deck size to the console
 				console.log("Deck size: " + deck.length);
+				}
 			}
 		}
 		orderHand(player);
@@ -701,7 +703,7 @@ window.onload = function () {
 		}
 	}
 
-	async function firstCardClick(player) {
+	async function handCardClick(player) {
 		return new Promise(resolve => {
 			const cardElements = player.handContainer.querySelectorAll('.card');
 
@@ -727,16 +729,28 @@ window.onload = function () {
 		});
 	}
 
-	function faceUpCardClick(player) {
+	async function faceUpCardClick(player) {
 		return new Promise(resolve => {
 			const cardElements = player.faceUpContainer.querySelectorAll('.card');
-			cardElements.forEach(cardElem => {
-				cardElem.addEventListener('click', () => {
-					resolve({
-						cardElement: cardElem,
-						card: cardElem.card
-					});
+
+			function handleClick(event) {
+				const cardElem = event.currentTarget;
+				const card = cardElem.card;
+				cardElem.style.transform = "scale(1.15) translateY(-7px)";
+
+				// Remove the event listener
+				cardElements.forEach(cardElem => {
+					cardElem.removeEventListener('click', handleClick);
 				});
+
+				resolve({
+					cardElement: cardElem,
+					card: card
+				});
+			}
+
+			cardElements.forEach(cardElem => {
+				cardElem.addEventListener('click', handleClick);
 			});
 		});
 	}
@@ -764,7 +778,7 @@ window.onload = function () {
 	}
 
 	async function switchCard(player) {
-		const handCard = await firstCardClick(player);
+		const handCard = await handCardClick(player);
 		const faceUpCard = await faceUpCardClick(player);
 	  
 		// Remove card from hand container
@@ -795,6 +809,7 @@ window.onload = function () {
 
 			isSelectedValid = false;
 			const player = players[currentPlayerIndex];
+			const playerOut = false;
 			console.log(`${player.playerName}'s turn`);
 			appendToGameLog(players[currentPlayerIndex].playerName + "'s turn");
 
@@ -849,6 +864,7 @@ window.onload = function () {
 			// Check for winner
 			if (player.hand.length === 0 && player.faceUp.length === 0 && player.faceDown.length === 0) {
 				appendToGameLog(players[currentPlayerIndex].playerName + " has played all of their cards!")
+				playerOut = true;
 				// Remove the player from the array
 				players.splice(currentPlayerIndex, 1);
 				if (!isTrickCard) {
@@ -864,7 +880,10 @@ window.onload = function () {
 			}
 
 			// Determine next Player
-			if (isTrickCard && !matchFour) {
+			if (playerOut){
+				// Move to the next player's turn
+				currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
+			} else if (isTrickCard && !matchFour) {
 				handleTrickCards();
 			} else if (isSelectedValid) {
 				if (!matchFour) {
