@@ -698,7 +698,6 @@ window.onload = function () {
 			burntCards.push(playedCards[i]);
 			createCardElement(playedCards[i], burnPile);
 			updateBurnPileCount();
-			updatePlayPileCount();
 		}
 		// clear the playedcards array
 		if (playedCards.length > 0) {
@@ -707,6 +706,7 @@ window.onload = function () {
 		while (playPile.firstChild) {
 			playPile.removeChild(playPile.firstChild);
 		}
+		updatePlayPileCount();
 	}
 
 	function handleTrickCards() {
