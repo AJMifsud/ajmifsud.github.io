@@ -231,10 +231,12 @@ window.onload = function () {
 
 		if (withJokers === "Yes") {
 			deck.push({
+				suit: "joker",
 				rank: "joker",
-				frontImage: "images/cards/black_joker.png"
+				frontImage: "images/cards/black_joker.png",
 			});
 			deck.push({
+				suit: "joker",
 				rank: "joker",
 				frontImage: "images/cards/red_joker.png"
 			});
@@ -253,24 +255,39 @@ window.onload = function () {
 	function createCardElement(card, targetElement) {
 		const cardElement = document.createElement("div");
 		cardElement.classList.add("card");
-
+	  
 		const cardFrontElement = document.createElement("div");
 		cardFrontElement.classList.add("card-front");
 		cardFrontElement.style.backgroundImage = `url(${card.frontImage})`;
-
+	  
 		const cardBackElement = document.createElement("div");
 		cardBackElement.classList.add("card-back");
-
+	  
+		if (card.suit === "joker") {
+			const selectElement = document.createElement("select");
+			selectElement.classList.add("joker-ranks");
+		
+			// Add options for card ranks
+			ranks.forEach(rank => {
+			  const optionElement = document.createElement('option');
+			  optionElement.value = rank;
+			  optionElement.text = rank;
+			  selectElement.appendChild(optionElement);
+			});
+		
+			cardElement.appendChild(selectElement);
+		  }
 		cardElement.appendChild(cardFrontElement);
 		cardElement.appendChild(cardBackElement);
-
+	  
 		targetElement.appendChild(cardElement);
-
+	  
 		// Add a reference to the underlying card value
 		cardElement.card = card;
-
+	  
 		return cardElement;
-	}
+	  }
+	  
 
 	function removeCard(cardElement, container) {
 		container.removeChild(cardElement);
