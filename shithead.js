@@ -468,7 +468,9 @@ window.onload = function () {
 		// Update the card count display
 		updateDrawPileCount();
 
-		switchCardLoop(players[0]);
+		for (let i = 0; i < players.length; i++){
+			switchCardLoop(players[i]);
+		}
 	}
 
 	async function playTurn(player, centerCard) {
@@ -507,6 +509,7 @@ window.onload = function () {
 			while (playPile.firstChild) {
 				playPile.removeChild(playPile.firstChild);
 			}
+			updatePlayPileCount();
 			appendToGameLog(players[currentPlayerIndex].playerName + " picked up the play pile!")
 			centerCard = undefined;
 		}
@@ -829,7 +832,7 @@ window.onload = function () {
 		// Add card to face-up container
 		player.faceUp.push(handCard.card);
 		createCardElement(handCard.card, player.faceUpContainer);
-	  }
+	}
 	  
 
 	async function playGame() {
