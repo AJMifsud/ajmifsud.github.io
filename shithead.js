@@ -171,8 +171,8 @@ window.onload = function () {
 	//----------//
 
 	// Define the necessary variables and arrays
-	const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
-	const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'jack', 'queen', 'king', 'ace'];
+	const suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades'];
+	const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 'Ace'];
 	const withJokersCheckbox = document.getElementsByName("withJokers");
 	let withJokers = withJokersCheckbox.checked ? "Yes" : "No";
 	let deck = [];
@@ -206,13 +206,6 @@ window.onload = function () {
 		}
 	}
 
-	// Define the Deck class
-	class Deck {
-		constructor(withJokers) {
-			this.cards = [];
-		}
-	}
-
 	function createDeck(withJokers) {
 		const deck = [];
 
@@ -231,13 +224,13 @@ window.onload = function () {
 
 		if (withJokers === "Yes") {
 			deck.push({
-				suit: "joker",
-				rank: "joker",
+				suit: "Jokers",
+				rank: "Joker",
 				frontImage: "images/cards/black_joker.png",
 			});
 			deck.push({
-				suit: "joker",
-				rank: "joker",
+				suit: "Jokers",
+				rank: "Joker",
 				frontImage: "images/cards/red_joker.png"
 			});
 		}
@@ -262,8 +255,12 @@ window.onload = function () {
 	  
 		const cardBackElement = document.createElement("div");
 		cardBackElement.classList.add("card-back");
-	  
-		if (card.suit === "joker") {
+		
+		const updateJokerRank = (event) => {
+			card.rank = event.target.value;
+		  };
+
+		if (card.suit === "Jokers") {
 			const selectElement = document.createElement("select");
 			selectElement.classList.add("joker-ranks");
 		
@@ -275,6 +272,12 @@ window.onload = function () {
 			  selectElement.appendChild(optionElement);
 			});
 		
+			// Set initial value based on the card's rank
+			selectElement.value = card.rank;
+
+			// Attach event listener to update the card's rank
+			selectElement.addEventListener("change", updateJokerRank);
+
 			cardElement.appendChild(selectElement);
 		  }
 		cardElement.appendChild(cardFrontElement);
