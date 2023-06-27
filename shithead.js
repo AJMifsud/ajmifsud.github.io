@@ -275,6 +275,11 @@ window.onload = function () {
 			// Set initial value based on the card's rank
 			selectElement.value = card.rank;
 
+			// Prevent card click event when interacting with select element
+  			selectElement.addEventListener("click", (event) => {
+    		event.stopPropagation();
+  			})
+
 			// Attach event listener to update the card's rank
 			selectElement.addEventListener("change", updateJokerRank);
 
@@ -638,6 +643,11 @@ window.onload = function () {
 			// Set canPlay to true.
 			isSelectedValid = true;
 			// Set isSelectedValid to true.
+		}
+
+		if (selectedCard.rank == "Joker"){
+			isSelectedValid = false;
+			appendToGameLog("You must assign a rank to a Joker before it can be played");
 		}
 
 		if (canPlay && isSelectedValid) {
