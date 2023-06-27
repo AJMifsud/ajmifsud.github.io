@@ -698,6 +698,7 @@ window.onload = function () {
 			burntCards.push(playedCards[i]);
 			createCardElement(playedCards[i], burnPile);
 			updateBurnPileCount();
+			updatePlayPileCount();
 		}
 		// clear the playedcards array
 		if (playedCards.length > 0) {
