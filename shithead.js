@@ -183,7 +183,7 @@ window.onload = function () {
 	const trickCards = ["2", "3", "7", "10"];
 	let gameOver = false;
 	let currentPlayerIndex = 0;
-	let centerCard = undefined;
+	let centreCard = undefined;
 	let selectedCardElements = [];
 	let selectedCards = []
 	let isSelectedValid = false;
@@ -398,9 +398,17 @@ window.onload = function () {
 	function initialiseGame() {
 		deck = [];
 		numPlayers = numPlayersSelect.value;
+		players = [];
 		playedCards = [];
 		burntCards = [];
-		players = [];
+		gameOver = false;
+		currentPlayerIndex = 0;
+		centreCard = undefined;
+		selectedCardElements = [];
+		selectedCards = []
+		isSelectedValid = false;
+		isTrickCard = false;
+		matchFour = false
 
 
 		// Get the number of players from the input field
@@ -442,6 +450,7 @@ window.onload = function () {
 			// Modify the border width and color
 			player.container.style.borderWidth = '0px'; // Set the border width to 2 pixels
 			player.container.style.borderColor = 'black'; // Set the border color to red
+			player.faceUpContainer.style.display = "flex"; // Re-Enable face up container if disabled from last game
 
 			players.push(player);
 		}
@@ -473,7 +482,7 @@ window.onload = function () {
 		}
 	}
 
-	async function playTurn(player, centerCard) {
+	async function playTurn(player, centreCard) {
 
 		function playCards() {
 			let i = 0;
@@ -492,7 +501,7 @@ window.onload = function () {
 				}
 				i++;
 			});
-			centerCard = playedCards[playedCards.length - 1];
+			centreCard = playedCards[playedCards.length - 1];
 		}
 
 		function pickup(playedcards, player) {
@@ -511,7 +520,7 @@ window.onload = function () {
 			}
 			updatePlayPileCount();
 			appendToGameLog(players[currentPlayerIndex].playerName + " picked up the play pile!")
-			centerCard = undefined;
+			centreCard = undefined;
 		}
 
 		if (player.hand.length === 0 && player.faceUp.length === 0) {
@@ -580,26 +589,26 @@ window.onload = function () {
 			canPlay = true;
 		}
 
-		if (centerCard) {
-			// If there is a center card:
+		if (centreCard) {
+			// If there is a centre card:
 			canPlay = false;
 			// Set the variable canPlay to false by default.
 
-			if (centerCard.rank === "7") {
-				// If the center card's rank is "7":
+			if (centreCard.rank === "7") {
+				// If the centre card's rank is "7":
 
 				// Check each card in the player's hand:
 				player.hand.forEach(card => {
-					if (ranks.indexOf(card.rank) < ranks.indexOf(centerCard.rank) && !isTrickCard) {
-						// If the rank of the card is lower than the center card's rank
+					if (ranks.indexOf(card.rank) < ranks.indexOf(centreCard.rank) && !isTrickCard) {
+						// If the rank of the card is lower than the centre card's rank
 						// and it is not a trick card:
 						canPlay = true;
 						// Set canPlay to true.
 					}
 				});
 
-				if (ranks.indexOf(selectedCard.rank) < ranks.indexOf(centerCard.rank) || isTrickCard) {
-					// If the rank of the selected card is lower than the center card's rank
+				if (ranks.indexOf(selectedCard.rank) < ranks.indexOf(centreCard.rank) || isTrickCard) {
+					// If the rank of the selected card is lower than the centre card's rank
 					// or it is a trick card:
 					canPlay = true;
 					// Set canPlay to true.
@@ -612,20 +621,20 @@ window.onload = function () {
 					// Append an error message to the game log.
 				}
 			} else {
-				// If the center card's rank is not "7":
+				// If the centre card's rank is not "7":
 
 				// Check each card in the player's hand:
 				player.hand.forEach(card => {
-					if (ranks.indexOf(card.rank) >= ranks.indexOf(centerCard.rank) || trickCards.includes(card.rank)) {
-						// If the rank of the card is equal to or higher than the center card's rank
+					if (ranks.indexOf(card.rank) >= ranks.indexOf(centreCard.rank) || trickCards.includes(card.rank)) {
+						// If the rank of the card is equal to or higher than the centre card's rank
 						// or it is a trick card:
 						canPlay = true;
 						// Set canPlay to true.
 					}
 				});
 
-				if (selectedCardRank >= ranks.indexOf(centerCard.rank) || trickCards.includes(selectedCard.rank)) {
-					// If the rank of the selected card is equal to or higher than the center card's rank
+				if (selectedCardRank >= ranks.indexOf(centreCard.rank) || trickCards.includes(selectedCard.rank)) {
+					// If the rank of the selected card is equal to or higher than the centre card's rank
 					// or it is a trick card:
 					canPlay = true;
 					// Set canPlay to true.
@@ -634,14 +643,14 @@ window.onload = function () {
 				} else {
 					isSelectedValid = false;
 					// Set isSelectedValid to false.
-					console.log("Selected card must be a higher rank than the center card.");
+					console.log("Selected card must be a higher rank than the centre card.");
 					// Log an error message to the console.
-					appendToGameLog("Selected card must be an equal to or higher in rank than the center card.");
+					appendToGameLog("Selected card must be an equal to or higher in rank than the centre card.");
 					// Append an error message to the game log.
 				}
 			}
 		} else {
-			// If there is no center card:
+			// If there is no centre card:
 			canPlay = true;
 			// Set canPlay to true.
 			isSelectedValid = true;
@@ -716,12 +725,12 @@ window.onload = function () {
 		switch (selectedCards[0].rank) {
 			case "2":
 				appendToGameLog(players[currentPlayerIndex].playerName + " can play again")
-				centerCard = undefined;
+				centreCard = undefined;
 				break;
 			case "3":
 				appendToGameLog(players[currentPlayerIndex].playerName + " skipped " + players[(currentPlayerIndex + 1) % numPlayers].playerName + "'s turn!")
 				currentPlayerIndex = (currentPlayerIndex + (skipCount + 1)) % numPlayers;
-				centerCard = undefined;
+				centreCard = undefined;
 				break;
 			case "7":
 				// Increment the player counter before it is incremented again, skipping the next player
@@ -732,7 +741,7 @@ window.onload = function () {
 				burnCards(playedCards);
 				appendToGameLog(players[currentPlayerIndex].playerName + " burnt the deck!")
 				currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
-				centerCard = undefined;
+				centreCard = undefined;
 				break;
 		}
 	}
@@ -842,8 +851,8 @@ window.onload = function () {
 		while (!gameOver) {
 
 			isSelectedValid = false;
-			const player = players[currentPlayerIndex];
-			const playerOut = false;
+			let player = players[currentPlayerIndex];
+			let playerOut = false;
 			console.log(`${player.playerName}'s turn`);
 			appendToGameLog(players[currentPlayerIndex].playerName + "'s turn");
 
@@ -852,14 +861,14 @@ window.onload = function () {
 			player.container.style.borderColor = 'white'; // Set the border color to white
 
 
-			console.log("Card to beat: ", centerCard);
+			console.log("Card to beat: ", centreCard);
 
 			while (isSelectedValid == false) {
-				await playTurn(player, centerCard);
+				await playTurn(player, centreCard);
 			}
 
-			// Assign the last played card to the center card
-			centerCard = playedCards[playedCards.length - 1];
+			// Assign the last played card to the centre card
+			centreCard = playedCards[playedCards.length - 1];
 
 			// Modify the border width and color
 			player.container.style.borderWidth = '0px'; // Set the border width to 2 pixels
@@ -891,7 +900,7 @@ window.onload = function () {
 				appendToGameLog("Four of a kind detected!")
 				appendToGameLog(players[currentPlayerIndex].playerName + " can play again!")
 				burnCards(playedCards);
-				centerCard = undefined;
+				centreCard = undefined;
 				matchFour = true;
 			}
 
