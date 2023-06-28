@@ -728,10 +728,28 @@ window.onload = function () {
 				centreCard = undefined;
 				break;
 			case "3":
-				appendToGameLog(players[currentPlayerIndex].playerName + " skipped " + players[(currentPlayerIndex + 1) % numPlayers].playerName + "'s turn!")
-				currentPlayerIndex = (currentPlayerIndex + (skipCount + 1)) % numPlayers;
+				let skippedPlayers = [];
+				for (let i = 1; i <= skipCount; i++) {
+					let skippedPlayerIndex = (currentPlayerIndex + i) % numPlayers;
+					skippedPlayers.push(players[skippedPlayerIndex].playerName);
+				}
+				
+				let skippedPlayersMessage = "";
+				if (skippedPlayers.length > 1) {
+					skippedPlayersMessage = skippedPlayers.slice(0, -1).join(", ") + " and " + skippedPlayers.slice(-1);
+				} else {
+					skippedPlayersMessage = skippedPlayers[0];
+				}
+				
+				let turnsWord = skippedPlayers.length > 1 ? "turns" : "turn";
+				
+				let message = players[currentPlayerIndex].playerName + " skipped " + skippedPlayersMessage + "'s " + turnsWord + "!";
+				
+				appendToGameLog(message);
+				
+				currentPlayerIndex = (currentPlayerIndex + skipCount + 1) % numPlayers;
 				centreCard = undefined;
-				break;
+				break;		
 			case "7":
 				// Increment the player counter before it is incremented again, skipping the next player
 				appendToGameLog(players[(currentPlayerIndex + 1) % numPlayers].playerName + " must now either play below a 7 or a trick card!")
