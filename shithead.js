@@ -370,12 +370,21 @@ window.onload = function () {
 	function appendToGameLog(message) {
 		// Get a reference to the game log element
 		const gameLog = document.getElementById('game-log');
-
-
-		// Append the message to the game log
-		gameLog.innerText += `\n${message}\n`;
+	  
+		// Create a new paragraph element for the message
+		const messageElement = document.createElement('p');
+	  
+		// Wrap the player's name in a <strong> element using CSS inline style
+		const styledMessage = message.replace(/<b>(.*?)<\/b>/g, '<strong style="font-weight: bold;">$1</strong>');
+	  
+		// Set the content of the paragraph element
+		messageElement.innerHTML = styledMessage;
+	  
+		// Append the message element to the game log
+		gameLog.appendChild(messageElement);
 		gameLog.scrollTop = gameLog.scrollHeight;
-	}
+	  }
+	  
 
 	// Function to update the play pile card count display
 	function updatePlayPileCount() {
@@ -492,7 +501,7 @@ window.onload = function () {
 				const selectedCardIndex = selectedCards.indexOf(card);
 				//selectedCards.splice(selectedCardIndex, 1);
 				playedCards.push(card);
-				appendToGameLog(players[currentPlayerIndex].playerName + " played " + card.rank + " of " + card.suit);
+				appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b> played " + card.rank + " of " + card.suit);
 				removeCard(selectedCardElements[i].cardElement, player.handContainer);
 				createCardElement(card, playPile);
 				rotatePlayedCard(playPile.lastChild);
@@ -519,12 +528,12 @@ window.onload = function () {
 				playPile.removeChild(playPile.firstChild);
 			}
 			updatePlayPileCount();
-			appendToGameLog(players[currentPlayerIndex].playerName + " picked up the play pile!")
+			appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b> picked up the play pile!")
 			centreCard = undefined;
 		}
 
 		if (player.hand.length === 0 && player.faceUp.length === 0) {
-			appendToGameLog(players[currentPlayerIndex].playerName + " must select a face down card to reveal")
+			appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b> must select a face down card to reveal")
 			// Allow the player to click on a card
 			const selectedFaceDownCard = await faceDownCardClick(player);
 			// Get the index of the selected card in the player's face down cards and remove it then replace it in the player's hand
@@ -724,7 +733,7 @@ window.onload = function () {
 	function handleTrickCards() {
 		switch (selectedCards[0].rank) {
 			case "2":
-				appendToGameLog(players[currentPlayerIndex].playerName + " can play again")
+				appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b> can play again")
 				centreCard = undefined;
 				break;
 			case "3":
@@ -743,7 +752,7 @@ window.onload = function () {
 				
 				let turnsWord = skippedPlayers.length > 1 ? "turns" : "turn";
 				
-				let message = players[currentPlayerIndex].playerName + " skipped " + skippedPlayersMessage + "'s " + turnsWord + "!";
+				let message = "<b>" + players[currentPlayerIndex].playerName + "</b> skipped <b>" + skippedPlayersMessage + "</b>'s " + turnsWord + "!";
 				
 				appendToGameLog(message);
 				
@@ -752,12 +761,12 @@ window.onload = function () {
 				break;		
 			case "7":
 				// Increment the player counter before it is incremented again, skipping the next player
-				appendToGameLog(players[(currentPlayerIndex + 1) % numPlayers].playerName + " must now either play below a 7 or a trick card!")
+				appendToGameLog("<b>" + players[(currentPlayerIndex + 1) % numPlayers].playerName + "</b> must now either play below a 7 or a trick card!")
 				currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
 				break;
 			case "10":
 				burnCards(playedCards);
-				appendToGameLog(players[currentPlayerIndex].playerName + " burnt the deck!")
+				appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b> burnt the deck!")
 				currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
 				centreCard = undefined;
 				break;
@@ -872,7 +881,7 @@ window.onload = function () {
 			let player = players[currentPlayerIndex];
 			let playerOut = false;
 			console.log(`${player.playerName}'s turn`);
-			appendToGameLog(players[currentPlayerIndex].playerName + "'s turn");
+			appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b>'s turn");
 
 			// Modify the border width and color
 			player.container.style.borderWidth = '3px'; // Set the border width to 3 pixels
@@ -916,7 +925,7 @@ window.onload = function () {
 				playedCards[playedCards.length - 3].rank === playedCards[playedCards.length - 4].rank
 			) {
 				appendToGameLog("Four of a kind detected!")
-				appendToGameLog(players[currentPlayerIndex].playerName + " can play again!")
+				appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b> can play again!")
 				burnCards(playedCards);
 				centreCard = undefined;
 				matchFour = true;
@@ -924,7 +933,7 @@ window.onload = function () {
 
 			// Check for winner
 			if (player.hand.length === 0 && player.faceUp.length === 0 && player.faceDown.length === 0) {
-				appendToGameLog(players[currentPlayerIndex].playerName + " has played all of their cards!")
+				appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b> has played all of their cards!")
 				playerOut = true;
 				// Remove the player from the array
 				players.splice(currentPlayerIndex, 1);
@@ -936,7 +945,7 @@ window.onload = function () {
 
 			if (players.length == 1) {
 				gameOver = true;
-				appendToGameLog(players[0].playerName + " is the SHITHEAD!")
+				appendToGameLog("<b>" + players[0].playerName + " is the SHITHEAD!</b>")
 				break;
 			}
 
