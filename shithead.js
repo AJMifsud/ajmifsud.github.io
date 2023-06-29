@@ -4,8 +4,8 @@ window.onload = function () {
 	//PAGE LAYOUT//
 	//-----------//
 
-	function rotatePlayedCard(card) {
-		if (playPile.contains(card)) {
+	function rotateCard(card, container) {
+		if (container.contains(card)) {
 			const angle = Math.floor(Math.random() * 360);
 			card.style.setProperty("--angle", `${angle}deg`);
 			card.classList.add("rotated");
@@ -36,7 +36,8 @@ window.onload = function () {
 
 	function assignNames() {
 		playerNames = []
-		const names = ["Andy", "Ashley", "Christie", "Jemma", "Toby", "Charlie",
+		const names = ["Andy", "Louis", "Robbie", "Patrick", "Dan", 
+			"Ashley", "Christie", "Jemma", "Toby", "Charlie",
 			"Stafford", "Matt", "Helena", "Natasha", "Edison", "Hannah",
 			"Harry", "Adam", "Marin", "Bertie", "Jack", "Ella"
 		];
@@ -80,16 +81,35 @@ window.onload = function () {
 		});
 
 		for (let i = 0; i < numPlayers; i++) {
+			const playerNameContainer = document.createElement("div");
+			playerNameContainer.classList.add("player-name-container");
+
 			const playerNameInput = document.createElement("input");
 			playerNameInput.type = "text";
 			playerNameInput.name = `player${i + 1}`;
-			playerNameInput.placeholder = playerNames[i];
-			playerNamesContainer.appendChild(playerNameInput);
-
+			playerNameInput.placeholder = `Player ${i + 1}`;
+			playerNameInput.value = playerNames[i];
+			playerNameContainer.appendChild(playerNameInput);
 			playerNameInput.addEventListener("input", function () {
-				document.documentElement.style.setProperty(`--player-${i + 1}`, `"${playerNameInput.value}"`);
 				updatePlayerName(i, playerNameInput.value);
 			});
+
+			const playerIsBot = document.createElement("input");
+			playerIsBot.type = "checkbox";
+			playerIsBot.name = `player${i + 1}` + "botCheckbox";
+
+			const label = document.createElement("label");
+			label.textContent = "CPU";
+			label.appendChild(playerIsBot);
+
+			playerNameContainer.appendChild(label);
+
+			playerIsBot.addEventListener("change", function () {
+			    setPlayerBotStatus(i, playerIsBot.checked);
+			});
+
+
+			playerNamesContainer.appendChild(playerNameContainer);
 		}
 
 		for (let i = numPlayers; i < orderedContainers.length; i++) {
@@ -104,6 +124,12 @@ window.onload = function () {
 		playerNames[playerIndex] = newName;
 	}
 
+	function setPlayerBotStatus(i, isChecked) {
+		const isBot = isChecked;
+		// Use the 'isBot' variable as needed for further processing
+		console.log(`Player ${i + 1} is a bot: ${isBot}`);
+	  }
+
 	numPlayersSelect.addEventListener("change", function () {
 
 		const numPlayers = this.value;
@@ -114,15 +140,28 @@ window.onload = function () {
 		}
 
 		for (let i = 0; i < numPlayers; i++) {
+			const playerNameContainer = document.createElement("div");
+			playerNameContainer.classList.add("player-name-container");
+
 			const playerNameInput = document.createElement("input");
 			playerNameInput.type = "text";
 			playerNameInput.name = `player${i + 1}`;
 			playerNameInput.placeholder = `Player ${i + 1}`;
 			playerNameInput.value = playerNames[i];
-			playerNamesContainer.appendChild(playerNameInput);
+			playerNameContainer.appendChild(playerNameInput);
 			playerNameInput.addEventListener("input", function () {
 				updatePlayerName(i, playerNameInput.value);
 			});
+
+			const playerIsBot = document.createElement("input");
+			playerIsBot.type = "checkbox";
+			playerIsBot.name = `player${i + 1}` + "botCheckbox";
+			playerNameContainer.appendChild(playerIsBot);
+			playerIsBot.addEventListener("change", function () {
+				setPlayerBotStatus(i, playerIsBot.checked);
+			});
+
+			playerNamesContainer.appendChild(playerNameContainer);
 		}
 	});
 
@@ -154,15 +193,28 @@ window.onload = function () {
 		}
 
 		for (let i = 0; i < numPlayers; i++) {
+			const playerNameContainer = document.createElement("div");
+			playerNameContainer.classList.add("player-name-container");
+
 			const playerNameInput = document.createElement("input");
 			playerNameInput.type = "text";
 			playerNameInput.name = `player${i + 1}`;
 			playerNameInput.placeholder = `Player ${i + 1}`;
 			playerNameInput.value = playerNames[i];
-			playerNamesContainer.appendChild(playerNameInput);
+			playerNameContainer.appendChild(playerNameInput);
 			playerNameInput.addEventListener("input", function () {
 				updatePlayerName(i, playerNameInput.value);
 			});
+
+			const playerIsBot = document.createElement("input");
+			playerIsBot.type = "checkbox";
+			playerIsBot.name = `player${i + 1}` + "botCheckbox";
+			playerNameContainer.appendChild(playerIsBot);
+			playerIsBot.addEventListener("change", function () {
+				setPlayerBotStatus(i, playerIsBot.checked);
+			});
+
+			playerNamesContainer.appendChild(playerNameContainer);
 		}
 	});
 
@@ -478,9 +530,15 @@ window.onload = function () {
 		}
 
 		// Add the remainder of cards to the draw pile
+		let offsetLeft = 0;
+		let offsetTop = 0;
 		for (let card of deck) {
 			const cardElement = createCardElement(card, drawPile);
+  			cardElement.style.left = `${offsetLeft}px`;
+  			cardElement.style.top = `${offsetTop}px`;
 			drawPile.appendChild(cardElement);
+			offsetLeft -= 0.5;
+  			offsetTop += 1;
 		}
 
 		// Update the card count display
@@ -498,13 +556,11 @@ window.onload = function () {
 			selectedCards.forEach(card => {
 				const selectedCardHandIndex = player.hand.indexOf(card);
 				player.hand.splice(selectedCardHandIndex, 1);
-				const selectedCardIndex = selectedCards.indexOf(card);
-				//selectedCards.splice(selectedCardIndex, 1);
 				playedCards.push(card);
 				appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b> played " + card.rank + " of " + card.suit);
 				removeCard(selectedCardElements[i].cardElement, player.handContainer);
 				createCardElement(card, playPile);
-				rotatePlayedCard(playPile.lastChild);
+				rotateCard(playPile.lastChild, playPile);
 				if (card.rank === "3") {
 					skipCount++;
 				}
@@ -718,6 +774,7 @@ window.onload = function () {
 			// add card to the player's hand
 			burntCards.push(playedCards[i]);
 			createCardElement(playedCards[i], burnPile);
+			rotateCard(burnPile.lastChild, burnPile);
 			updateBurnPileCount();
 		}
 		// clear the playedcards array
