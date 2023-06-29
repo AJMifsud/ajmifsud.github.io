@@ -940,7 +940,7 @@ window.onload = function () {
 			console.log(`${player.playerName}'s turn`);
 			appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b>'s turn");
 
-			player.cardContainer.style.setProperty("animation", "pulsing-animation 1.5s infinite");
+			player.cardContainer.style.setProperty("animation", "pulsing-animation 2s infinite");
 
 
 			console.log("Card to beat: ", centreCard);
