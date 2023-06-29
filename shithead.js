@@ -380,6 +380,7 @@ window.onload = function () {
 
 			// Order the cards in the player's hand
 			orderHand(player);
+			orderFaceUp(player);
 		}
 	}
 
@@ -388,16 +389,27 @@ window.onload = function () {
 		while (player.handContainer.firstChild) {
 			removeCard(player.handContainer.firstChild, player.handContainer);
 		}
-
 		// Order the cards in the hand by rank
 		player.hand.sort((a, b) => ranks.indexOf(a.rank) - ranks.indexOf(b.rank));
-
-
 		// Add the card elements back to the hand container in the new order
 		player.hand.forEach(card => {
 			createCardElement(card, player.handContainer);
 		});
 	}
+	
+	function orderFaceUp(player) {
+		// Remove card elements from the faceUp container
+		while (player.faceUpContainer.firstChild) {
+			removeCard(player.faceUpContainer.firstChild, player.faceUpContainer);
+		}
+		// Order the cards in the faceUp by rank
+		player.faceUp.sort((a, b) => ranks.indexOf(a.rank) - ranks.indexOf(b.rank));
+		// Add the card elements back to the faceUp container in the new order
+		player.faceUp.forEach(card => {
+			createCardElement(card, player.faceUpContainer);
+		});
+	}
+
 
 	function createGameLog() {
 		// Get a reference to the sidebar element
@@ -763,6 +775,7 @@ window.onload = function () {
 			}
 		}
 		orderHand(player);
+		orderFaceUp(player);
 
 		
 		return;
@@ -915,7 +928,7 @@ window.onload = function () {
 	  
 		// Remove card from face-up container
 		removeCard(faceUpCard.cardElement, player.faceUpContainer);
-		const selectedFaceUpCardIndex = player.faceUp.indexOf(handCard.card);
+		const selectedFaceUpCardIndex = player.faceUp.indexOf(faceUpCard.card);
 		player.faceUp.splice(selectedFaceUpCardIndex, 1);
 
 		// Add card to hand container
@@ -925,6 +938,10 @@ window.onload = function () {
 		// Add card to face-up container
 		player.faceUp.push(handCard.card);
 		createCardElement(handCard.card, player.faceUpContainer);
+
+		
+		orderHand(player);
+		orderFaceUp(player);
 	}
 	  
 
