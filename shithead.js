@@ -494,6 +494,7 @@ window.onload = function () {
 
 			// Get the containers for the different types of cards for this player
 			const playerName = playerContainer.querySelector(".player-name");
+			const cardContainer = playerContainer.querySelector(".player-hand")
 			const handContainer = playerContainer.querySelector(".playable-cards");
 			const faceUpContainer = playerContainer.querySelector(".face-up-cards");
 			const faceDownContainer = playerContainer.querySelector(".face-down-cards");
@@ -503,15 +504,14 @@ window.onload = function () {
 
 			// Set the player object's properties to reference the container elements
 			player.container = playerContainer;
+			player.cardContainer = cardContainer;
 			player.playerName = playerName.textContent;
 			player.handContainer = handContainer;
 			player.faceUpContainer = faceUpContainer;
 			player.faceDownContainer = faceDownContainer;
 
-			// Modify the border width and color
-			player.container.style.borderWidth = '0px'; // Set the border width to 2 pixels
-			player.container.style.borderColor = 'black'; // Set the border color to red
 			player.faceUpContainer.style.display = "flex"; // Re-Enable face up container if disabled from last game
+			player.cardContainer.style.removeProperty("animation");
 
 			players.push(player);
 		}
@@ -530,15 +530,15 @@ window.onload = function () {
 		}
 
 		// Add the remainder of cards to the draw pile
-		let offsetLeft = 0;
-		let offsetTop = 0;
+		let offsetLeft = (deck.length * (numPlayers + 1));
+		let offsetTop = deck.length;
 		for (let card of deck) {
 			const cardElement = createCardElement(card, drawPile);
-  			cardElement.style.left = `${offsetLeft}px`;
-  			cardElement.style.top = `${offsetTop}px`;
+  			cardElement.style.marginRight = `${offsetLeft}px`;
+  			cardElement.style.marginBottom = `${offsetTop}px`;
 			drawPile.appendChild(cardElement);
-			offsetLeft -= 0.5;
-  			offsetTop += 1;
+			offsetLeft -= 4;
+  			offsetTop += 4;
 		}
 
 		// Update the card count display
@@ -940,9 +940,7 @@ window.onload = function () {
 			console.log(`${player.playerName}'s turn`);
 			appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b>'s turn");
 
-			// Modify the border width and color
-			player.container.style.borderWidth = '3px'; // Set the border width to 3 pixels
-			player.container.style.borderColor = 'white'; // Set the border color to white
+			player.cardContainer.style.setProperty("animation", "pulse-animation 2s infinite");
 
 
 			console.log("Card to beat: ", centreCard);
@@ -954,9 +952,8 @@ window.onload = function () {
 			// Assign the last played card to the centre card
 			centreCard = playedCards[playedCards.length - 1];
 
-			// Modify the border width and color
-			player.container.style.borderWidth = '0px'; // Set the border width to 2 pixels
-			player.container.style.borderColor = 'black'; // Set the border color to red
+			player.cardContainer.style.removeProperty("animation");
+
 
 			// Check for empty hand to enable face-up cards
 			if (player.hand.length === 0) {

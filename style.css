@@ -362,11 +362,11 @@ body {
 	border: 1px solid gold;
 	border-radius: 30px 0px 0px 30px;
 	border-right-width: 0px;
-	justify-content: center;
 	align-items: center;
 	background-color: green;
 	padding: 10px;
 	box-shadow: -5px 5px 20px 0px black;
+	justify-content: space-around;
 }
 
 #burn-pile {
@@ -376,6 +376,7 @@ body {
 	width: 90%;
 	justify-content: center;
 	align-items: center;
+	padding: 20px;
 }
 
 #burn-pile .card {
@@ -391,6 +392,7 @@ body {
 	width: 90%;
 	justify-content: center;
 	align-items: center;
+	padding:20px;
 }
 
 #draw-pile .card {
@@ -423,3 +425,11 @@ body {
 	display: none;
 }
 
+@keyframes pulse-animation {
+	0% {
+	  box-shadow: 0 0 0 0px rgb(255, 255, 255);
+	}
+	100% {
+	  box-shadow: 0 0 0 35px rgba(0, 0, 0, 0);
+	}
+  }
