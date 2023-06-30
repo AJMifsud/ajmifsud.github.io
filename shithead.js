@@ -12,6 +12,7 @@ window.onload = function () {
 		}
 	}
 
+	const settingsButton = document.getElementsByClassName("collapsible");
 	const numPlayersSelect = document.getElementById("numPlayers");
 	const playerNamesContainer = document.getElementById("playernames-container");
 	const randomiseNamesButton = document.getElementById("randomise-names-button");
@@ -218,6 +219,17 @@ window.onload = function () {
 		}
 	});
 
+	for (let i = 0; i < settingsButton.length; i++) {
+		settingsButton[i].addEventListener("click", function() {
+		  this.classList.toggle("active");
+		  var settings = this.nextElementSibling;
+		  if (settings.style.height === "auto") {
+			settings.style.height = "0px";
+		  } else {
+			settings.style.height = "auto";
+		  }
+		});
+	  }
 	//----------//
 	//GAME LOGIC//
 	//----------//
@@ -522,6 +534,7 @@ window.onload = function () {
 			player.faceUpContainer = faceUpContainer;
 			player.faceDownContainer = faceDownContainer;
 
+			player.container.style.display = 'flex';
 			player.faceUpContainer.style.display = "flex"; // Re-Enable face up container if disabled from last game
 			player.cardContainer.style.removeProperty("animation");
 
@@ -1004,6 +1017,10 @@ window.onload = function () {
 
 			// Check for winner
 			if (player.hand.length === 0 && player.faceUp.length === 0 && player.faceDown.length === 0) {
+
+				player.cardContainer.style.animation = "shrink 2s forwards";
+				
+				//player.container.style.display = 'none';
 				appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b> has played all of their cards!")
 				playerOut = true;
 				// Remove the player from the array

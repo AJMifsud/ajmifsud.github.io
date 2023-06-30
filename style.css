@@ -5,10 +5,14 @@
 	--player-4: "Player 4";
 }
 
+html, body {
+	height: 100%;
+}
 
 body {
 	margin: 0;
 	padding: 0;
+	background-color: steelblue;
 }
 
 #wrapper {
@@ -18,7 +22,6 @@ body {
 	position: absolute;
 	justify-content: center;
 	align-items: center;
-	background-color: steelblue;
 }
 
 #left-container {
@@ -116,6 +119,7 @@ body {
 	display: flex;
 	justify-content: center;
 	align-items: center;
+	text-align: center;
 	box-shadow: 5px 5px 20px 0px black;
 }
 
@@ -123,10 +127,28 @@ body {
 	width: 100%;
 }
 
-.player-name-container {
+.collapsible {
+	background-color: rgba(80, 5, 129, 0.84);
+	color: white;
+	cursor: pointer;
+	padding: 18px;
+	width: 100%;
+	border: none;
+	text-align: left;
+	outline: none;
+	font-size: 15px;
+  }
+
+  .settings {
+	transition: height 0.2s ease-out;
+	background-color: rgba(155, 7, 253, 0.84);
+  }
+
+.player-name-container, .player-names-container {
 	border: 1px solid;
 	border-radius: 5px;
 	display: flex;
+	flex-direction: column;
 	justify-content: center;
 	align-items: center;
 	margin: 10px 0px;
@@ -425,11 +447,37 @@ body {
 	display: none;
 }
 
+.settings {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-content: center;
+	overflow-y: hidden;
+	height: 0px;
+	transition: height 0.2s ease-out;
+}
+
 @keyframes pulsing-animation {
 	0% {
 	  box-shadow: 0 0 0 0px rgb(255, 255, 255);
 	}
 	100% {
 	  box-shadow: 0 0 0 35px rgba(0, 0, 0, 0);
+	}
+  }
+
+  @keyframes shrink {
+	0% {
+	  width: 33%;
+	  height: 33%;;
+	}
+	10% {
+		width: 45%;
+		height: 45%;;
+	  }
+	100% {
+	  width: 0%;
+	  height: 0%;
+	  border-width: 0px;
 	}
   }

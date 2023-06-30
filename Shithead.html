@@ -3,31 +3,32 @@
 	<head>
 		<title>Shithead Game</title>
 		<link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
-<link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
-<link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
-<link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
-<link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
-<link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
-<link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
-<link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
-<link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-<link rel="manifest" href="/manifest.json">
-<meta name="msapplication-TileColor" content="#ffffff">
-<meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
-<meta name="theme-color" content="#ffffff">
+		<link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
+		<link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
+		<link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
+		<link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
+		<link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
+		<link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
+		<link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
+		<link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
+		<link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
+		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+		<link rel="manifest" href="/manifest.json">
+		<meta name="msapplication-TileColor" content="#ffffff">
+		<meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+		<meta name="theme-color" content="#ffffff">
 		<link rel="stylesheet" type="text/css" href="style.css">
 		<script src="shithead.js"></script>
 	</head>
-	<body> 
+	<body>
 		<div id="wrapper">
 			<div id="rules-container">
 				<img id="close-rules" src="images/close_icon.png" alt="Close rules container">
 				<div>
-					<h1><u>Shithead!</u></h1><br>
+					<h1><u>Shithead!</u></h1>
+					<br>
 					<p>Welcome to shithead! A card game for 2 to 4 players!<br><br><br></p>
 					<h2>Game Rules</h2>
 					<p>At the start of the game, each player is dealt three cards facing down. These cards cannot be viewed or played until later in the game.<br><br>
@@ -45,36 +46,30 @@
 					</p>
 					<h2>Trick Card Abilities</h2>
 					<div id="trick-cards-desc">
-
-						<div class="trick-card">				
+						<div class="trick-card">
 							<img src="images/cards/2_of_Clubs.png" alt="2">
 							<div class="card-desc">
 								When a 2 is played, the player who played it is able to play again, playing any card from their current selection.
 							</div>
-
 						</div>
-
-						<div class="trick-card">	
+						<div class="trick-card">
 							<img src="images/cards/3_of_Diamonds.png" alt="3">
 							<div class="card-desc">
 								When a 3 is played, the next player in the rotation has their turn skipped. (For example, in a 3 player game, if Player 1 plays a 3, in then skips player 2 and becomes player 3's turn.)
 							</div>
 						</div>
-
 						<div class="trick-card">
 							<img src="images/cards/7_of_Hearts.png" alt="7">
 							<div class="card-desc">
 								When a 7 is played, the next player in the rotation MUST play a card with a rank below 7 or a trick card.
 							</div>
 						</div>
-
 						<div class="trick-card">
 							<img src="images/cards/10_of_Spades.png" alt="10">
 							<div class="card-desc">
 								When a 10 is played, the pile of played cards is scrapped from the deck and placed into the burn pile. These cards are out of play for the remainder of the game and cannot be recalled.
 							</div>
 						</div>
-
 					</div>
 					<p>
 						After the draw pile has run out of cards, and players have depleted the cards in their hand, they may then begin using the face up cards they were dealt at the start of the game.<br><br>
@@ -91,25 +86,31 @@
 				</div>
 				<div id="sidebar-container">
 					<div id="sidebar">
-						<h2 style="margin-bottom: 20px;">Game Settings</h2>
+						<h2 style="margin-bottom: 20px;">Settings</h2>
 						<hr>
-						<div id = "playerno-container">
-							<label for="players">Number of Players:</label>
-							<select name="players" id="numPlayers">
-								<option value="2">2</option>
-								<option value="3">3</option>
-								<option value="4">4</option>
-							</select>
+						<button type="button" class="collapsible">Player Settings</button>
+						<div class = "settings">
+							<div id = "playerno-container">
+								<label for="numPlayers">Number of Players:</label>
+								<select name="numPlayers" id="numPlayers">
+			  						<option value="2">2</option>
+  									<option value="3">3</option>
+  									<option value="4">4</option>
+								</select>
+							</div>
+							<div id="playernames-container">
+							</div>
+							<button id="randomise-names-button">Randomise<br>Player Names</button>
 						</div>
-						<div id="playernames-container">
-						</div>
-						<button id="randomise-names-button">Randomise<br>Player Names</button>
 						<hr>
+						<button type="button" class="collapsible">Game Settings</button>
+						<div class = "settings">
 						<div id="dealJokers-container">
 							<label>
 							<input type="checkbox" name="withJokers"> Deal Jokers?
 							</label>
-							<p style="font-size: 80%; color: grey;">(Two jokers will be shuffled in the deck if ticked. Jokers may assume the role of ANY card.)</p>
+							<p style="font-size: 80%; color: lightgray;">(Two jokers will be shuffled in the deck if ticked. Jokers may assume the role of ANY card.)</p>
+						</div>
 						</div>
 						<hr>
 						<button id="deal-button">Deal New Game</button>
@@ -151,8 +152,8 @@
 						</div>
 					</div>
 					<div id="playpile-container">
-					<div id="playpile-count"></div>
-					<div id="play-pile"></div>
+						<div id="playpile-count"></div>
+						<div id="play-pile"></div>
 					</div>
 					<button id="start-button">Start Game</button>
 				</div>
