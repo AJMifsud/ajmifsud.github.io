@@ -223,11 +223,11 @@ window.onload = function () {
 		settingsButton[i].addEventListener("click", function() {
 		  this.classList.toggle("active");
 		  var settings = this.nextElementSibling;
-		  if (settings.style.height === "auto") {
-			settings.style.height = "0px";
+		  if (settings.style.height) {
+			settings.style.height = null;
 		  } else {
-			settings.style.height = "auto";
-		  }
+			settings.style.height = settings.scrollHeight*2.3 + "px";
+		  } 
 		});
 	  }
 	//----------//

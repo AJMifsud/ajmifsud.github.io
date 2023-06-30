@@ -142,7 +142,13 @@ body {
   .settings {
 	transition: height 0.2s ease-out;
 	background-color: rgba(155, 7, 253, 0.84);
-  }
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-content: center;
+	overflow-y: hidden;
+	height: 0px;
+}
 
 .player-name-container, .player-names-container {
 	border: 1px solid;
@@ -447,15 +453,7 @@ body {
 	display: none;
 }
 
-.settings {
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-content: center;
-	overflow-y: hidden;
-	height: 0px;
-	transition: height 0.2s ease-out;
-}
+
 
 @keyframes pulsing-animation {
 	0% {
