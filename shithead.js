@@ -1062,7 +1062,7 @@ window.onload = function () {
 			}
 
 			// Determine next Player
-			if (playerOut){
+			if (playerOut && !isTrickCard){
 				// Move to the next player's turn
 				currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
 			} else if (isTrickCard && !matchFour) {
