@@ -414,8 +414,8 @@ body {
 #draw-pile .card {
 	transform: rotateY(180deg);
 	position: absolute;
-	width: 100px;
-	height: 150px;
+	min-width: 100px;
+	min-height: 150px;
 }
 
 #game-log-container {
