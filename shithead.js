@@ -24,6 +24,8 @@ window.onload = function () {
 	const closeRulesButton = document.getElementById('close-rules');
 	const rulesContainer = document.getElementById('rules-container');
 	const jokersCheck = document.querySelector('input[name="withJokers"]');
+	const showGameLog = document.querySelector('input[name="showGameLog"]');
+	let gameLogContainer = document.getElementById('game-log-container');
 	const drawPile = document.getElementById('draw-pile');
 	const drawpileCount = document.getElementById('drawpile-count');
 	const burnPile = document.getElementById('burn-pile');
@@ -182,6 +184,14 @@ window.onload = function () {
 			withJokers = "Yes";
 		} else {
 			withJokers = "No";
+		}
+	});
+
+	showGameLog.addEventListener('change', function () {
+		if (this.checked) {
+			gameLogContainer.style.display = 'flex';
+		} else {
+			gameLogContainer.style.display = 'none';
 		}
 	});
 
@@ -436,13 +446,15 @@ window.onload = function () {
 
 
 	function createGameLog() {
-		// Get a reference to the sidebar element
-		const sidebar = document.getElementById('sidebar');
+
+		if (showGameLog.checked){
+		gameLogContainer.style.display = 'flex';
+		}
 
 		// Remove any existing game log element
 		let gameLog = document.getElementById('game-log');
 		if (gameLog) {
-			sidebar.removeChild(gameLog);
+			gameLogContainer.removeChild(gameLog);
 		}
 
 		// Create a new div element for the game log
@@ -452,7 +464,7 @@ window.onload = function () {
 		gameLog.innerText += '\nNew Game\n';
 
 		// Append the new console log element to the sidebar
-		sidebar.appendChild(gameLog);
+		gameLogContainer.appendChild(gameLog);
 	}
 
 	function appendToGameLog(message) {
@@ -470,7 +482,7 @@ window.onload = function () {
 	  
 		// Append the message element to the game log
 		gameLog.appendChild(messageElement);
-		gameLog.scrollTop = gameLog.scrollHeight;
+		gameLogContainer.scrollTop = gameLog.scrollHeight;
 	  }
 	  
 
