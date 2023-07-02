@@ -85,25 +85,34 @@ window.onload = function () {
 			const playerNameContainer = document.createElement("div");
 			playerNameContainer.classList.add("player-name-container");
 
+			
 			const playerNameInput = document.createElement("input");
 			playerNameInput.type = "text";
 			playerNameInput.name = `player${i + 1}`;
 			playerNameInput.placeholder = `Player ${i + 1}`;
 			playerNameInput.value = playerNames[i];
-			playerNameContainer.appendChild(playerNameInput);
 			playerNameInput.addEventListener("input", function () {
 				updatePlayerName(i, playerNameInput.value);
 			});
+
+			const playerNameLabel = document.createElement("label");
+			playerNameLabel.textContent = `Player ${i + 1}` + "'s Name: ";
+			playerNameLabel.appendChild(playerNameInput);
+			playerNameContainer.appendChild(playerNameLabel);
 
 			const playerIsBot = document.createElement("input");
 			playerIsBot.type = "checkbox";
 			playerIsBot.name = `player${i + 1}` + "botCheckbox";
 
-			const label = document.createElement("label");
-			label.textContent = "CPU";
-			label.appendChild(playerIsBot);
+			if (i === 0){
+			playerIsBot.disabled = true; // Disable the checkbox
+			}
 
-			playerNameContainer.appendChild(label);
+			const cbxLabel = document.createElement("label");
+			cbxLabel.textContent = "Controlled by Computer: ";
+			cbxLabel.appendChild(playerIsBot);
+
+			playerNameContainer.appendChild(cbxLabel);
 
 			playerIsBot.addEventListener("change", function () {
 			    setPlayerBotStatus(i, playerIsBot.checked);
@@ -225,11 +234,14 @@ window.onload = function () {
 		  var settings = this.nextElementSibling;
 		  if (settings.style.height) {
 			settings.style.height = null;
+			settings.style.padding = null;
 		  } else {
-			settings.style.height = settings.scrollHeight*2.3 + "px";
+			settings.style.height = "auto";
+			settings.style.padding = "10px 0px";
 		  } 
 		});
 	  }
+	  
 	//----------//
 	//GAME LOGIC//
 	//----------//
