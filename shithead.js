@@ -280,15 +280,19 @@ window.onload = function () {
     }
 
     // Toggle the selected settings container
-    this.classList.toggle("active");
-    var settings = this.nextElementSibling;
-    if (settings.style.height) {
-      settings.style.height = null;
-      settings.style.padding = null;
-    } else {
-      settings.style.height = settings.scrollHeight + "px";
-      settings.style.padding = "10px 0px";
-    }
+    // Toggle the selected settings container
+this.classList.toggle("active");
+var settings = this.nextElementSibling;
+var header = this.previousElementSibling;
+if (settings.style.height) {
+  settings.style.height = null;
+  settings.style.padding = null;
+} else {
+  settings.style.height = "auto";
+  settings.style.paddingTop = header.offsetHeight + "px";
+  settings.style.paddingBottom = "10px";
+}
+
   });
 }
 
@@ -636,6 +640,8 @@ window.onload = function () {
 		// Update the card count display
 		updateDrawPileCount();
 
+		startButton.style.display = "flex";
+
 		for (let i = 0; i < players.length; i++){
 			switchCardLoop(players[i]);
 		}
@@ -678,6 +684,8 @@ window.onload = function () {
 			updatePlayPileCount();
 			appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b> picked up the play pile!")
 			centreCard = undefined;
+			orderHand(player);
+			orderFaceUp(player);
 		}
 
 		if (player.hand.length === 0 && player.faceUp.length === 0) {
@@ -1126,7 +1134,6 @@ window.onload = function () {
 
 	dealButton.addEventListener("click", function () {
 		initialiseGame();
-		startButton.style.display = "flex";
 	});
 
 	startButton.addEventListener("click", function () {
