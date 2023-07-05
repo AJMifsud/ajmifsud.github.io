@@ -268,18 +268,31 @@ window.onload = function () {
 	});
 
 	for (let i = 0; i < settingsButton.length; i++) {
-		settingsButton[i].addEventListener("click", function() {
-		  this.classList.toggle("active");
-		  var settings = this.nextElementSibling;
-		  if (settings.style.height) {
-			settings.style.height = null;
-			settings.style.padding = null;
-		  } else {
-			settings.style.height = "fit-content";
-			settings.style.padding = "10px 0px";
-		  } 
-		});
-	  }
+  settingsButton[i].addEventListener("click", function() {
+    // Close all other settings containers
+    for (let j = 0; j < settingsButton.length; j++) {
+      if (i !== j) {
+        settingsButton[j].classList.remove("active");
+        let settings = settingsButton[j].nextElementSibling;
+        settings.style.height = null;
+        settings.style.padding = null;
+      }
+    }
+
+    // Toggle the selected settings container
+    this.classList.toggle("active");
+    var settings = this.nextElementSibling;
+    if (settings.style.height) {
+      settings.style.height = null;
+      settings.style.padding = null;
+    } else {
+      settings.style.height = settings.scrollHeight + "px";
+      settings.style.padding = "10px 0px";
+    }
+  });
+}
+
+	  
 	  
 	//----------//
 	//GAME LOGIC//
