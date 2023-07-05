@@ -104,7 +104,7 @@ window.onload = function () {
 
 			const playerIsBot = document.createElement("input");
 			playerIsBot.type = "checkbox";
-			playerIsBot.name = `player${i + 1}` + "botCheckbox";
+			playerIsBot.name = "botCheckbox" + i;
 
 			if (i === 0){
 			playerIsBot.disabled = true; // Disable the checkbox
@@ -137,8 +137,6 @@ window.onload = function () {
 
 	function setPlayerBotStatus(i, isChecked) {
 		const isBot = isChecked;
-		// Use the 'isBot' variable as needed for further processing
-		console.log(`Player ${i + 1} is a bot: ${isBot}`);
 	  }
 
 	numPlayersSelect.addEventListener("change", function () {
@@ -171,7 +169,7 @@ window.onload = function () {
 
 			const playerIsBot = document.createElement("input");
 			playerIsBot.type = "checkbox";
-			playerIsBot.name = `player${i + 1}` + "botCheckbox";
+			playerIsBot.name = "botCheckbox" + i;
 
 			if (i === 0){
 			playerIsBot.disabled = true; // Disable the checkbox
@@ -247,7 +245,7 @@ window.onload = function () {
 
 			const playerIsBot = document.createElement("input");
 			playerIsBot.type = "checkbox";
-			playerIsBot.name = `player${i + 1}` + "botCheckbox";
+			playerIsBot.name = "botCheckbox" + i;
 
 			if (i === 0){
 			playerIsBot.disabled = true; // Disable the checkbox
@@ -327,6 +325,7 @@ if (settings.style.height) {
 	class Player {
 		constructor(playerName, hand, faceDown, faceUp) {
 			this.name = playerName;
+			this.isBot = null;
 			this.hand = hand;
 			this.faceDown = faceDown;
 			this.faceUp = faceUp;
@@ -568,6 +567,8 @@ if (settings.style.height) {
 
 		// Get the number of players from the input field
 		numPlayers = parseInt(document.getElementById('numPlayers').value);
+		const botCheckboxes = document.querySelectorAll('input[name^="botCheckbox"]');
+
 		createGameLog();
 
 		//Create deck with/out jokers
@@ -603,6 +604,9 @@ if (settings.style.height) {
 			player.handContainer = handContainer;
 			player.faceUpContainer = faceUpContainer;
 			player.faceDownContainer = faceDownContainer;
+			if (botCheckboxes[i].checked){
+				player.isBot = true;
+			}
 
 			player.container.style.display = 'flex';
 			player.faceUpContainer.style.display = "flex"; // Re-Enable face up container if disabled from last game
