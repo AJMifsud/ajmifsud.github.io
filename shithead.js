@@ -39,7 +39,7 @@ window.onload = function () {
 
 	function assignNames() {
 		playerNames = []
-		const names = ["Andy", "Louis", "Robbie", "Patrick", "Dan", 
+		const names = ["Andy", "Louis", "Robbie", "Patrick", "Dan",
 			"Ashley", "Christie", "Jemma", "Toby", "Charlie",
 			"Stafford", "Matt", "Helena", "Natasha", "Edison", "Hannah",
 			"Harry", "Adam", "Marin", "Bertie", "Jack", "Ella"
@@ -87,7 +87,7 @@ window.onload = function () {
 			const playerNameContainer = document.createElement("div");
 			playerNameContainer.classList.add("player-name-container");
 
-			
+
 			const playerNameInput = document.createElement("input");
 			playerNameInput.type = "text";
 			playerNameInput.name = `player${i + 1}`;
@@ -106,8 +106,8 @@ window.onload = function () {
 			playerIsBot.type = "checkbox";
 			playerIsBot.name = "botCheckbox" + i;
 
-			if (i === 0){
-			playerIsBot.disabled = true; // Disable the checkbox
+			if (i === 0) {
+				playerIsBot.disabled = true; // Disable the checkbox
 			}
 
 			const cbxLabel = document.createElement("label");
@@ -117,7 +117,7 @@ window.onload = function () {
 			playerNameContainer.appendChild(cbxLabel);
 
 			playerIsBot.addEventListener("change", function () {
-			    setPlayerBotStatus(i, playerIsBot.checked);
+				setPlayerBotStatus(i, playerIsBot.checked);
 			});
 
 			playerNamesContainer.appendChild(playerNameContainer);
@@ -137,7 +137,7 @@ window.onload = function () {
 
 	function setPlayerBotStatus(i, isChecked) {
 		const isBot = isChecked;
-	  }
+	}
 
 	numPlayersSelect.addEventListener("change", function () {
 
@@ -152,7 +152,7 @@ window.onload = function () {
 			const playerNameContainer = document.createElement("div");
 			playerNameContainer.classList.add("player-name-container");
 
-			
+
 			const playerNameInput = document.createElement("input");
 			playerNameInput.type = "text";
 			playerNameInput.name = `player${i + 1}`;
@@ -171,8 +171,8 @@ window.onload = function () {
 			playerIsBot.type = "checkbox";
 			playerIsBot.name = "botCheckbox" + i;
 
-			if (i === 0){
-			playerIsBot.disabled = true; // Disable the checkbox
+			if (i === 0) {
+				playerIsBot.disabled = true; // Disable the checkbox
 			}
 
 			const cbxLabel = document.createElement("label");
@@ -182,9 +182,9 @@ window.onload = function () {
 			playerNameContainer.appendChild(cbxLabel);
 
 			playerIsBot.addEventListener("change", function () {
-			    setPlayerBotStatus(i, playerIsBot.checked);
+				setPlayerBotStatus(i, playerIsBot.checked);
 			});
-			
+
 			playerNamesContainer.appendChild(playerNameContainer);
 		}
 	});
@@ -228,7 +228,7 @@ window.onload = function () {
 			const playerNameContainer = document.createElement("div");
 			playerNameContainer.classList.add("player-name-container");
 
-			
+
 			const playerNameInput = document.createElement("input");
 			playerNameInput.type = "text";
 			playerNameInput.name = `player${i + 1}`;
@@ -247,8 +247,8 @@ window.onload = function () {
 			playerIsBot.type = "checkbox";
 			playerIsBot.name = "botCheckbox" + i;
 
-			if (i === 0){
-			playerIsBot.disabled = true; // Disable the checkbox
+			if (i === 0) {
+				playerIsBot.disabled = true; // Disable the checkbox
 			}
 
 			const cbxLabel = document.createElement("label");
@@ -258,44 +258,43 @@ window.onload = function () {
 			playerNameContainer.appendChild(cbxLabel);
 
 			playerIsBot.addEventListener("change", function () {
-			    setPlayerBotStatus(i, playerIsBot.checked);
+				setPlayerBotStatus(i, playerIsBot.checked);
 			});
-			
+
 			playerNamesContainer.appendChild(playerNameContainer);
 		}
 	});
 
 	for (let i = 0; i < settingsButton.length; i++) {
-  settingsButton[i].addEventListener("click", function() {
-    // Close all other settings containers
-    for (let j = 0; j < settingsButton.length; j++) {
-      if (i !== j) {
-        settingsButton[j].classList.remove("active");
-        let settings = settingsButton[j].nextElementSibling;
-        settings.style.height = null;
-        settings.style.padding = null;
-      }
-    }
+		settingsButton[i].addEventListener("click", function () {
+			// Close all other settings containers
+			for (let j = 0; j < settingsButton.length; j++) {
+				if (i !== j) {
+					settingsButton[j].classList.remove("active");
+					let settings = settingsButton[j].nextElementSibling;
+					settings.style.height = null;
+					settings.style.padding = null;
+				}
+			}
 
-    // Toggle the selected settings container
-    // Toggle the selected settings container
-this.classList.toggle("active");
-var settings = this.nextElementSibling;
-var header = this.previousElementSibling;
-if (settings.style.height) {
-  settings.style.height = null;
-  settings.style.padding = null;
-} else {
-  settings.style.height = "auto";
-  settings.style.paddingTop = header.offsetHeight + "px";
-  settings.style.paddingBottom = "10px";
-}
+			// Toggle the selected settings container
+			// Toggle the selected settings container
+			this.classList.toggle("active");
+			var settings = this.nextElementSibling;
+			var header = this.previousElementSibling;
+			if (settings.style.height) {
+				settings.style.height = null;
+				settings.style.padding = null;
+			} else {
+				settings.style.height = "auto";
+				settings.style.paddingTop = header.offsetHeight + "px";
+				settings.style.paddingBottom = "10px";
+			}
 
-  });
-}
+		});
+	}
 
-	  
-	  
+
 	//----------//
 	//GAME LOGIC//
 	//----------//
@@ -379,54 +378,54 @@ if (settings.style.height) {
 	function createCardElement(card, targetElement) {
 		const cardElement = document.createElement("div");
 		cardElement.classList.add("card");
-	  
+
 		const cardFrontElement = document.createElement("div");
 		cardFrontElement.classList.add("card-front");
 		cardFrontElement.style.backgroundImage = `url(${card.frontImage})`;
-	  
+
 		const cardBackElement = document.createElement("div");
 		cardBackElement.classList.add("card-back");
-		
+
 		const updateJokerRank = (event) => {
 			card.rank = event.target.value;
-		  };
+		};
 
 		if (card.suit === "Jokers") {
 			const selectElement = document.createElement("select");
 			selectElement.classList.add("joker-ranks");
-		
+
 			// Add options for card ranks
 			ranks.forEach(rank => {
-			  const optionElement = document.createElement('option');
-			  optionElement.value = rank;
-			  optionElement.text = rank;
-			  selectElement.appendChild(optionElement);
+				const optionElement = document.createElement('option');
+				optionElement.value = rank;
+				optionElement.text = rank;
+				selectElement.appendChild(optionElement);
 			});
-		
+
 			// Set initial value based on the card's rank
 			selectElement.value = card.rank;
 
 			// Prevent card click event when interacting with select element
-  			selectElement.addEventListener("click", (event) => {
-    		event.stopPropagation();
-  			})
+			selectElement.addEventListener("click", (event) => {
+				event.stopPropagation();
+			})
 
 			// Attach event listener to update the card's rank
 			selectElement.addEventListener("change", updateJokerRank);
 
 			cardElement.appendChild(selectElement);
-		  }
+		}
 		cardElement.appendChild(cardFrontElement);
 		cardElement.appendChild(cardBackElement);
-	  
+
 		targetElement.appendChild(cardElement);
-	  
+
 		// Add a reference to the underlying card value
 		cardElement.card = card;
-	  
+
 		return cardElement;
-	  }
-	  
+	}
+
 
 	function removeCard(cardElement, container) {
 		container.removeChild(cardElement);
@@ -475,7 +474,7 @@ if (settings.style.height) {
 			createCardElement(card, player.handContainer);
 		});
 	}
-	
+
 	function orderFaceUp(player) {
 		// Remove card elements from the faceUp container
 		while (player.faceUpContainer.firstChild) {
@@ -492,8 +491,8 @@ if (settings.style.height) {
 
 	function createGameLog() {
 
-		if (showGameLog.checked){
-		gameLogContainer.style.display = 'flex';
+		if (showGameLog.checked) {
+			gameLogContainer.style.display = 'flex';
 		}
 
 		// Remove any existing game log element
@@ -515,21 +514,21 @@ if (settings.style.height) {
 	function appendToGameLog(message) {
 		// Get a reference to the game log element
 		const gameLog = document.getElementById('game-log');
-	  
+
 		// Create a new paragraph element for the message
 		const messageElement = document.createElement('p');
-	  
+
 		// Wrap the player's name in a <strong> element using CSS inline style
 		const styledMessage = message.replace(/<b>(.*?)<\/b>/g, '<strong style="font-weight: bold;">$1</strong>');
-	  
+
 		// Set the content of the paragraph element
 		messageElement.innerHTML = styledMessage;
-	  
+
 		// Append the message element to the game log
 		gameLog.appendChild(messageElement);
 		gameLogContainer.scrollTop = gameLog.scrollHeight;
-	  }
-	  
+	}
+
 
 	// Function to update the play pile card count display
 	function updatePlayPileCount() {
@@ -604,7 +603,7 @@ if (settings.style.height) {
 			player.handContainer = handContainer;
 			player.faceUpContainer = faceUpContainer;
 			player.faceDownContainer = faceDownContainer;
-			if (botCheckboxes[i].checked){
+			if (botCheckboxes[i].checked) {
 				player.isBot = true;
 			}
 
@@ -633,12 +632,12 @@ if (settings.style.height) {
 		let offsetTop = deck.length;
 
 		for (let card of deck) {
-  			const cardElement = createCardElement(card, drawPile);
-  			cardElement.style.right = `${offsetLeft}px`;
-  			cardElement.style.bottom = `${offsetTop}px`;
-  			drawPile.appendChild(cardElement);
-  			offsetLeft -= 1;
-  			offsetTop += 2;
+			const cardElement = createCardElement(card, drawPile);
+			cardElement.style.right = `${offsetLeft}px`;
+			cardElement.style.bottom = `${offsetTop}px`;
+			drawPile.appendChild(cardElement);
+			offsetLeft -= 1;
+			offsetTop += 2;
 		}
 
 		// Update the card count display
@@ -646,7 +645,7 @@ if (settings.style.height) {
 
 		startButton.style.display = "flex";
 
-		for (let i = 0; i < players.length; i++){
+		for (let i = 0; i < players.length; i++) {
 			switchCardLoop(players[i]);
 		}
 	}
@@ -698,25 +697,25 @@ if (settings.style.height) {
 			orderFaceUp(player);
 		}
 
-		function findValidCards (){
+		function findValidCards() {
 			// Determine valid cards in the player's hand
 			validCards = player.hand.filter(card => {
-			  if (centreCard && centreCard.rank === "7") {
-				return (
-				  ranks.indexOf(card.rank) < ranks.indexOf(centreCard.rank) ||
-				  trickCards.includes(card.rank)
-				);
-			  } else if (centreCard) {
-				return (
-				  ranks.indexOf(card.rank) >= ranks.indexOf(centreCard.rank) ||
-				  trickCards.includes(card.rank)
-				);
-			  } else {
-				return true;
-			  }
+				if (centreCard && centreCard.rank === "7") {
+					return (
+						ranks.indexOf(card.rank) < ranks.indexOf(centreCard.rank) ||
+						trickCards.includes(card.rank)
+					);
+				} else if (centreCard) {
+					return (
+						ranks.indexOf(card.rank) >= ranks.indexOf(centreCard.rank) ||
+						trickCards.includes(card.rank)
+					);
+				} else {
+					return true;
+				}
 			});
 		}
-		
+
 		skipCount = 0;
 		matchFour = false;
 		let canPlay = false;
@@ -736,31 +735,31 @@ if (settings.style.height) {
 		}
 
 		findValidCards();
-		
-		if (centreCard){
-		if (centreCard.rank === "7") {
-			// If the centre card's rank is "7":
-			// Check each card in the player's hand:
-			player.hand.forEach(card => {
-				if (ranks.indexOf(card.rank) < ranks.indexOf(centreCard.rank) || player.hand.some(card => trickCards.includes(card.rank))) {
-					// If the rank of the card is lower than the centre card's rank (7)
-					// OR the hand contains a trick card
-					canPlay = true;
-					// Set canPlay to true.
-				}
-			});
-		} else {
-			// If the centre card's rank is not "7":
-			// Check each card in the player's hand:
-			player.hand.forEach(card => {
-				if (ranks.indexOf(card.rank) >= ranks.indexOf(centreCard.rank) || player.hand.some(card => trickCards.includes(card.rank))) {
-					// If the rank of the card is equal to or higher than the centre card's rank
-					// OR the hand contains a trick card
-					canPlay = true;
-					// Set canPlay to true.
-				}
-			});
-		}
+
+		if (centreCard) {
+			if (centreCard.rank === "7") {
+				// If the centre card's rank is "7":
+				// Check each card in the player's hand:
+				player.hand.forEach(card => {
+					if (ranks.indexOf(card.rank) < ranks.indexOf(centreCard.rank) || player.hand.some(card => trickCards.includes(card.rank))) {
+						// If the rank of the card is lower than the centre card's rank (7)
+						// OR the hand contains a trick card
+						canPlay = true;
+						// Set canPlay to true.
+					}
+				});
+			} else {
+				// If the centre card's rank is not "7":
+				// Check each card in the player's hand:
+				player.hand.forEach(card => {
+					if (ranks.indexOf(card.rank) >= ranks.indexOf(centreCard.rank) || player.hand.some(card => trickCards.includes(card.rank))) {
+						// If the rank of the card is equal to or higher than the centre card's rank
+						// OR the hand contains a trick card
+						canPlay = true;
+						// Set canPlay to true.
+					}
+				});
+			}
 		} else {
 			canPlay = true;
 		}
@@ -775,66 +774,100 @@ if (settings.style.height) {
 		selectedCards = []
 		selectedCardElements = []
 
-		if (!player.isBot){
-		// Allow the player to click on a card
-		let firstSelectedCard = await handCardClick(player);
-		console.log("Selected card: ", firstSelectedCard.card);
-		selectedCardElements.push(firstSelectedCard)
-		selectedCards.push(firstSelectedCard.card);
-		selectedCard = selectedCardElements[0].card;
-		selectedCardRank = ranks.indexOf(selectedCard.rank);
-		remainingCards = player.hand.filter(card => card !== selectedCard);
-		hasEqualRank = remainingCards.some(card => card.rank === selectedCard.rank);
+		if (!player.isBot) {
+			// Allow the player to click on a card
+			let firstSelectedCard = await handCardClick(player);
+			console.log("Selected card: ", firstSelectedCard.card);
+			selectedCardElements.push(firstSelectedCard)
+			selectedCards.push(firstSelectedCard.card);
+			selectedCard = selectedCardElements[0].card;
+			selectedCardRank = ranks.indexOf(selectedCard.rank);
+			remainingCards = player.hand.filter(card => card !== selectedCard);
+			hasEqualRank = remainingCards.some(card => card.rank === selectedCard.rank);
 
 
-		// Select next card if duplicate rank is in hand
-		if (hasEqualRank) {
-			appendToGameLog("Another card in your hand has the same rank as the selected card.");
+			// Select next card if duplicate rank is in hand
+			if (hasEqualRank) {
+				appendToGameLog("Another card in your hand has the same rank as the selected card.");
 
-			while (true) {
-				let nextCardElement = await handCardClick(player);
+				while (true) {
+					let nextCardElement = await handCardClick(player);
 
-				// If the next selected card is the same rank as the first selected
-				if (nextCardElement.card.rank === selectedCard.rank) {
-					// If the card has not already been selected
-					if (!selectedCards.includes(nextCardElement.card)) {
-						selectedCardElements.push(nextCardElement);
-						selectedCards.push(nextCardElement.card);
-						remainingCards.splice(selectedCard, 1)
+					// If the next selected card is the same rank as the first selected
+					if (nextCardElement.card.rank === selectedCard.rank) {
+						// If the card has not already been selected
+						if (!selectedCards.includes(nextCardElement.card)) {
+							selectedCardElements.push(nextCardElement);
+							selectedCards.push(nextCardElement.card);
+							remainingCards.splice(selectedCard, 1)
+						} else {
+							appendToGameLog("You have already selected this card.");
+							break; // Exit the loop if the player selects a card they have already chosen
+						}
 					} else {
-						appendToGameLog("You have already selected this card.");
-						break; // Exit the loop if the player selects a card they have already chosen
+						appendToGameLog("Next selected card must be the same rank as the first selected card.");
+						break; // Exit the loop if the player selects a card with a different rank
 					}
-				} else {
-					appendToGameLog("Next selected card must be the same rank as the first selected card.");
-					break; // Exit the loop if the player selects a card with a different rank
+
+					// Exit the loop if none of the cards in remainingCards have the same rank as selectedCard
+					if (!remainingCards.some(card => card.rank === selectedCard.rank)) {
+						break;
+					}
 				}
-
-				// Exit the loop if none of the cards in remainingCards have the same rank as selectedCard
-				if (!remainingCards.some(card => card.rank === selectedCard.rank)) {
-					break;
-  				}
 			}
-		}
 		} else {
-			// Randomly select a card from the valid cards	
-		const cardElements = player.handContainer.querySelectorAll('.card');
-		const randomIndex = Math.floor(Math.random() * validCards.length);
-		const selectedCard = validCards[randomIndex];
-		const selectedCardIndex = player.hand.indexOf(selectedCard);
-		selectedCardRank = ranks.indexOf(selectedCard.rank);
-		remainingCards = player.hand.filter(card => card !== selectedCard);
-		hasEqualRank = remainingCards.some(card => card.rank === selectedCard.rank);
+			/* Randomly select a card from the valid cards	
+			const cardElements = player.handContainer.querySelectorAll('.card');
+			const randomIndex = Math.floor(Math.random() * validCards.length);
+			const selectedCard = validCards[randomIndex];
+			const selectedCardIndex = player.hand.indexOf(selectedCard);
+			selectedCardRank = ranks.indexOf(selectedCard.rank);
+			remainingCards = player.hand.filter(card => card !== selectedCard);
+			hasEqualRank = remainingCards.some(card => card.rank === selectedCard.rank);
 
-		// Update the card element in the mock card element	
-		const selectedCardElement = {
-		  card: selectedCard,
-		  cardElement: cardElements[selectedCardIndex]
-		};
+			// Update the card element in the mock card element	
+			const selectedCardElement = {
+				card: selectedCard,
+				cardElement: cardElements[selectedCardIndex]
+			};*/
+
+			// Sort the valid cards by rank in ascending order
+validCards.sort((a, b) => ranks.indexOf(a.rank) - ranks.indexOf(b.rank));
+const cardElements = player.handContainer.querySelectorAll('.card');
+
+// Check if all valid cards are trick cards
+const allTrickCards = validCards.every(card => trickCards.includes(card.rank));
+
+// Select a card based on the available options
+let selectedCard;
+let selectedCardIndex;
+
+if (allTrickCards) {
+  // If all valid cards are trick cards, select one at random
+  const randomIndex = Math.floor(Math.random() * validCards.length);
+  selectedCard = validCards[randomIndex];
+  selectedCardIndex = player.hand.indexOf(selectedCard);
+} else {
+  // Select the card with the lowest rank from the valid cards
+  selectedCard = validCards.find(card => !trickCards.includes(card.rank));
+  selectedCardIndex = player.hand.indexOf(selectedCard);
+}
+
+// Update the card-related variables
+selectedCardRank = ranks.indexOf(selectedCard.rank);
+remainingCards = player.hand.filter(card => card !== selectedCard);
+hasEqualRank = remainingCards.some(card => card.rank === selectedCard.rank);
+
+// Update the card element in the mock card element	
+const selectedCardElement = {
+  card: selectedCard,
+  cardElement: cardElements[selectedCardIndex]
+};
+
 
 			// Print the selected card for reference
 			console.log("Selected card (bot): ", selectedCard);
-		
+
 			// Push the selected card and its mock card element to the respective arrays
 			selectedCards.push(selectedCard);
 			selectedCardElements.push(selectedCardElement);
@@ -913,7 +946,7 @@ if (settings.style.height) {
 			// Set isSelectedValid to true.
 		}
 
-		if (selectedCards[0].rank == "Joker"){
+		if (selectedCards[0].rank == "Joker") {
 			isSelectedValid = false;
 			appendToGameLog("You must assign a rank to a Joker before it can be played");
 		}
@@ -929,28 +962,28 @@ if (settings.style.height) {
 		if (deck.length > 0) {
 			while (player.hand.length < 3) {
 				if (deck.length > 0) {
-				// Draw a new card from the deck and add it to the player's hand
-				const card = deck.pop();
-				player.hand.push(card);
+					// Draw a new card from the deck and add it to the player's hand
+					const card = deck.pop();
+					player.hand.push(card);
 
-				// Add the new card to the player's hand on the screen
-				createCardElement(card, player.handContainer);
+					// Add the new card to the player's hand on the screen
+					createCardElement(card, player.handContainer);
 
-				// Update the card count display
-				updateDrawPileCount();
+					// Update the card count display
+					updateDrawPileCount();
 
-				// Remove the top card from the draw pile
-				removeCard(drawPile.lastChild, drawPile);
+					// Remove the top card from the draw pile
+					removeCard(drawPile.lastChild, drawPile);
 
-				// Log the new deck size to the console
-				console.log("Deck size: " + deck.length);
+					// Log the new deck size to the console
+					console.log("Deck size: " + deck.length);
 				}
 			}
 		}
 		orderHand(player);
 		orderFaceUp(player);
 
-		
+
 		return;
 	}
 
@@ -985,23 +1018,23 @@ if (settings.style.height) {
 					let skippedPlayerIndex = (currentPlayerIndex + i) % numPlayers;
 					skippedPlayers.push(players[skippedPlayerIndex].playerName);
 				}
-				
+
 				let skippedPlayersMessage = "";
 				if (skippedPlayers.length > 1) {
 					skippedPlayersMessage = skippedPlayers.slice(0, -1).join(", ") + " and " + skippedPlayers.slice(-1);
 				} else {
 					skippedPlayersMessage = skippedPlayers[0];
 				}
-				
+
 				let turnsWord = skippedPlayers.length > 1 ? "turns" : "turn";
-				
+
 				let message = "<b>" + players[currentPlayerIndex].playerName + "</b> skipped <b>" + skippedPlayersMessage + "</b>'s " + turnsWord + "!";
-				
+
 				appendToGameLog(message);
-				
+
 				currentPlayerIndex = (currentPlayerIndex + skipCount + 1) % numPlayers;
 				centreCard = undefined;
-				break;		
+				break;
 			case "7":
 				// Increment the player counter before it is incremented again, skipping the next player
 				appendToGameLog("<b>" + players[(currentPlayerIndex + 1) % numPlayers].playerName + "</b> must now either play below a 7 or a trick card!")
@@ -1093,12 +1126,12 @@ if (settings.style.height) {
 	async function switchCard(player) {
 		const handCard = await handCardClick(player);
 		const faceUpCard = await faceUpCardClick(player);
-	  
+
 		// Remove card from hand container
 		removeCard(handCard.cardElement, player.handContainer);
 		const selectedHandCardIndex = player.hand.indexOf(handCard.card);
 		player.hand.splice(selectedHandCardIndex, 1);
-	  
+
 		// Remove card from face-up container
 		removeCard(faceUpCard.cardElement, player.faceUpContainer);
 		const selectedFaceUpCardIndex = player.faceUp.indexOf(faceUpCard.card);
@@ -1107,20 +1140,20 @@ if (settings.style.height) {
 		// Add card to hand container
 		player.hand.push(faceUpCard.card);
 		createCardElement(faceUpCard.card, player.handContainer);
-	  
+
 		// Add card to face-up container
 		player.faceUp.push(handCard.card);
 		createCardElement(handCard.card, player.faceUpContainer);
 
-		
+
 		orderHand(player);
 		orderFaceUp(player);
 	}
-	  
+
 
 	async function playGame() {
 		currentPlayerIndex = 0;
-		
+
 		// Play the game until there is a winner
 		while (!gameOver) {
 
@@ -1179,7 +1212,7 @@ if (settings.style.height) {
 			if (player.hand.length === 0 && player.faceUp.length === 0 && player.faceDown.length === 0) {
 
 				player.cardContainer.style.animation = "shrink 2s forwards";
-				
+
 				//player.container.style.display = 'none';
 				appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b> has played all of their cards!")
 				playerOut = true;
@@ -1198,7 +1231,7 @@ if (settings.style.height) {
 			}
 
 			// Determine next Player
-			if (playerOut && !isTrickCard){
+			if (playerOut && !isTrickCard) {
 				// Move to the next player's turn
 				currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
 			} else if (isTrickCard && !matchFour) {
@@ -1224,6 +1257,5 @@ if (settings.style.height) {
 		playGame();
 		startButton.style.display = "none";
 	});
-
 
 }
