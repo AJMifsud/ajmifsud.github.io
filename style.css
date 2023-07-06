@@ -43,6 +43,22 @@ body {
 	z-index: 2;
 }
 
+#bug-report {
+	display: flex;
+	position: absolute;
+	width: 10%;
+	top: 0;
+	right: 0;
+	border-radius: 0px 0px 0px 10px;
+	justify-content: center;
+	align-items: center;  
+	background-color: gold;
+	padding: 10px;
+	color: white;
+	box-shadow: 5px 5px 20px black;
+	z-index: 2;
+}
+
 #open-rules:hover {
 	background-color: rgba(171, 4, 177, 0.84);
 	cursor: pointer;
