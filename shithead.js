@@ -657,6 +657,7 @@ if (settings.style.height) {
 		let selectedCardRank = undefined;
 		let remainingCards = [];
 		let hasEqualRank = false;
+		let validCards = [];
 
 		function playCards() {
 			let i = 0;
@@ -696,6 +697,25 @@ if (settings.style.height) {
 			orderHand(player);
 			orderFaceUp(player);
 		}
+
+		function findValidCards (){
+			// Determine valid cards in the player's hand
+			validCards = player.hand.filter(card => {
+			  if (centreCard && centreCard.rank === "7") {
+				return (
+				  ranks.indexOf(card.rank) < ranks.indexOf(centreCard.rank) ||
+				  trickCards.includes(card.rank)
+				);
+			  } else if (centreCard) {
+				return (
+				  ranks.indexOf(card.rank) >= ranks.indexOf(centreCard.rank) ||
+				  trickCards.includes(card.rank)
+				);
+			  } else {
+				return true;
+			  }
+			});
+		}
 		
 		skipCount = 0;
 		matchFour = false;
@@ -714,6 +734,8 @@ if (settings.style.height) {
 			removeCard(selectedFaceDownCard.cardElement, player.faceDownContainer);
 			createCardElement(selectedFaceDownCard.card, player.handContainer);
 		}
+
+		findValidCards();
 		
 		if (centreCard){
 		if (centreCard.rank === "7") {
@@ -795,20 +817,21 @@ if (settings.style.height) {
 			}
 		}
 		} else {
-			// Randomly select a card from the player's hand
-			const cardElements = player.handContainer.querySelectorAll('.card');
-			const randomIndex = Math.floor(Math.random() * player.hand.length);
-			const selectedCard = player.hand[randomIndex];
-			selectedCardRank = ranks.indexOf(selectedCard.rank);
-			remainingCards = player.hand.filter(card => card !== selectedCard);
-			hasEqualRank = remainingCards.some(card => card.rank === selectedCard.rank);
+			// Randomly select a card from the valid cards	
+		const cardElements = player.handContainer.querySelectorAll('.card');
+		const randomIndex = Math.floor(Math.random() * validCards.length);
+		const selectedCard = validCards[randomIndex];
+		const selectedCardIndex = player.hand.indexOf(selectedCard);
+		selectedCardRank = ranks.indexOf(selectedCard.rank);
+		remainingCards = player.hand.filter(card => card !== selectedCard);
+		hasEqualRank = remainingCards.some(card => card.rank === selectedCard.rank);
 
-			// Update the card element in the mock card element	
-			const selectedCardElement = {
-  				card: selectedCard,
-  				cardElement: cardElements[randomIndex]
-			};
-		
+		// Update the card element in the mock card element	
+		const selectedCardElement = {
+		  card: selectedCard,
+		  cardElement: cardElements[selectedCardIndex]
+		};
+
 			// Print the selected card for reference
 			console.log("Selected card (bot): ", selectedCard);
 		
