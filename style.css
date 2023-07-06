@@ -3,14 +3,15 @@ body {
 	width: 100%;
 	margin: 0;
 	padding: 0;
-	background-color: steelblue;
+	background: rgb(2,0,36);
+	background: linear-gradient(rgba(2,0,36,1) 0%, rgba(9,9,121,1) 35%, rgba(0,212,255,1) 100%);
 }
 
 #wrapper {
 	display: inline-flex;
 	min-width: 100%;
 	min-height: 100%;
-	position: absolute;
+	position: relative;
 	justify-content: center;
 	align-items: center;
 }
@@ -67,11 +68,10 @@ body {
 
 #rules-container {
 	display: none;
-	flex-direction: column;
 	position: absolute;
-	align-items: center;  
+	align-items: center;
+    justify-content: center;
 	background-color: rgba(108 4 177 / 84%);
-	padding: 10px;
 	color: white;
 	border: 5px solid gold;
 	border-radius: 25px;
@@ -80,20 +80,29 @@ body {
 	height: 75%;
 	font-family: monospace;
 	text-align: center;
-	overflow-y: scroll;
 	box-shadow: 5px 5px 10px black;
 }
+#rules{
+	overflow-y: scroll;
+	position: absolute;
+    max-height: 85%;
+    max-width: 95%;
+	bottom: 5%;
+}
+
 
 #trick-cards-desc {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	grid-template-rows: 1fr 1fr;
+    max-width: 95%;
 }
 
 .trick-card {
 	display: flex;
 	height: 100px;
-	margin: 10px 100px;
+	width: 100%;
+	padding:10px;
 }
 
 .card-desc{
@@ -109,6 +118,10 @@ body {
 	width: 25px;
 	right: 25px;
 	top: 25px;
+}
+
+#close-rules:hover{
+	background-color: rgba(255, 0, 0, 0.5);
 }
 
 #sidebar {
@@ -148,7 +161,7 @@ body {
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
-	align-content: center;
+	align-items: center;
 	overflow-y: auto;
 	height: 0px;
 }
@@ -469,6 +482,22 @@ body {
 	display: none;
 }
 
+#deal-button, #randomise-names-button {
+	width: 80%;
+	display: inline-block;
+	padding: 10px 20px;
+	font-size: 16px;
+	background-color: #f0f0f0;
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+	transition: transform 0.3s ease;
+  }
+
+  #deal-button:hover, #randomise-names-button:hover {
+	animation: wiggle 0.8s;
+	transform-origin: center;
+  }
 
 
 @keyframes pulsing-animation {
@@ -493,5 +522,29 @@ body {
 	  width: 0%;
 	  height: 0%;
 	  border-width: 0px;
+	}
+  }
+
+  @keyframes wiggle {
+	0% {
+	  transform: scaleX(1);
+	}
+	30% {
+	  transform: scale3d(1.25, 0.75, 1);
+	}
+	40% {
+	  transform: scale3d(0.75, 1.25, 1);
+	}
+	50% {
+	  transform: scale3d(1.15, 0.85, 1);
+	}
+	65% {
+	  transform: scale3d(0.95, 1.05, 1);
+	}
+	75% {
+	  transform: scale3d(1.05, 0.95, 1);
+	}
+	to {
+	  transform: scaleX(1);
 	}
   }
