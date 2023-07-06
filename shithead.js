@@ -697,6 +697,10 @@ if (settings.style.height) {
 			orderFaceUp(player);
 		}
 		
+		skipCount = 0;
+		matchFour = false;
+		let canPlay = false;
+		isTrickCard = false;
 
 		if (player.hand.length === 0 && player.faceUp.length === 0) {
 			appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b> must select a face down card to reveal")
@@ -709,6 +713,41 @@ if (settings.style.height) {
 			// Remove the card element from the player's face down container and add it to the player hand container
 			removeCard(selectedFaceDownCard.cardElement, player.faceDownContainer);
 			createCardElement(selectedFaceDownCard.card, player.handContainer);
+		}
+		
+		if (centreCard){
+		if (centreCard.rank === "7") {
+			// If the centre card's rank is "7":
+			// Check each card in the player's hand:
+			player.hand.forEach(card => {
+				if (ranks.indexOf(card.rank) < ranks.indexOf(centreCard.rank) || player.hand.some(card => trickCards.includes(card.rank))) {
+					// If the rank of the card is lower than the centre card's rank (7)
+					// OR the hand contains a trick card
+					canPlay = true;
+					// Set canPlay to true.
+				}
+			});
+		} else {
+			// If the centre card's rank is not "7":
+			// Check each card in the player's hand:
+			player.hand.forEach(card => {
+				if (ranks.indexOf(card.rank) >= ranks.indexOf(centreCard.rank) || player.hand.some(card => trickCards.includes(card.rank))) {
+					// If the rank of the card is equal to or higher than the centre card's rank
+					// OR the hand contains a trick card
+					canPlay = true;
+					// Set canPlay to true.
+				}
+			});
+		}
+		} else {
+			canPlay = true;
+		}
+
+		// Pickup on unplayable hand
+		if (canPlay == false) {
+			pickup(playedCards, player)
+			isSelectedValid = true;
+			return;
 		}
 
 		selectedCards = []
@@ -725,10 +764,6 @@ if (settings.style.height) {
 		remainingCards = player.hand.filter(card => card !== selectedCard);
 		hasEqualRank = remainingCards.some(card => card.rank === selectedCard.rank);
 
-		skipCount = 0;
-		matchFour = false;
-		let canPlay = false;
-		isTrickCard = false;
 
 		// Select next card if duplicate rank is in hand
 		if (hasEqualRank) {
@@ -864,12 +899,6 @@ if (settings.style.height) {
 			playCards();
 			// Update the number of played cards
 			updatePlayPileCount();
-		}
-
-		// Pickup on unplayable hand
-		if (canPlay == false) {
-			pickup(playedCards, player)
-			isSelectedValid = true;
 		}
 
 		// Draw cards up to 3 in hand
