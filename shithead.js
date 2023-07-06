@@ -832,45 +832,55 @@ window.onload = function () {
 			};*/
 
 			// Sort the valid cards by rank in ascending order
-validCards.sort((a, b) => ranks.indexOf(a.rank) - ranks.indexOf(b.rank));
-const cardElements = player.handContainer.querySelectorAll('.card');
+			validCards.sort((a, b) => ranks.indexOf(a.rank) - ranks.indexOf(b.rank));
+			const cardElements = player.handContainer.querySelectorAll('.card');
 
-// Check if all valid cards are trick cards
-const allTrickCards = validCards.every(card => trickCards.includes(card.rank));
+			// Check if all valid cards are trick cards
+			const allTrickCards = validCards.every(card => trickCards.includes(card.rank));
 
-// Select a card based on the available options
-let selectedCard;
-let selectedCardIndex;
+			// Select a card based on the available options
+			let selectedCard;
+			let selectedCardIndex;
 
-if (allTrickCards) {
-  // If all valid cards are trick cards, select one at random
-  const randomIndex = Math.floor(Math.random() * validCards.length);
-  selectedCard = validCards[randomIndex];
-  selectedCardIndex = player.hand.indexOf(selectedCard);
-} else {
-  // Select the card with the lowest rank from the valid cards
-  selectedCard = validCards.find(card => !trickCards.includes(card.rank));
-  selectedCardIndex = player.hand.indexOf(selectedCard);
-}
+			if (allTrickCards) {
+				// If all valid cards are trick cards, select one at random
+				const randomIndex = Math.floor(Math.random() * validCards.length);
+				selectedCard = validCards[randomIndex];
+				selectedCardIndex = player.hand.indexOf(selectedCard);
+			} else {
+				// Select the card with the lowest rank from the valid cards
+				selectedCard = validCards.find(card => !trickCards.includes(card.rank));
+				selectedCardIndex = player.hand.indexOf(selectedCard);
+			}
 
-// Update the card-related variables
-selectedCardRank = ranks.indexOf(selectedCard.rank);
-remainingCards = player.hand.filter(card => card !== selectedCard);
-hasEqualRank = remainingCards.some(card => card.rank === selectedCard.rank);
+			// Update the card-related variables
+			selectedCardRank = ranks.indexOf(selectedCard.rank);
+			remainingCards = player.hand.filter(card => card !== selectedCard);
+			hasEqualRank = remainingCards.some(card => card.rank === selectedCard.rank);
 
-// Update the card element in the mock card element	
-const selectedCardElement = {
-  card: selectedCard,
-  cardElement: cardElements[selectedCardIndex]
-};
-
-
-			// Print the selected card for reference
-			console.log("Selected card (bot): ", selectedCard);
+			// Update the card element in the mock card element	
+			const selectedCardElement = {
+				card: selectedCard,
+				cardElement: cardElements[selectedCardIndex]
+			};
 
 			// Push the selected card and its mock card element to the respective arrays
 			selectedCards.push(selectedCard);
 			selectedCardElements.push(selectedCardElement);
+
+			if (hasEqualRank) {
+				remainingCards.forEach(card => {
+				  if (card.rank === selectedCard.rank) {
+					const nextCardIndex = player.hand.indexOf(card);
+					const selectedCardElement = {
+					  card: card,
+					  cardElement: cardElements[nextCardIndex]
+					};
+					selectedCards.push(card);
+					selectedCardElements.push(selectedCardElement);
+				  }
+				});
+			  }			  
 		}
 
 		if (trickCards.includes(selectedCards[0].rank)) {
@@ -1114,7 +1124,6 @@ const selectedCardElement = {
 			});
 		});
 	}
-
 
 	// Recursive function to loop the switchCard function
 	async function switchCardLoop(player) {
