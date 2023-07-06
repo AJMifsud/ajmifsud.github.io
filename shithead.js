@@ -653,6 +653,11 @@ if (settings.style.height) {
 
 	async function playTurn(player, centreCard) {
 
+		let selectedCard = undefined;
+		let selectedCardRank = undefined;
+		let remainingCards = [];
+		let hasEqualRank = false;
+
 		function playCards() {
 			let i = 0;
 			selectedCards.forEach(card => {
@@ -691,6 +696,7 @@ if (settings.style.height) {
 			orderHand(player);
 			orderFaceUp(player);
 		}
+		
 
 		if (player.hand.length === 0 && player.faceUp.length === 0) {
 			appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b> must select a face down card to reveal")
@@ -708,15 +714,16 @@ if (settings.style.height) {
 		selectedCards = []
 		selectedCardElements = []
 
+		if (!player.isBot){
 		// Allow the player to click on a card
 		let firstSelectedCard = await handCardClick(player);
 		console.log("Selected card: ", firstSelectedCard.card);
 		selectedCardElements.push(firstSelectedCard)
 		selectedCards.push(firstSelectedCard.card);
-		let selectedCard = selectedCardElements[0].card;
-		const selectedCardRank = ranks.indexOf(selectedCard.rank);
-		const remainingCards = player.hand.filter(card => card !== selectedCard);
-		const hasEqualRank = remainingCards.some(card => card.rank === selectedCard.rank);
+		selectedCard = selectedCardElements[0].card;
+		selectedCardRank = ranks.indexOf(selectedCard.rank);
+		remainingCards = player.hand.filter(card => card !== selectedCard);
+		hasEqualRank = remainingCards.some(card => card.rank === selectedCard.rank);
 
 		skipCount = 0;
 		matchFour = false;
@@ -752,9 +759,30 @@ if (settings.style.height) {
   				}
 			}
 		}
+		} else {
+			// Randomly select a card from the player's hand
+			const cardElements = player.handContainer.querySelectorAll('.card');
+			const randomIndex = Math.floor(Math.random() * player.hand.length);
+			const selectedCard = player.hand[randomIndex];
+			selectedCardRank = ranks.indexOf(selectedCard.rank);
+			remainingCards = player.hand.filter(card => card !== selectedCard);
+			hasEqualRank = remainingCards.some(card => card.rank === selectedCard.rank);
 
+			// Update the card element in the mock card element	
+			const selectedCardElement = {
+  				card: selectedCard,
+  				cardElement: cardElements[randomIndex]
+			};
+		
+			// Print the selected card for reference
+			console.log("Selected card (bot): ", selectedCard);
+		
+			// Push the selected card and its mock card element to the respective arrays
+			selectedCards.push(selectedCard);
+			selectedCardElements.push(selectedCardElement);
+		}
 
-		if (trickCards.includes(selectedCard.rank)) {
+		if (trickCards.includes(selectedCards[0].rank)) {
 			isTrickCard = true;
 			canPlay = true;
 		}
@@ -777,7 +805,7 @@ if (settings.style.height) {
 					}
 				});
 
-				if (ranks.indexOf(selectedCard.rank) < ranks.indexOf(centreCard.rank) || isTrickCard) {
+				if (ranks.indexOf(selectedCards[0].rank) < ranks.indexOf(centreCard.rank) || isTrickCard) {
 					// If the rank of the selected card is lower than the centre card's rank
 					// or it is a trick card:
 					canPlay = true;
@@ -803,7 +831,7 @@ if (settings.style.height) {
 					}
 				});
 
-				if (selectedCardRank >= ranks.indexOf(centreCard.rank) || trickCards.includes(selectedCard.rank)) {
+				if (selectedCardRank >= ranks.indexOf(centreCard.rank) || trickCards.includes(selectedCards[0].rank)) {
 					// If the rank of the selected card is equal to or higher than the centre card's rank
 					// or it is a trick card:
 					canPlay = true;
@@ -827,7 +855,7 @@ if (settings.style.height) {
 			// Set isSelectedValid to true.
 		}
 
-		if (selectedCard.rank == "Joker"){
+		if (selectedCards[0].rank == "Joker"){
 			isSelectedValid = false;
 			appendToGameLog("You must assign a rank to a Joker before it can be played");
 		}
