@@ -720,6 +720,7 @@ window.onload = function () {
 				// Allow the player to click on a card
 				selectedFaceDownCard = await faceDownCardClick(player);
 			} else {
+				waitForSeconds(1);
 				// Randomly select a face-down card if the player is a bot
 				const cardElements = player.faceDownContainer.querySelectorAll('.card');
 				const randomIndex = Math.floor(Math.random() * cardElements.length);
