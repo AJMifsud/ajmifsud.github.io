@@ -713,8 +713,23 @@ window.onload = function () {
 
 		if (player.hand.length === 0 && player.faceUp.length === 0) {
 			appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b> must select a face down card to reveal")
-			// Allow the player to click on a card
-			const selectedFaceDownCard = await faceDownCardClick(player);
+		
+			let selectedFaceDownCard = null;
+
+			if (!player.isBot){
+				// Allow the player to click on a card
+				selectedFaceDownCard = await faceDownCardClick(player);
+			} else {
+				// Randomly select a face-down card if the player is a bot
+				const cardElements = player.faceDownContainer.querySelectorAll('.card');
+				const randomIndex = Math.floor(Math.random() * cardElements.length);
+				const selectedCardElement = cardElements[randomIndex];
+
+				selectedFaceDownCard = {
+				  cardElement: selectedCardElement,
+				  card: selectedCardElement.card
+				};
+			}
 			// Get the index of the selected card in the player's face down cards and remove it then replace it in the player's hand
 			const selectedCardIndex = player.faceDown.indexOf(selectedFaceDownCard);
 			player.faceDown.splice(selectedCardIndex, 1);
@@ -965,7 +980,6 @@ window.onload = function () {
 
 		// Draw cards up to 3 in hand
 		// If there are still cards in the deck:
-		if (deck.length > 0) {
 			while (player.hand.length < 3) {
 				if (deck.length > 0) {
 					// Draw a new card from the deck and add it to the player's hand
@@ -983,9 +997,10 @@ window.onload = function () {
 
 					// Log the new deck size to the console
 					console.log("Deck size: " + deck.length);
+				} else {
+					break;
 				}
 			}
-		}
 		orderHand(player);
 		orderFaceUp(player);
 
