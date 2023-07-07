@@ -634,6 +634,12 @@ window.onload = function () {
 		}
 	}
 
+	function waitForSeconds(seconds) {
+		return new Promise(resolve => {
+		  setTimeout(resolve, seconds * 1000);
+		});
+	  }
+
 	async function playTurn(player, centreCard) {
 
 		let selectedCard = undefined;
@@ -750,6 +756,9 @@ window.onload = function () {
 
 		// Pickup on unplayable hand
 		if (canPlay == false) {
+			if(player.isBot){
+				await waitForSeconds(2);
+			}
 			pickup(playedCards, player)
 			isSelectedValid = true;
 			return;
@@ -800,6 +809,9 @@ window.onload = function () {
 				}
 			}
 		} else {
+			
+			await waitForSeconds(2);
+
 			/* Randomly select a card from the valid cards	
 			const cardElements = player.handContainer.querySelectorAll('.card');
 			const randomIndex = Math.floor(Math.random() * validCards.length);
@@ -977,7 +989,7 @@ window.onload = function () {
 		orderHand(player);
 		orderFaceUp(player);
 
-
+		
 		return;
 	}
 
