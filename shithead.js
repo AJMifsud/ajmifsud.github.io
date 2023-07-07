@@ -92,7 +92,6 @@ window.onload = function () {
 			playerNameInput.type = "text";
 			playerNameInput.name = `player${i + 1}`;
 			playerNameInput.placeholder = `Player ${i + 1}`;
-			playerNameInput.value = playerNames[i];
 			playerNameInput.addEventListener("input", function () {
 				updatePlayerName(i, playerNameInput.value);
 			});
@@ -157,7 +156,6 @@ window.onload = function () {
 			playerNameInput.type = "text";
 			playerNameInput.name = `player${i + 1}`;
 			playerNameInput.placeholder = `Player ${i + 1}`;
-			playerNameInput.value = playerNames[i];
 			playerNameInput.addEventListener("input", function () {
 				updatePlayerName(i, playerNameInput.value);
 			});
