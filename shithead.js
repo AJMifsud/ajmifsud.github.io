@@ -265,35 +265,21 @@ window.onload = function () {
 		}
 	});
 
-	for (let i = 0; i < settingsButton.length; i++) {
-		settingsButton[i].addEventListener("click", function () {
-			// Close all other settings containers
-			for (let j = 0; j < settingsButton.length; j++) {
-				if (i !== j) {
-					settingsButton[j].classList.remove("active");
-					let settings = settingsButton[j].nextElementSibling;
-					settings.style.height = null;
-					settings.style.padding = null;
-				}
-			}
-
-			// Toggle the selected settings container
-			// Toggle the selected settings container
-			this.classList.toggle("active");
-			var settings = this.nextElementSibling;
-			var header = this.previousElementSibling;
-			if (settings.style.height) {
-				settings.style.height = null;
-				settings.style.padding = null;
-			} else {
-				settings.style.height = "auto";
-				settings.style.paddingTop = header.offsetHeight + "px";
-				settings.style.paddingBottom = "10px";
-			}
-
+	for (i = 0; i < settingsButton.length; i++) {
+		settingsButton[i].addEventListener("click", function() {
+		  this.classList.toggle("active");
+		  var settings = this.nextElementSibling;
+		  if (settings.style.maxHeight){
+			settings.style.height = null;
+			settings.style.maxHeight = null;
+			settings.style.padding = null;
+		  } else {
+			settings.style.height = "auto";
+			settings.style.maxHeight = "1000px"
+			settings.style.padding = "10px 0px";
+		  } 
 		});
-	}
-
+	  }
 
 	//----------//
 	//GAME LOGIC//

@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-	<lang="en"></lang>
 	<head>
 		<title>Shithead Game</title>
 		<link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
@@ -90,7 +89,7 @@
 			<div id="left-container">
 					<div id="sidebar">
 						<h2 style="margin-bottom: 20px;"><u>Options</u></h2>
-						
+						<div id="settings-container">
 						<button type="button" class="collapsible">Player Settings</button>
 						<div class = "settings">
 							<div id = "playerno-container">
@@ -119,12 +118,12 @@
 							<input type="checkbox" name="showGameLog" checked> Show Game Log
 							</label>
 						</div>
-						
+						</div>
 						<button id="deal-button">Deal New Game</button>
 					</div>
 			</div>
 			<div id="game-container">
-				<img src="images/shithead_logo.png" alt="logo">
+				<img id="logo" src="images/shithead_logo.png" alt="logo">
 				<div id="game-board">
 					<div id="playerbottom-container" class="player-container">
 						<div class="player-name">Player 1</div>
