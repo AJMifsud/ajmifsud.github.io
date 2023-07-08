@@ -1,8 +1,8 @@
 html, body {
 	margin: 0;
 	padding: 0;
-	background: rgb(2,0,36);
-	background: linear-gradient(rgba(2,0,36,1) 0%, rgba(9,9,121,1) 35%, rgba(0,212,255,1) 100%);
+	background-image: url("images/felt.png");
+	/*background: linear-gradient(rgba(2,0,36,1) 0%, rgba(9,9,121,1) 35%, rgba(0,212,255,1) 100%);*/
 }
 
 #wrapper {
@@ -25,7 +25,16 @@ html, body {
 #logo-container{
 	display: flex;
 	justify-content: center;
-	max-height: 100%;
+	max-height: 100%;font-size: 75%;
+    border-radius: 0px 0px 10px 10px;
+	align-items: center;  
+	color:  white;
+	background: rgba(255, 255, 255, 0.2);
+	backdrop-filter: blur(4.9px);
+	-webkit-backdrop-filter: blur(4.9px);
+	border: 1px solid rgba(255, 255, 255, 0.5);
+	box-shadow: 5px 5px 20px black;
+	z-index: 2;
 }
 
 #logo{
@@ -172,10 +181,8 @@ html, body {
 
 #settings-container{
     max-height: 100%;
-    display: inline-flex;
+	max-width: 100%;
     overflow-y: auto;
-    align-items: center;
-    flex-direction: column;
 }
 
 .collapsible {
@@ -243,7 +250,7 @@ html, body {
 	aspect-ratio: 1;
 	max-height: 95vh;
 	max-width: 95vh;
-	background-color: green;
+	background-image: url("images/green_felt.png");
 	position: relative;
 	border-radius: 20%;
 	border: 5px solid gold;
@@ -445,6 +452,8 @@ html, body {
 }
 
 #deck-container {
+	transition: transform 0.2s ease-out;
+	transform: scaleY(0);
 	position: relative;
 	right: 0;
 	display: flex;
@@ -452,11 +461,12 @@ html, body {
 	min-width: 160px;
 	width: 25%;
 	height: 80vh;
+	max-height: 80vh;
 	border: 1px solid gold;
 	border-radius: 30px 0px 0px 30px;
 	border-right-width: 0px;
 	align-items: center;
-	background-color: green;
+	background-image: url("images/green_felt.png");
 	padding: 10px;
 	box-shadow: -5px 5px 20px 0px black;
 	justify-content: space-around;

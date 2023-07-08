@@ -26,6 +26,7 @@ window.onload = function () {
 	const jokersCheck = document.querySelector('input[name="withJokers"]');
 	const showGameLog = document.querySelector('input[name="showGameLog"]');
 	let gameLogContainer = document.getElementById('game-log-container');
+	const deckContainer = document.getElementById('deck-container');
 	const drawPile = document.getElementById('draw-pile');
 	const drawpileCount = document.getElementById('drawpile-count');
 	const burnPile = document.getElementById('burn-pile');
@@ -547,6 +548,9 @@ window.onload = function () {
 		isTrickCard = false;
 		matchFour = false
 
+		setTimeout(() => {
+			deckContainer.style.transform = "scaleY(1)";
+		  }, 100);		  
 
 		// Get the number of players from the input field
 		numPlayers = parseInt(document.getElementById('numPlayers').value);
