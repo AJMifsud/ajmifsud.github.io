@@ -1,6 +1,4 @@
-body {
-	height: 100%;
-	width: 100%;
+html, body {
 	margin: 0;
 	padding: 0;
 	background: rgb(2,0,36);
@@ -14,6 +12,20 @@ body {
 	position: relative;
 	justify-content: center;
 	align-items: center;
+}
+
+#top-container{
+	width: 100%;
+	display: inline-flex;
+	position: relative;
+	justify-content: center;
+	align-items: center;
+}
+
+#logo-container{
+	display: flex;
+	justify-content: center;
+	max-height: 100%;
 }
 
 #logo{
@@ -32,35 +44,44 @@ body {
 	align-items: center;
 }
 
-
 #open-rules {
+	font-size: 75%;
+	text-align: center;
 	display: flex;
 	position: absolute;
 	width: 10%;
+	height: 100%;
 	top: 0;
 	left: 0;
 	border-radius: 0px 0px 10px;
 	justify-content: center;
 	align-items: center;  
-	background-color: rgba(108 4 177 / 84%);
-	padding: 10px;
-	color: white;
+	color:  white;
+	background: rgba(255, 255, 255, 0.2);
+	backdrop-filter: blur(4.9px);
+	-webkit-backdrop-filter: blur(4.9px);
+	border: 1px solid rgba(255, 255, 255, 0.5);
 	box-shadow: 5px 5px 20px black;
 	z-index: 2;
 }
 
 #bug-report {
+	font-size: 75%;
+	text-align: center;
 	display: flex;
 	position: absolute;
 	width: 10%;
+	height: 100%;
 	top: 0;
 	right: 0;
 	border-radius: 0px 0px 0px 10px;
 	justify-content: center;
 	align-items: center;  
-	background-color: gold;
-	padding: 10px;
-	color: white;
+	color:  white;
+	background: rgba(255, 255, 255, 0.2);
+	backdrop-filter: blur(4.9px);
+	-webkit-backdrop-filter: blur(4.9px);
+	border: 1px solid rgba(255, 255, 255, 0.5);
 	box-shadow: 5px 5px 20px black;
 	z-index: 2;
 }
@@ -142,6 +163,7 @@ body {
 	text-align: center;
 	box-shadow: 5px 5px 20px 0px black;
 	max-height: 80vh;
+	max-width: 100%;
 	background: rgba(255, 255, 255, 0.2);
 	backdrop-filter: blur(4.9px);
 	-webkit-backdrop-filter: blur(4.9px);
@@ -149,8 +171,11 @@ body {
 }
 
 #settings-container{
-	max-height: 100%;
-	overflow-y: auto;
+    max-height: 100%;
+    display: inline-flex;
+    overflow-y: auto;
+    align-items: center;
+    flex-direction: column;
 }
 
 .collapsible {
@@ -159,15 +184,19 @@ body {
 	color: white;
 	cursor: pointer;
 	padding: 18px;
-	width: 100%;
 	text-align: left;
 	outline: none;
 	font-size: 15px;
 	border-radius: 20px;
+	width: 100%;
   }
 
-  .collapsible:hover, .collapsible.active {
+  .collapsible.active:hover {
 	background: rgba(0, 0, 0, 0.5);
+  }
+
+  .collapsible:hover {
+	background: rgba(0, 0, 0, 0.3);
   }
 
   .settings {
@@ -198,6 +227,7 @@ body {
 	display: inline-flex;
 	height: 100%;
 	width: 100%;
+	padding: 5%;
 	align-items: center;
 	justify-content: center;
 	flex-direction: column;
@@ -209,9 +239,7 @@ body {
 	justify-content: center;
 	align-items: center;
 	max-width: 100%;
-	min-width: 500px;
-	min-height: 500px;
-	width: 100vh;
+	width: 100%;
 	aspect-ratio: 1;
 	max-height: 95vh;
 	max-width: 95vh;
@@ -227,7 +255,7 @@ body {
 	position: absolute;
 	width: 33%;
 	height: 33%;
-	border: 5px solid gold;
+	border: 3px solid gold;
 	border-radius: 5px;
 	display: flex;
 	justify-content: center;
@@ -289,7 +317,7 @@ body {
 	background-color: red;
 	width: 80%;
 	height: 80%;
-	border: 5px solid gold;
+	border: 1px solid gold;
 }
 
 #playerleft-hand {
