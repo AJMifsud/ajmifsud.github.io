@@ -23,18 +23,18 @@
 		<script src="shithead.js"></script>
 	</head>
 	<body>
+		<div id="wrapper">
 		<div id="top-container">
 			<div id="open-rules">
 				Game<br>Rules
 			</div>
 			<div id="logo-container">
 				<img id="logo" src="images/shithead_logo.png" alt="logo">
-				</div>
+			</div>
 			<div id="bug-report">
 				<a href="https://docs.google.com/spreadsheets/d/1x6_RnsynriWTYPvkBiFDrfylFFzGDwJM4YmEGst_Q2c/edit?usp=sharing" target="_blank" rel="noopener noreferrer">Report<br>a Bug</a>
 			</div>
-			</div>
-		<div id="wrapper">
+		</div>
 			<div id="rules-container">
 				<img id="close-rules" src="images/close_icon.png" alt="Close rules container">
 				<div id="rules">
@@ -92,40 +92,38 @@
 				</div>
 			</div>
 			<div id="left-container">
-					<div id="sidebar">
-						<h2 style="margin-bottom: 20px;"><u>Options</u></h2>
-						<div id="settings-container">
+				<div id="sidebar">
+					<h2 style="margin-bottom: 20px;"><u>Options</u></h2>
+					<div id="settings-container">
 						<button type="button" class="collapsible">Player Settings</button>
 						<div class = "settings">
 							<div id = "playerno-container">
 								<label for="numPlayers">Number of Players:</label>
 								<select name="numPlayers" id="numPlayers">
-			  						<option value="2">2</option>
-  									<option value="3">3</option>
-  									<option value="4">4</option>
+									<option value="2">2</option>
+									<option value="3">3</option>
+									<option value="4">4</option>
 								</select>
 							</div>
 							<div id="playernames-container">
 							</div>
 							<button id="randomise-names-button">Randomise<br>Player Names</button>
 						</div>
-						
 						<button type="button" class="collapsible">Game Settings</button>
 						<div class = "settings">
-						<div id="dealJokers-container">
+							<div id="dealJokers-container">
+								<label>
+								<input type="checkbox" name="withJokers"> Deal Jokers?
+								</label>
+								<p style="font-size: 80%; color: lightgray;">(Two jokers will be shuffled in the deck if ticked. Jokers may assume the role of ANY card.)</p>
+							</div>
 							<label>
-							<input type="checkbox" name="withJokers"> Deal Jokers?
-							</label>
-							<p style="font-size: 80%; color: lightgray;">(Two jokers will be shuffled in the deck if ticked. Jokers may assume the role of ANY card.)</p>
-						</div>
-						
-						<label>
 							<input type="checkbox" name="showGameLog" checked> Show Game Log
 							</label>
 						</div>
-						</div>
-						<button id="deal-button">Deal New Game</button>
 					</div>
+					<button id="deal-button">Deal New Game</button>
+				</div>
 			</div>
 			<div id="game-container">
 				<div id="game-board">

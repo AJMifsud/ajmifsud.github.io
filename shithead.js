@@ -12,6 +12,7 @@ window.onload = function () {
 		}
 	}
 
+	const wrapper = document.getElementById('wrapper');
 	const settingsButton = document.getElementsByClassName("collapsible");
 	const numPlayersSelect = document.getElementById("numPlayers");
 	const playerNamesContainer = document.getElementById("playernames-container");
@@ -37,6 +38,30 @@ window.onload = function () {
 	const playPile = document.getElementById('play-pile');
 	const playpileCount = document.getElementById('playpile-count');
 	let playerNames = ["Player 1", "Player 2", "Player 3", "Player 4"];
+	const cardImagesPath = 'images/cards/';
+
+	function spawnCard() {
+	  	const card = document.createElement('div');
+	  	card.classList.add('card');
+	  	const randomLeft = Math.random() * 100; // Adjust the value to specify the range of left values
+
+		const cardImageNames = ["10_of_Clubs.png", "10_of_Diamonds.png", "10_of_Hearts.png", "10_of_Spades.png", "2_of_Clubs.png", "2_of_Diamonds.png", "2_of_Hearts.png", "2_of_Spades.png", "3_of_Clubs.png", "3_of_Diamonds.png", "3_of_Hearts.png", "3_of_Spades.png", "4_of_Clubs.png", "4_of_Diamonds.png", "4_of_Hearts.png", "4_of_Spades.png", "5_of_Clubs.png", "5_of_Diamonds.png", "5_of_Hearts.png", "5_of_Spades.png", "6_of_Clubs.png", "6_of_Diamonds.png", "6_of_Hearts.png", "6_of_Spades.png", "7_of_Clubs.png", "7_of_Diamonds.png", "7_of_Hearts.png", "7_of_Spades.png", "8_of_Clubs.png", "8_of_Diamonds.png", "8_of_Hearts.png", "8_of_Spades.png", "9_of_Clubs.png", "9_of_Diamonds.png", "9_of_Hearts.png", "9_of_Spades.png", "Ace_of_Clubs.png", "Ace_of_Diamonds.png", "Ace_of_Hearts.png", "Ace_of_Spades.png", "ace_of_spades2.png", "black_joker.png", "Jack_of_Clubs.png", "jack_of_clubs2.png", "Jack_of_Diamonds.png", "jack_of_diamonds2.png", "Jack_of_Hearts.png", "jack_of_hearts2.png", "Jack_of_Spades.png", "jack_of_spades2.png", "King_of_Clubs.png", "king_of_clubs2.png", "King_of_Diamonds.png", "king_of_diamonds2.png", "King_of_Hearts.png", "king_of_hearts2.png", "King_of_Spades.png", "king_of_spades2.png", "Queen_of_Clubs.png", "queen_of_clubs2.png", "Queen_of_Diamonds.png", "queen_of_diamonds2.png", "Queen_of_Hearts.png", "queen_of_hearts2.png", "Queen_of_Spades.png", "queen_of_spades2.png", "red_joker.png"]; // Replace with the names of your card images
+		const randomIndex = Math.floor(Math.random() * cardImageNames.length);
+		const cardImage = cardImageNames[randomIndex];
+
+	  	card.style.left = `${randomLeft}%`;
+	  	card.style.animationDuration = `${Math.random() * 6 + 4}s`; // Random animation duration between 4 and 10 seconds
+		card.style.backgroundImage = `url(${cardImagesPath}${cardImage})`;
+
+ 	 	card.addEventListener('animationend', () => {
+ 	   		card.remove(); // Remove the card element from the DOM after the animation finishes
+ 	 	});
+
+	  	wrapper.appendChild(card);
+	}
+
+	setInterval(spawnCard, 1000); // Spawn a new card every second (adjust the interval as needed)
+
 
 	function assignNames() {
 		playerNames = []
