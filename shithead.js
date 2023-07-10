@@ -352,7 +352,6 @@ window.onload = function () {
 	function createDeck(withJokers) {
 		const deck = [];
 
-
 		for (let suit of suits) {
 			for (let rank of ranks) {
 				const card = {
@@ -644,13 +643,13 @@ window.onload = function () {
 		}
 
 		// Add the remainder of cards to the draw pile
-		let offsetLeft = (deck.length * (numPlayers + 1));
-		let offsetTop = deck.length;
+		let offsetLeft = 0;
+		let offsetTop = -deck.length;
 
 		for (let card of deck) {
 			const cardElement = createCardElement(card, drawPile);
-			cardElement.style.right = `${offsetLeft}px`;
-			cardElement.style.bottom = `${offsetTop}px`;
+			cardElement.style.marginRight = `${offsetLeft}px`;
+			cardElement.style.marginBottom = `${offsetTop}px`;
 			drawPile.appendChild(cardElement);
 			offsetLeft -= 1;
 			offsetTop += 2;
