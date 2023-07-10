@@ -620,11 +620,13 @@ window.onload = function () {
 			player.faceDownContainer = faceDownContainer;
 			if (botCheckboxes[i].checked) {
 				player.isBot = true;
+				handContainer.classList.add("bot");
 			}
-
 			player.container.style.display = 'flex';
 			player.faceUpContainer.style.display = "flex"; // Re-Enable face up container if disabled from last game
 			player.cardContainer.style.removeProperty("animation");
+
+			
 
 			players.push(player);
 		}
