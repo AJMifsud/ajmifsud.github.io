@@ -199,7 +199,7 @@ window.onload = function () {
 			playerIsBot.name = "botCheckbox" + i;
 
 			if (i === 0) {
-				playerIsBot.disabled = true; // Disable the checkbox
+				//playerIsBot.disabled = true; // Disable the checkbox
 			}
 
 			const cbxLabel = document.createElement("label");
@@ -1211,24 +1211,19 @@ window.onload = function () {
 
 			isSelectedValid = false;
 			let player = players[currentPlayerIndex];
-			let playerOut = false;
 			console.log(`${player.playerName}'s turn`);
 			appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b>'s turn");
 
-			player.cardContainer.style.setProperty("animation", "pulsing-animation 2s infinite");
-
-
 			console.log("Card to beat: ", centreCard);
 
+			player.cardContainer.style.setProperty("animation", "pulsing-animation 2s infinite");
 			while (isSelectedValid == false) {
 				await playTurn(player, centreCard);
 			}
+			player.cardContainer.style.removeProperty("animation");
 
 			// Assign the last played card to the centre card
 			centreCard = playedCards[playedCards.length - 1];
-
-			player.cardContainer.style.removeProperty("animation");
-
 
 			// Check for empty hand to enable face-up cards
 			if (player.hand.length === 0) {
@@ -1267,12 +1262,9 @@ window.onload = function () {
 
 				//player.container.style.display = 'none';
 				appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b> has played all of their cards!")
-				playerOut = true;
 				// Remove the player from the array
 				players.splice(currentPlayerIndex, 1);
-				if (!isTrickCard) {
-					currentPlayerIndex = (currentPlayerIndex - 1) % numPlayers;
-				}
+				currentPlayerIndex = (currentPlayerIndex - 1) % numPlayers;
 				numPlayers = players.length;
 			}
 
@@ -1283,10 +1275,7 @@ window.onload = function () {
 			}
 
 			// Determine next Player
-			if (playerOut && !isTrickCard) {
-				// Move to the next player's turn
-				currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
-			} else if (isTrickCard && !matchFour) {
+			if (isTrickCard && !matchFour) {
 				handleTrickCards();
 			} else if (isSelectedValid) {
 				if (!matchFour) {
