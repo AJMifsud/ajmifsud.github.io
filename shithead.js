@@ -199,7 +199,7 @@ window.onload = function () {
 			playerIsBot.name = "botCheckbox" + i;
 
 			if (i === 0) {
-				//playerIsBot.disabled = true; // Disable the checkbox
+				playerIsBot.disabled = true; // Disable the checkbox
 			}
 
 			const cbxLabel = document.createElement("label");
@@ -325,7 +325,9 @@ window.onload = function () {
 	const trickCards = ["2", "3", "7", "10"];
 	let gameOver = false;
 	let currentPlayerIndex = 0;
-	let centreCard = undefined;
+	let currentPlayerName;
+	let playerOut;
+	let centreCard;
 	let selectedCardElements = [];
 	let selectedCards = []
 	let isSelectedValid = false;
@@ -1064,7 +1066,9 @@ window.onload = function () {
 	function handleTrickCards() {
 		switch (selectedCards[0].rank) {
 			case "2":
+				if (!playerOut){
 				appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b> can play again")
+				}
 				centreCard = undefined;
 				break;
 			case "3":
@@ -1083,7 +1087,7 @@ window.onload = function () {
 
 				let turnsWord = skippedPlayers.length > 1 ? "turns" : "turn";
 
-				let message = "<b>" + players[currentPlayerIndex].playerName + "</b> skipped <b>" + skippedPlayersMessage + "</b>'s " + turnsWord + "!";
+				let message = "<b>" + currentPlayerName + "</b> skipped <b>" + skippedPlayersMessage + "</b>'s " + turnsWord + "!";
 
 				appendToGameLog(message);
 
@@ -1093,12 +1097,16 @@ window.onload = function () {
 			case "7":
 				// Increment the player counter before it is incremented again, skipping the next player
 				appendToGameLog("<b>" + players[(currentPlayerIndex + 1) % numPlayers].playerName + "</b> must now either play below a 7 or a trick card!")
+				if (!playerOut){
 				currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
+				}
 				break;
 			case "10":
 				burnCards(playedCards);
-				appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b> burnt the deck!")
+				appendToGameLog("<b>" + currentPlayerName + "</b> burnt the deck!")
+				if (!playerOut){
 				currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
+				}
 				centreCard = undefined;
 				break;
 		}
@@ -1207,14 +1215,14 @@ window.onload = function () {
 
 	async function playGame() {
 		currentPlayerIndex = 0;
-		let outPlayerIndex;
 
 		// Play the game until there is a winner
 		while (!gameOver) {
 
-			let playerOut = false;
+			playerOut = false;
 			isSelectedValid = false;
 			let player = players[currentPlayerIndex];
+			currentPlayerName = players[currentPlayerIndex].playerName;
 			console.log(`${player.playerName}'s turn`);
 			appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b>'s turn");
 
@@ -1263,39 +1271,35 @@ window.onload = function () {
 			if (player.hand.length === 0 && player.faceUp.length === 0 && player.faceDown.length === 0) {
 
 				player.cardContainer.style.animation = "shrink 2s forwards";
-
+				
 				//player.container.style.display = 'none';
 				appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b> has played all of their cards!")
-				outPlayerIndex = currentPlayerIndex;
 				playerOut = true;
+				// Remove the player from the array
+				players.splice(currentPlayerIndex, 1);
+				if (!isTrickCard) {
+					currentPlayerIndex = (currentPlayerIndex - 1) % numPlayers;
+				}
+				numPlayers = players.length;
 			}
 
-			// Determine next Player
-			if (isTrickCard && !matchFour) {
-				handleTrickCards();
-				if (playerOut){
-					// Remove the player from the array
-					players.splice(outPlayerIndex, 1);
-					currentPlayerIndex = (currentPlayerIndex - 1) % numPlayers;
-					numPlayers = players.length;
-				}
-			} else if (isSelectedValid) {
-				if (!matchFour) {
-					// Move to the next player's turn
-					currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
-					if (playerOut){
-						// Remove the player from the array
-						players.splice(outPlayerIndex, 1);
-						currentPlayerIndex = (currentPlayerIndex - 1) % numPlayers;
-						numPlayers = players.length;
-					}
-				}
-			}
-			
 			if (players.length == 1) {
 				gameOver = true;
 				appendToGameLog("<b>" + players[0].playerName + " is the SHITHEAD!</b>")
 				break;
+			}
+
+			// Determine next Player
+			if (playerOut && !isTrickCard){
+				// Move to the next player's turn
+				currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
+			} else if (isTrickCard && !matchFour) {
+				handleTrickCards();
+			} else if (isSelectedValid) {
+				if (!matchFour) {
+					// Move to the next player's turn
+					currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
+				}
 			}
 
 			if (gameOver) {
