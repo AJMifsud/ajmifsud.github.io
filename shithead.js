@@ -1207,10 +1207,12 @@ window.onload = function () {
 
 	async function playGame() {
 		currentPlayerIndex = 0;
+		let outPlayerIndex;
 
 		// Play the game until there is a winner
 		while (!gameOver) {
 
+			let playerOut = false;
 			isSelectedValid = false;
 			let player = players[currentPlayerIndex];
 			console.log(`${player.playerName}'s turn`);
@@ -1264,26 +1266,36 @@ window.onload = function () {
 
 				//player.container.style.display = 'none';
 				appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b> has played all of their cards!")
-				// Remove the player from the array
-				players.splice(currentPlayerIndex, 1);
-				currentPlayerIndex = (currentPlayerIndex - 1) % numPlayers;
-				numPlayers = players.length;
-			}
-
-			if (players.length == 1) {
-				gameOver = true;
-				appendToGameLog("<b>" + players[0].playerName + " is the SHITHEAD!</b>")
-				break;
+				outPlayerIndex = currentPlayerIndex;
+				playerOut = true;
 			}
 
 			// Determine next Player
 			if (isTrickCard && !matchFour) {
 				handleTrickCards();
+				if (playerOut){
+					// Remove the player from the array
+					players.splice(outPlayerIndex, 1);
+					currentPlayerIndex = (currentPlayerIndex - 1) % numPlayers;
+					numPlayers = players.length;
+				}
 			} else if (isSelectedValid) {
 				if (!matchFour) {
 					// Move to the next player's turn
 					currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
+					if (playerOut){
+						// Remove the player from the array
+						players.splice(outPlayerIndex, 1);
+						currentPlayerIndex = (currentPlayerIndex - 1) % numPlayers;
+						numPlayers = players.length;
+					}
 				}
+			}
+			
+			if (players.length == 1) {
+				gameOver = true;
+				appendToGameLog("<b>" + players[0].playerName + " is the SHITHEAD!</b>")
+				break;
 			}
 
 			if (gameOver) {
