@@ -15,6 +15,7 @@ html, body {
 	justify-content: center;
 	align-items: center;
 	overflow: hidden;
+	flex-direction: column;
 }
 
 #wrapper > .card
@@ -30,7 +31,8 @@ html, body {
 #top-container{
 	width: 100%;
 	display: inline-flex;
-	position: absolute;
+	position: relative;
+	max-height: 10%;
 	top: 0;
 	justify-content: center;
 	align-items: center;
@@ -40,7 +42,8 @@ html, body {
 #logo-container{
 	display: flex;
 	justify-content: center;
-	max-height: 100%;font-size: 75%;
+	height: 100%;
+	width: 60%;
     border-radius: 0px 0px 10px 10px;
 	align-items: center;  
 	color:  white;
@@ -52,7 +55,20 @@ html, body {
 }
 
 #logo{
-	max-width: 35%;
+	width: 70%;
+	max-width: 70%;
+}
+
+#page-container {
+	aspect-ratio: 9 / 16;
+	display: inline-flex;
+	min-width: 100%;
+	min-height: 400px;
+	height: 100%;
+	position: relative;
+	justify-content: center;
+	align-items: center;
+	overflow: hidden;
 }
 
 #left-container {
@@ -69,8 +85,9 @@ html, body {
 }
 
 #open-rules {
-	font-size: 75%;
 	text-align: center;
+	font-family: Poo;
+    font-size: 130%;
 	display: flex;
 	position: absolute;
 	width: 10%;
@@ -80,7 +97,7 @@ html, body {
 	border-radius: 0px 0px 10px;
 	justify-content: center;
 	align-items: center;  
-	color:  white;
+	color:  rgb(87, 39, 20);
 	background: rgba(255, 255, 255, 0.2);
 	backdrop-filter: blur(4.9px);
 	-webkit-backdrop-filter: blur(4.9px);
@@ -89,8 +106,9 @@ html, body {
 }
 
 #bug-report {
-	font-size: 75%;
 	text-align: center;
+	font-size: 130%;
+	font-family: Poo;
 	display: flex;
 	position: absolute;
 	width: 10%;
@@ -100,7 +118,7 @@ html, body {
 	border-radius: 0px 0px 0px 10px;
 	justify-content: center;
 	align-items: center;  
-	color:  white;
+	color:  rgb(87, 39, 20);
 	background: rgba(255, 255, 255, 0.2);
 	backdrop-filter: blur(4.9px);
 	-webkit-backdrop-filter: blur(4.9px);
@@ -112,12 +130,14 @@ html, body {
 	background: rgba(0, 0, 0, 0.3);
 	cursor: pointer;
 	transition: transform 0.6s;
+	color: white;
 }
 
 #bug-report:hover {
 	background: rgba(0, 0, 0, 0.3);
 	cursor: pointer;
 	transition: transform 0.6s;
+	color: white;
 }
 
 #rules-container {
@@ -211,10 +231,11 @@ html, body {
 .collapsible {
 	background: rgba(0, 0, 0, 0.2);
 	border: 1px solid rgba(255, 255, 255, 0.5);
-	color: white;
+	color:  white;
 	cursor: pointer;
 	padding: 18px;
 	text-align: left;
+	font-family: Poo;
 	outline: none;
 	font-size: 15px;
 	border-radius: 20px;
@@ -269,9 +290,10 @@ html, body {
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	max-width: 100%;
 	width: 100%;
 	aspect-ratio: 1;
+	min-height: 300px;
+	min-width: 300px;
 	max-height: 80vh;
 	max-width: 80vh;
 	background-image: url("images/green_felt.png");
@@ -478,10 +500,9 @@ html, body {
 
 .player-name {
 	position: absolute;
-	top: 0;
-	height: 25px;
+	top: 1%;
 	font-family: monospace;
-	font-size: 22px;
+	font-size: 150%;
 }
 
 #deck-container {
@@ -660,4 +681,10 @@ html, body {
 	  transform: translateY(120vh) rotate(calc(360deg * var(--rotation-factor)));
 	}
   }
+
+  @font-face {
+	font-family: Poo;
+	src: url(Chalkduster.ttf);
+  }
+  
   
