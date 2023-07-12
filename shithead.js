@@ -289,52 +289,14 @@ window.onload = function () {
 	randomiseNamesButton.addEventListener("click", function () {
 		assignNames();
 		numPlayers = numPlayersSelect.value;
-		updatePlayerContainers(numPlayers);
-
-		while (playerNamesContainer.firstChild) {
-			playerNamesContainer.removeChild(playerNamesContainer.firstChild);
-		}
-
+	  
+		// Update only the player names
 		for (let i = 0; i < numPlayers; i++) {
-			const playerNameContainer = document.createElement("div");
-			playerNameContainer.classList.add("player-name-container");
-
-
-			const playerNameInput = document.createElement("input");
-			playerNameInput.type = "text";
-			playerNameInput.name = `player${i + 1}`;
-			playerNameInput.placeholder = `Player ${i + 1}`;
-			playerNameInput.value = playerNames[i];
-			playerNameInput.addEventListener("input", function () {
-				updatePlayerName(i, playerNameInput.value);
-			});
-
-			const playerNameLabel = document.createElement("label");
-			playerNameLabel.textContent = `Player ${i + 1}` + "'s Name: ";
-			playerNameLabel.appendChild(playerNameInput);
-			playerNameContainer.appendChild(playerNameLabel);
-
-			const playerIsBot = document.createElement("input");
-			playerIsBot.type = "checkbox";
-			playerIsBot.name = "botCheckbox" + i;
-
-			if (i === 0) {
-				playerIsBot.disabled = true; // Disable the checkbox
-			}
-
-			const cbxLabel = document.createElement("label");
-			cbxLabel.textContent = "Controlled by Computer: ";
-			cbxLabel.appendChild(playerIsBot);
-
-			playerNameContainer.appendChild(cbxLabel);
-
-			playerIsBot.addEventListener("change", function () {
-				setPlayerBotStatus(i, playerIsBot.checked);
-			});
-
-			playerNamesContainer.appendChild(playerNameContainer);
+		  const playerNameInput = playerNamesContainer.querySelector(`input[name="player${i + 1}"]`);
+		  playerNameInput.value = playerNames[i];
 		}
-	});
+	  });
+	  
 
 	for (i = 0; i < settingsButton.length; i++) {
 		settingsButton[i].addEventListener("click", function() {
@@ -612,7 +574,7 @@ window.onload = function () {
 		players = [];
 		playedCards = [];
 		burntCards = [];
-		gameOver = false;
+		gameOver = true;
 		currentPlayerIndex = 0;
 		centreCard = undefined;
 		selectedCardElements = [];
@@ -670,6 +632,7 @@ window.onload = function () {
 			}
 			player.container.style.display = 'flex';
 			player.faceUpContainer.style.display = "flex"; // Re-Enable face up container if disabled from last game
+			player.name.style.textShadow = null;
 			player.cardContainer.style.removeProperty("animation");
 
 			
@@ -1257,6 +1220,7 @@ window.onload = function () {
 
 	async function playGame() {
 		currentPlayerIndex = 0;
+		gameOver = false;
 
 		// Play the game until there is a winner
 		while (!gameOver) {
@@ -1271,10 +1235,12 @@ window.onload = function () {
 			console.log("Card to beat: ", centreCard);
 
 			player.cardContainer.style.setProperty("animation", "pulsing-animation 2s infinite");
+			player.name.style.textShadow = "-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff";
 			while (isSelectedValid == false) {
 				await playTurn(player, centreCard);
 			}
 			player.cardContainer.style.removeProperty("animation");
+			player.name.style.textShadow = null;
 
 			// Assign the last played card to the centre card
 			centreCard = playedCards[playedCards.length - 1];
