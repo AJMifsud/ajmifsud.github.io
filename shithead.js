@@ -88,7 +88,6 @@ window.onload = function () {
 		audio.src = 'sounds/Ace_of_Spades.wav';
 		audio.play();
   	}
-
 	
 	  function theJoker() {
 		// Create an audio element
@@ -96,6 +95,16 @@ window.onload = function () {
 		audio.src = 'sounds/Joker.wav';
 		audio.play();
   	}
+
+	  function fart() {
+		// Create an audio element
+		const audio = document.createElement('audio');
+		const soundFiles = ['sounds/fart1.wav', 'sounds/fart2.wav', 'sounds/fart3.wav', 'sounds/fart4.wav', 'sounds/fart5.wav', 'sounds/fart6.wav', 'sounds/fart7.wav', 'sounds/fart8.wav', 'sounds/fart9.wav', 'sounds/fart10.wav'];
+		const randomIndex = Math.floor(Math.random() * soundFiles.length);
+		audio.src = soundFiles[randomIndex];
+		audio.play();
+	  }
+	  
 
 
 	setInterval(spawnCard, 500); // Spawn a new card every second (adjust the interval as needed)
@@ -751,6 +760,7 @@ window.onload = function () {
 				playPile.removeChild(playPile.firstChild);
 			}
 			updatePlayPileCount();
+			fart();
 			appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b> picked up the play pile!")
 			centreCard = undefined;
 			orderHand(player);

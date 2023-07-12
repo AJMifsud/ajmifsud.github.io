@@ -528,6 +528,7 @@ html, body {
 
 #deck-container {
 	transition: transform 0.5s ease-out;
+	text-align: center;
 	transform: scaleY(0);
 	position: relative;
 	right: 0;
@@ -561,6 +562,7 @@ html, body {
 #burn-pile .card {
 	position: absolute;
 	height: 50%;
+	max-height: 50%;
 }
 
 #draw-pile {
