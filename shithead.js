@@ -1149,9 +1149,6 @@ window.onload = function () {
 			case "10":
 				burnCards(playedCards);
 				appendToGameLog("<b>" + currentPlayerName + "</b> burnt the deck!")
-				if (!playerOut){
-				currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
-				}
 				centreCard = undefined;
 				break;
 		}
@@ -1335,10 +1332,7 @@ window.onload = function () {
 			}
 
 			// Determine next Player
-			if (playerOut && !isTrickCard){
-				// Move to the next player's turn
-				currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
-			} else if (isTrickCard && !matchFour) {
+			if (isTrickCard && !matchFour) {
 				handleTrickCards();
 			} else if (isSelectedValid) {
 				if (!matchFour) {
