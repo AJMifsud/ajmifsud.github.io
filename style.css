@@ -152,7 +152,7 @@ html, body {
 	z-index: 4;
 	width: 70%;
 	height: 75%;
-	font-family: monospace;
+	font-family: Poo;
 	text-align: center;
 	box-shadow: 5px 5px 10px black;
 }
@@ -417,17 +417,19 @@ html, body {
 	align-items: center;
 	justify-content: center;
 	bottom: 10px;
-	overflow-x: auto;
-	overflow-y: hidden;
 	width: 95%;
 	height: 40%;
 }
 
+.playable-cards .card{
+	max-width: 100%;
+	max-height: 100%;
+
+}
 
 .card {
 	border: 1px solid black;
 	border-radius: 5px;
-	margin: 5px;
 	position: relative;
 	transform-style: preserve-3d;
 	height: 100px;
@@ -499,10 +501,14 @@ html, body {
 }
 
 .player-name {
-	position: absolute;
-	top: 1%;
-	font-family: monospace;
-	font-size: 150%;
+    position: absolute;
+    text-align: center;
+    height: 8%;
+    display: flex;
+    align-content: center;
+    top: 1%;
+    font-family: Poo;
+    flex-wrap: wrap;
 }
 
 #deck-container {
@@ -585,7 +591,7 @@ html, body {
     padding: 10px 5px;
 	direction: ltr;
 	text-align: left;
-	font-family: monospace;
+	font-family: Poo;
 	display: block;
 	width: 100%;
 	height: auto;

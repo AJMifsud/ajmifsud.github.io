@@ -64,6 +64,10 @@ window.onload = function () {
 			card.addEventListener('click', queenOfHearts);
 		}
 
+		if (cardImage.includes('joker')){
+			card.addEventListener('click', theJoker);
+		}
+
  	 	card.addEventListener('animationend', () => {
  	   		card.remove(); // Remove the card element from the DOM after the animation finishes
  	 	});
@@ -82,6 +86,14 @@ window.onload = function () {
 		// Create an audio element
 		const audio = document.createElement('audio');
 		audio.src = 'sounds/Ace_of_Spades.wav';
+		audio.play();
+  	}
+
+	
+	  function theJoker() {
+		// Create an audio element
+		const audio = document.createElement('audio');
+		audio.src = 'sounds/Joker.wav';
 		audio.play();
   	}
 
@@ -541,7 +553,7 @@ window.onload = function () {
 		// Create a new div element for the game log
 		gameLog = document.createElement('div');
 		gameLog.id = 'game-log';
-		gameLog.innerText = '### Game Log ###';
+		gameLog.innerText = '#Game Log#';
 		gameLog.innerText += '\nNew Game\n';
 
 		// Append the new console log element to the sidebar
