@@ -1,7 +1,7 @@
 html, body {
 	margin: 0;
 	padding: 0;
-	background-image: url("images/felt.png");
+	background-image: url("images/wood.jpg");
 	/*background: linear-gradient(rgba(2,0,36,1) 0%, rgba(9,9,121,1) 35%, rgba(0,212,255,1) 100%);*/
 }
 
@@ -81,7 +81,6 @@ html, body {
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
-	z-index: 1;
 }
 
 #open-rules {
@@ -220,6 +219,7 @@ html, body {
 	backdrop-filter: blur(4.9px);
 	-webkit-backdrop-filter: blur(4.9px);
 	border: 1px solid rgba(255, 255, 255, 0.5);
+	z-index: 1;
 }
 
 #settings-container{
@@ -282,7 +282,6 @@ html, body {
 	align-items: center;
 	justify-content: center;
 	flex-direction: column;
-	z-index: 1;
 }
 
 
@@ -302,6 +301,7 @@ html, body {
 	border: 5px solid gold;
 	margin: 0 100px 0 100px;
 	box-shadow: 0px 5px 20px black;
+	z-index: 1;
 }
 
 #playpile-container {

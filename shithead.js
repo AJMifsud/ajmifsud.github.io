@@ -56,12 +56,35 @@ window.onload = function () {
 	  	card.style.animationDuration = `${Math.random() * 6 + 4}s`; // Random animation duration between 4 and 10 seconds
 		card.style.backgroundImage = `url(${cardImagesPath}${cardImage})`;
 
+		if (cardImage.includes('Ace_of_Spades') || (cardImage.includes('ace_of_spades2'))){
+			card.addEventListener('click', aceOfSpades);
+		}
+
+		if (cardImage.includes('Queen_of_Hearts') || (cardImage.includes('queen_of_hearts2'))){
+			card.addEventListener('click', queenOfHearts);
+		}
+
  	 	card.addEventListener('animationend', () => {
  	   		card.remove(); // Remove the card element from the DOM after the animation finishes
  	 	});
 
 	  	wrapper.appendChild(card);
 	}
+	
+	function queenOfHearts() {
+		// Create an audio element
+		const audio = document.createElement('audio');
+		audio.src = 'sounds/Queen_of_Hearts.wav';
+		audio.play();
+  	}
+	
+	function aceOfSpades() {
+		// Create an audio element
+		const audio = document.createElement('audio');
+		audio.src = 'sounds/Ace_of_Spades.wav';
+		audio.play();
+  	}
+
 
 	setInterval(spawnCard, 500); // Spawn a new card every second (adjust the interval as needed)
 
