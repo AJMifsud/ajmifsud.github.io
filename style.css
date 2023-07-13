@@ -469,6 +469,7 @@ html, body {
 	transform: translate(-50%, -50%);
 	z-index: 3;
 	width:50%;
+	backface-visibility: hidden;
   }
 
 .card-front {

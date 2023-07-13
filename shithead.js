@@ -433,6 +433,9 @@ window.onload = function () {
 			// Attach event listener to update the card's rank
 			selectElement.addEventListener("change", updateJokerRank);
 
+			// Store a reference to the select element in the card object
+			card.jokerRank = selectElement;
+
 			cardElement.appendChild(selectElement);
 		}
 		cardElement.appendChild(cardFrontElement);
@@ -731,12 +734,23 @@ window.onload = function () {
 		}
 
 		function findValidCards() {
+				
+			// Assign a random joker rank
+			player.hand.forEach(card => {
+				if (player.isBot && card.suit === "Jokers") {
+					const randomIndex = Math.floor(Math.random() * card.jokerRank.options.length);
+					card.jokerRank.value = card.jokerRank.options[randomIndex].value
+					card.rank = card.jokerRank.value;
+				}
+			});
+			
 			// Determine valid cards in the player's hand
 			validCards = player.hand.filter(card => {
 				if (centreCard && centreCard.rank === "7") {
 					return (
 						ranks.indexOf(card.rank) < ranks.indexOf(centreCard.rank) ||
-						trickCards.includes(card.rank)
+						trickCards.includes(card.rank) ||
+						card.suit === "Jokers"
 					);
 				} else if (centreCard) {
 					return (
@@ -790,9 +804,9 @@ window.onload = function () {
 				// If the centre card's rank is "7":
 				// Check each card in the player's hand:
 				player.hand.forEach(card => {
-					if (ranks.indexOf(card.rank) < ranks.indexOf(centreCard.rank) || player.hand.some(card => trickCards.includes(card.rank))) {
+					if (ranks.indexOf(card.rank) < ranks.indexOf(centreCard.rank) || player.hand.some(card => trickCards.includes(card.rank)) || card.suit === "Jokers") {
 						// If the rank of the card is lower than the centre card's rank (7)
-						// OR the hand contains a trick card
+						// OR the hand contains a trick card or a joker
 						canPlay = true;
 						// Set canPlay to true.
 					}
@@ -803,7 +817,7 @@ window.onload = function () {
 				player.hand.forEach(card => {
 					if (ranks.indexOf(card.rank) >= ranks.indexOf(centreCard.rank) || player.hand.some(card => trickCards.includes(card.rank))) {
 						// If the rank of the card is equal to or higher than the centre card's rank
-						// OR the hand contains a trick card
+						// OR the hand contains a trick card or a joker
 						canPlay = true;
 						// Set canPlay to true.
 					}
@@ -812,7 +826,7 @@ window.onload = function () {
 		} else {
 			canPlay = true;
 		}
-
+		
 		// Pickup on unplayable hand
 		if (canPlay == false) {
 			if(player.isBot){
@@ -1106,12 +1120,15 @@ window.onload = function () {
 				// Increment the player counter before it is incremented again, skipping the next player
 				appendToGameLog("<b>" + players[(currentPlayerIndex + 1) % numPlayers].playerName + "</b> must now either play below a 7 or a trick card!")
 				if (!playerOut){
-				currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
+					currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
 				}
 				break;
 			case "10":
 				burnCards(playedCards);
 				appendToGameLog("<b>" + currentPlayerName + "</b> burnt the deck!")
+				if (!playerOut){
+					currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
+				}
 				centreCard = undefined;
 				break;
 		}
