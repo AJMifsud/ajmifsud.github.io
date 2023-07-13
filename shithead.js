@@ -279,11 +279,11 @@ window.onload = function () {
 	});
 
 	closeRulesButton.addEventListener('click', function () {
-		rulesContainer.style.display = 'none';
+		rulesContainer.style.scale = 0;
 	});
 
 	openRulesButton.addEventListener('click', function () {
-		rulesContainer.style.display = 'flex';
+		rulesContainer.style.scale = 1;
 	});
 
 	randomiseNamesButton.addEventListener("click", function () {
