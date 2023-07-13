@@ -289,13 +289,52 @@ window.onload = function () {
 	randomiseNamesButton.addEventListener("click", function () {
 		assignNames();
 		numPlayers = numPlayersSelect.value;
-	  
-		// Update only the player names
-		for (let i = 0; i < numPlayers; i++) {
-		  const playerNameInput = playerNamesContainer.querySelector(`input[name="player${i + 1}"]`);
-		  playerNameInput.value = playerNames[i];
+		updatePlayerContainers(numPlayers);
+
+		while (playerNamesContainer.firstChild) {
+			playerNamesContainer.removeChild(playerNamesContainer.firstChild);
 		}
-	  });
+
+		for (let i = 0; i < numPlayers; i++) {
+			const playerNameContainer = document.createElement("div");
+			playerNameContainer.classList.add("player-name-container");
+
+
+			const playerNameInput = document.createElement("input");
+			playerNameInput.type = "text";
+			playerNameInput.name = `player${i + 1}`;
+			playerNameInput.placeholder = `Player ${i + 1}`;
+			playerNameInput.value = playerNames[i];
+			playerNameInput.addEventListener("input", function () {
+				updatePlayerName(i, playerNameInput.value);
+			});
+
+			const playerNameLabel = document.createElement("label");
+			playerNameLabel.textContent = `Player ${i + 1}` + "'s Name: ";
+			playerNameLabel.appendChild(playerNameInput);
+			playerNameContainer.appendChild(playerNameLabel);
+
+			const playerIsBot = document.createElement("input");
+			playerIsBot.type = "checkbox";
+			playerIsBot.name = "botCheckbox" + i;
+
+			if (i === 0) {
+				playerIsBot.disabled = true; // Disable the checkbox
+			}
+
+			const cbxLabel = document.createElement("label");
+			cbxLabel.textContent = "Controlled by Computer: ";
+			cbxLabel.appendChild(playerIsBot);
+
+			playerNameContainer.appendChild(cbxLabel);
+
+			playerIsBot.addEventListener("change", function () {
+				setPlayerBotStatus(i, playerIsBot.checked);
+			});
+
+			playerNamesContainer.appendChild(playerNameContainer);
+		}
+	});
 	  
 
 	for (i = 0; i < settingsButton.length; i++) {
@@ -738,9 +777,10 @@ window.onload = function () {
 			// Assign a random joker rank
 			player.hand.forEach(card => {
 				if (player.isBot && card.suit === "Jokers") {
-					const randomIndex = Math.floor(Math.random() * card.jokerRank.options.length);
-					card.jokerRank.value = card.jokerRank.options[randomIndex].value
-					card.rank = card.jokerRank.value;
+					const jokerRanks = ["2", "3", "7", "10"]
+					const randomIndex = Math.floor(Math.random() * jokerRanks.length);
+					//card.jokerRank.value = card.jokerRank.options[randomIndex].value
+					card.rank = jokerRanks[randomIndex];
 				}
 			});
 			
