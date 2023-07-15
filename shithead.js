@@ -372,12 +372,14 @@ window.onload = function () {
 	let currentPlayerIndex = 0;
 	let currentPlayerName;
 	let playerOut;
+	let outPlayerIndex;
 	let centreCard;
 	let selectedCardElements = [];
 	let selectedCards = []
 	let isSelectedValid = false;
 	let isTrickCard = false;
 	let matchFour = false
+	let skipCount = 0;
 
 
 	// Define the Player class
@@ -686,7 +688,7 @@ window.onload = function () {
 		dealCards(deck, players);
 
 		// Log player names to console
-		for (let i = 0; i < numPlayers; i++) {
+		for (let i = 0; i < players.length; i++) {
 			console.log(`Player ${i + 1}: ${players[i].playerName}`);
 		}
 
@@ -1136,7 +1138,7 @@ window.onload = function () {
 			case "3":
 				let skippedPlayers = [];
 				for (let i = 1; i <= skipCount; i++) {
-					let skippedPlayerIndex = (currentPlayerIndex + i) % numPlayers;
+					let skippedPlayerIndex = (currentPlayerIndex + i) % players.length;
 					skippedPlayers.push(players[skippedPlayerIndex].playerName);
 				}
 
@@ -1153,21 +1155,21 @@ window.onload = function () {
 
 				appendToGameLog(message);
 
-				currentPlayerIndex = (currentPlayerIndex + skipCount + 1) % numPlayers;
+				currentPlayerIndex = (currentPlayerIndex + skipCount + 1) % players.length;
 				centreCard = undefined;
 				break;
 			case "7":
 				// Increment the player counter before it is incremented again, skipping the next player
-				appendToGameLog("<b>" + players[(currentPlayerIndex + 1) % numPlayers].playerName + "</b> must now either play below a 7 or a trick card!")
+				appendToGameLog("<b>" + players[(currentPlayerIndex + 1) % players.length].playerName + "</b> must now either play below a 7 or a trick card!")
 				if (!playerOut){
-					currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
+					currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
 				}
 				break;
 			case "10":
 				burnCards(playedCards);
 				appendToGameLog("<b>" + currentPlayerName + "</b> burnt the deck!")
 				if (!playerOut){
-					currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
+					currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
 				}
 				centreCard = undefined;
 				break;
@@ -1340,18 +1342,7 @@ window.onload = function () {
 				//player.container.style.display = 'none';
 				appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b> has played all of their cards!")
 				playerOut = true;
-				// Remove the player from the array
-				players.splice(currentPlayerIndex, 1);
-				if (!isTrickCard) {
-					currentPlayerIndex = (currentPlayerIndex - 1) % numPlayers;
-				}
-				numPlayers = players.length;
-			}
-
-			if (players.length == 1) {
-				gameOver = true;
-				appendToGameLog("<b>" + players[0].playerName + " is the SHITHEAD!</b>")
-				break;
+				outPlayerIndex = currentPlayerIndex;
 			}
 
 			// Determine next Player
@@ -1360,10 +1351,22 @@ window.onload = function () {
 			} else if (isSelectedValid) {
 				if (!matchFour) {
 					// Move to the next player's turn
-					currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
+					currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
 				}
 			}
 
+			if(playerOut){
+				// Remove the player from the array
+				players.splice(outPlayerIndex, 1);
+				numPlayers = players.length;
+			}
+			
+			if (players.length == 1) {
+				gameOver = true;
+				appendToGameLog("<b>" + players[0].playerName + " is the SHITHEAD!</b>")
+				break;
+			}
+		
 			if (gameOver) {
 				break;
 			}

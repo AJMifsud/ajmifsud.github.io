@@ -424,7 +424,7 @@ html, body {
 	position: absolute;
 	width: 95%;
 	height: 40%;
-	top: 10px;
+	top: 15px;
 }
 
 .face-up-cards .card{
@@ -498,7 +498,7 @@ html, body {
 }
 
 .playable-cards.bot .card{
-	/*transform: rotateY(180deg);*/
+	transform: rotateY(180deg);
 }
 
 .playable-cards.bot .card:hover{	
