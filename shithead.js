@@ -16,6 +16,7 @@ window.onload = function () {
 	const settingsButton = document.getElementsByClassName("collapsible");
 	const numPlayersSelect = document.getElementById("numPlayers");
 	const playerNamesContainer = document.getElementById("playernames-container");
+	const gameBoard = document.getElementById("game-board");
 	const randomiseNamesButton = document.getElementById("randomise-names-button");
 	const playerLeftContainer = document.getElementById("playerleft-container");
 	const playerTopContainer = document.getElementById("playertop-container");
@@ -39,6 +40,10 @@ window.onload = function () {
 	const playpileCount = document.getElementById('playpile-count');
 	let playerNames = ["Player 1", "Player 2", "Player 3", "Player 4"];
 	const cardImagesPath = 'images/cards/';
+
+	
+	dealButton.disabled = true;
+	randomiseNamesButton.disabled = true;
 
 	function spawnCard() {
 	  	const card = document.createElement('div');
@@ -128,6 +133,8 @@ window.onload = function () {
 	}
 
 	function updatePlayerContainers(numPlayers) {
+		
+		playerBottomContainer.style.display = "none";
 		playerLeftContainer.style.display = "none";
 		playerTopContainer.style.display = "none";
 		playerRightContainer.style.display = "none";
@@ -137,15 +144,18 @@ window.onload = function () {
 		switch (numPlayers) {
 			case "2":
 				orderedContainers = [playerBottomContainer, playerTopContainer];
+				playerBottomContainer.style.display = "flex";
 				playerTopContainer.style.display = "flex";
 				break;
 			case "3":
 				orderedContainers = [playerBottomContainer, playerLeftContainer, playerRightContainer];
+				playerBottomContainer.style.display = "flex";
 				playerLeftContainer.style.display = "flex";
 				playerRightContainer.style.display = "flex";
 				break;
 			case "4":
 				orderedContainers = [playerBottomContainer, playerLeftContainer, playerTopContainer, playerRightContainer];
+				playerBottomContainer.style.display = "flex";
 				playerLeftContainer.style.display = "flex";
 				playerTopContainer.style.display = "flex";
 				playerRightContainer.style.display = "flex";
@@ -257,10 +267,11 @@ window.onload = function () {
 			});
 
 			playerNamesContainer.appendChild(playerNameContainer);
+			
+			dealButton.disabled = false;
+			randomiseNamesButton.disabled = false;
 		}
 	});
-
-	updatePlayerContainers(numPlayersSelect.value);
 
 	jokersCheck.addEventListener('change', function () {
 		if (this.checked) {
@@ -629,6 +640,7 @@ window.onload = function () {
 
 		setTimeout(() => {
 			deckContainer.style.transform = "scaleY(1)";
+			gameBoard.style.transform = "scale(1)";
 		  }, 100);		  
 
 		// Get the number of players from the input field
