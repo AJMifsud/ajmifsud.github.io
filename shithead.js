@@ -1161,16 +1161,12 @@ window.onload = function () {
 			case "7":
 				// Increment the player counter before it is incremented again, skipping the next player
 				appendToGameLog("<b>" + players[(currentPlayerIndex + 1) % players.length].playerName + "</b> must now either play below a 7 or a trick card!")
-				if (!playerOut){
-					currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
-				}
+				currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
 				break;
 			case "10":
 				burnCards(playedCards);
 				appendToGameLog("<b>" + currentPlayerName + "</b> burnt the deck!")
-				if (!playerOut){
-					currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
-				}
+				currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
 				centreCard = undefined;
 				break;
 		}
@@ -1359,6 +1355,9 @@ window.onload = function () {
 				// Remove the player from the array
 				players.splice(outPlayerIndex, 1);
 				numPlayers = players.length;
+				if (currentPlayerIndex > outPlayerIndex){
+					currentPlayerIndex = (currentPlayerIndex - 1 + players.length) % players.length;
+				}
 			}
 			
 			if (players.length == 1) {
