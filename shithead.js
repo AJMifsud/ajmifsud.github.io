@@ -86,6 +86,7 @@ window.onload = function () {
 		audio.src = 'sounds/Queen_of_Hearts.wav';
 		audio.play();
   	}
+
 	
 	function aceOfSpades() {
 		// Create an audio element
@@ -94,23 +95,28 @@ window.onload = function () {
 		audio.play();
   	}
 	
-	  function theJoker() {
+	function theJoker() {
 		// Create an audio element
 		const audio = document.createElement('audio');
 		audio.src = 'sounds/Joker.wav';
 		audio.play();
   	}
 
-	  function fart() {
+	function fart() {
 		// Create an audio element
 		const audio = document.createElement('audio');
 		const soundFiles = ['sounds/fart1.wav', 'sounds/fart2.wav', 'sounds/fart3.wav', 'sounds/fart4.wav', 'sounds/fart5.wav', 'sounds/fart6.wav', 'sounds/fart7.wav', 'sounds/fart8.wav', 'sounds/fart9.wav', 'sounds/fart10.wav'];
 		const randomIndex = Math.floor(Math.random() * soundFiles.length);
 		audio.src = soundFiles[randomIndex];
 		audio.play();
-	  }
-	  
-
+	}
+	    
+	function flush() {
+		// Create an audio element
+		const audio = document.createElement('audio');
+		audio.src = 'sounds/flush.wav';
+		audio.play();
+  	}
 
 	setInterval(spawnCard, 500); // Spawn a new card every second (adjust the interval as needed)
 
@@ -1136,6 +1142,7 @@ window.onload = function () {
 		while (playPile.firstChild) {
 			playPile.removeChild(playPile.firstChild);
 		}
+		flush();
 		updatePlayPileCount();
 	}
 
