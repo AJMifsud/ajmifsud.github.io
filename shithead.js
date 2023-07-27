@@ -626,7 +626,7 @@ window.onload = function () {
 	// Function to update the burnt pile card count display
 	function updateBurnPileCount() {
 		const numCards = burntCards.length;
-		burnpileCount.textContent = `Cards burnt: ${numCards}`;
+		burnpileCount.textContent = `Cards flushed: ${numCards}`;
 	}
 
 	function initialiseGame() {
@@ -1184,7 +1184,7 @@ window.onload = function () {
 				break;
 			case "10":
 				burnCards(playedCards);
-				appendToGameLog("<b>" + currentPlayerName + "</b> burnt the deck!")
+				appendToGameLog("<b>" + currentPlayerName + "</b> flushed the deck!")
 				currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
 				centreCard = undefined;
 				break;
