@@ -677,6 +677,8 @@ window.onload = function () {
 			const handContainer = playerContainer.querySelector(".playable-cards");
 			const faceUpContainer = playerContainer.querySelector(".face-up-cards");
 			const faceDownContainer = playerContainer.querySelector(".face-down-cards");
+			const playerMat = playerContainer.querySelector(".player-hand-container")
+			const playerTrophy = playerContainer.querySelector(".player-trophy")
 
 			// Create a new player object with empty arrays for each type of card
 			const player = new Player(playerName, [], [], []);
@@ -688,6 +690,8 @@ window.onload = function () {
 			player.handContainer = handContainer;
 			player.faceUpContainer = faceUpContainer;
 			player.faceDownContainer = faceDownContainer;
+			player.playerMat = playerMat;
+			player.playerTrophy = playerTrophy;
 			if (botCheckboxes[i].checked) {
 				player.isBot = true;
 				handContainer.classList.add("bot");
@@ -696,8 +700,8 @@ window.onload = function () {
 			player.faceUpContainer.style.display = "flex"; // Re-Enable face up container if disabled from last game
 			player.name.style.textShadow = null;
 			player.cardContainer.style.removeProperty("animation");
-
-			
+			player.playerMat.style.transform = "rotateY(0deg)";
+			player.playerTrophy.style.backgroundImage = null;
 
 			players.push(player);
 		}
@@ -1295,6 +1299,7 @@ window.onload = function () {
 	async function playGame() {
 		currentPlayerIndex = 0;
 		gameOver = false;
+		numWinners = 0;
 
 		// Play the game until there is a winner
 		while (!gameOver) {
@@ -1351,13 +1356,23 @@ window.onload = function () {
 
 			// Check for winner
 			if (player.hand.length === 0 && player.faceUp.length === 0 && player.faceDown.length === 0) {
-
-				player.cardContainer.style.animation = "shrink 2s forwards";
-				
-				//player.container.style.display = 'none';
 				appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b> has played all of their cards!")
 				playerOut = true;
 				outPlayerIndex = currentPlayerIndex;
+
+				if (numWinners === 0){
+					player.playerTrophy.style.backgroundImage = 'url(images/first_place.png)';
+				} else if (numWinners === 1){
+					player.playerTrophy.style.backgroundImage = 'url(images/second_place.png)';
+				} else if (numWinners === 2){
+					player.playerTrophy.style.backgroundImage = 'url(images/third_place.png)';
+				}
+
+				
+				player.playerMat.style.transform = "rotateY(180deg)";
+
+				numWinners++;
+
 			}
 
 			// Determine next Player
@@ -1382,6 +1397,9 @@ window.onload = function () {
 			if (players.length == 1) {
 				gameOver = true;
 				appendToGameLog("<b>" + players[0].playerName + " is the SHITHEAD!</b>")
+				
+				players[0].playerTrophy.style.backgroundImage = 'url(images/dunghead.png)';
+				players[0].playerMat.style.transform = "rotateY(180deg)";
 				break;
 			}
 		
