@@ -27,6 +27,7 @@ window.onload = function () {
 	const rulesContainer = document.getElementById('rules-container');
 	const jokersCheck = document.querySelector('input[name="withJokers"]');
 	const showGameLog = document.querySelector('input[name="showGameLog"]');
+	const randomiseStarterCheck = document.querySelector('input[name="randomise-starter"]');
 	let gameLogContainer = document.getElementById('game-log-container');
 	const deckContainer = document.getElementById('deck-container');
 	const drawPile = document.getElementById('draw-pile');
@@ -397,6 +398,9 @@ window.onload = function () {
 	let isTrickCard = false;
 	let matchFour = false
 	let skipCount = 0;
+	let randomiseStarter = randomiseStarterCheck.checked ? "Yes" : "No";
+	let randomPlayerIndex;
+
 
 
 	// Define the Player class
@@ -643,6 +647,7 @@ window.onload = function () {
 		isSelectedValid = false;
 		isTrickCard = false;
 		matchFour = false
+		randomPlayerIndex = Math.floor(Math.random() * numPlayers);
 
 		setTimeout(() => {
 			deckContainer.style.transform = "scaleY(1)";
@@ -1301,9 +1306,14 @@ window.onload = function () {
 		gameOver = false;
 		numWinners = 0;
 
+		if (randomiseStarter){
+			currentPlayerIndex = randomPlayerIndex;
+		}
+
 		// Play the game until there is a winner
 		while (!gameOver) {
 
+			
 			playerOut = false;
 			isSelectedValid = false;
 			let player = players[currentPlayerIndex];
