@@ -102,18 +102,23 @@
 						</div>
 						<button type="button" class="collapsible">Game Settings</button>
 						<div class = "settings">
-							<div id="dealJokers-container">
 								<label>
 								<input type="checkbox" name="withJokers"> Deal Jokers?
 								</label>
 								<p style="font-size: 80%; color: lightgray;">(Two jokers will be shuffled in the deck if ticked. Jokers may assume the role of ANY card.)</p>
-							</div>
+								<hr>
 							<label>
 							<input type="checkbox" name="showGameLog" checked> Show Game Log
 							</label>
+							<hr>
 							<label>
-							<input type="checkbox" name="randomise-starter"> Randomise first player
+							<input type="checkbox" name="randomise-starter"> Randomise First Player
 							</label>
+							<hr>
+							<label>
+							<input type="checkbox" name="double-deck-check"> Double Deck
+							</label>
+							<p style="font-size: 80%; color: lightgray;">(If jokers are enabled, a total of four jokers will be shuffled in the deck.)</p>
 						</div>
 					</div>
 					<button id="deal-button">Deal New Game</button>

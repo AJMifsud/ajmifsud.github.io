@@ -28,6 +28,7 @@ window.onload = function () {
 	const jokersCheck = document.querySelector('input[name="withJokers"]');
 	const showGameLog = document.querySelector('input[name="showGameLog"]');
 	const randomiseStarterCheck = document.querySelector('input[name="randomise-starter"]');
+	const doubleDeckCheck = document.querySelector('input[name="double-deck-check"]');
 	let gameLogContainer = document.getElementById('game-log-container');
 	const deckContainer = document.getElementById('deck-container');
 	const drawPile = document.getElementById('draw-pile');
@@ -660,8 +661,14 @@ window.onload = function () {
 
 		createGameLog();
 
-		//Create deck with/out jokers
+		// Create deck with/out jokers
 		deck = createDeck(withJokers);
+
+		if (doubleDeckCheck.checked) {
+  			// Concatenate the deck with a second deck
+  			deck = deck.concat(createDeck(withJokers));
+		}
+
 		shuffleDeck(deck);
 
 		// Clear cards from game container
