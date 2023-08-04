@@ -250,6 +250,10 @@ html, body {
 	width: 100%;
   }
 
+  .collapsible.active {
+	background: rgba(0, 0, 0, 0.4);
+  }
+
   .collapsible.active:hover {
 	background: rgba(0, 0, 0, 0.5);
   }
