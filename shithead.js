@@ -1406,7 +1406,7 @@ window.onload = function () {
 			
 			if (players.length == 1) {
 				gameOver = true;
-				appendToGameLog("<b>" + players[0].playerName + " is the SHITHEAD!</b>")
+				appendToGameLog("<b>" + players[0].playerName + " is the DUNGHEAD!</b>")
 				
 				players[0].playerTrophy.style.backgroundImage = 'url(images/dunghead.png)';
 				players[0].playerMat.style.transform = "rotateY(180deg)";
