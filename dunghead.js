@@ -980,8 +980,8 @@ window.onload = function () {
 			validCards.sort((a, b) => ranks.indexOf(a.rank) - ranks.indexOf(b.rank));
 			const cardElements = player.handContainer.querySelectorAll('.card');
 
-			// Check if all valid cards are trick cards
-			const allTrickCards = validCards.every(card => trickCards.includes(card.rank));
+			// Check if all valid cards are trick cards or jokers
+			const allTrickCards = validCards.every(card => trickCards.includes(card.rank) || card.suit === "Jokers");
 
 			// Select a card based on the available options
 			let selectedCard;
