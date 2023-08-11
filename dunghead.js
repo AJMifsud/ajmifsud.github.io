@@ -830,7 +830,8 @@ window.onload = function () {
 				} else if (centreCard) {
 					return (
 						ranks.indexOf(card.rank) >= ranks.indexOf(centreCard.rank) ||
-						trickCards.includes(card.rank)
+						trickCards.includes(card.rank) ||
+						card.suit === "Jokers"
 					);
 				} else {
 					return true;
@@ -890,7 +891,7 @@ window.onload = function () {
 				// If the centre card's rank is not "7":
 				// Check each card in the player's hand:
 				player.hand.forEach(card => {
-					if (ranks.indexOf(card.rank) >= ranks.indexOf(centreCard.rank) || player.hand.some(card => trickCards.includes(card.rank))) {
+					if (ranks.indexOf(card.rank) >= ranks.indexOf(centreCard.rank) || player.hand.some(card => trickCards.includes(card.rank)) || card.suit === "Jokers") {
 						// If the rank of the card is equal to or higher than the centre card's rank
 						// OR the hand contains a trick card or a joker
 						canPlay = true;
