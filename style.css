@@ -270,9 +270,14 @@ html, body {
 	justify-content: center;
 	align-items: center;
 	overflow-y: hidden;
-	height: 0px;
 	max-height: 0px;
 	border-radius: 10px;
+	transition: max-height 0.8s ease-out;
+}
+
+.settings *{
+	margin: 5px 0px;
+	padding: 0px 5px;
 }
 
 .player-name-container, .player-names-container {
@@ -282,7 +287,7 @@ html, body {
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
-	margin: 10px 0px;
+	margin: 5px 5px;
 	padding: 10px;
 }
 

@@ -367,7 +367,6 @@ window.onload = function () {
 		  } else {
 			settings.style.height = "auto";
 			settings.style.maxHeight = "1000px"
-			settings.style.padding = "10px 0px";
 		  } 
 		});
 	  }
