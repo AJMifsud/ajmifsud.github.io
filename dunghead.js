@@ -114,7 +114,7 @@ window.onload = function () {
 		audio.play();
 	}
 
-	setInterval(spawnCard, 500); // Spawn a new card every second (adjust the interval as needed)
+	setInterval(spawnCard, 250); // Spawn a new card every second (adjust the interval as needed)
 
 
 	function randomName() {
@@ -1245,11 +1245,13 @@ window.onload = function () {
 			console.log("Card to beat: ", centreCard);
 
 			player.cardContainer.style.setProperty("animation", "pulsing-animation 2s infinite");
+			player.playerMat.style.transform = "scale(1.5)";
 			player.name.style.textShadow = "-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff";
 			while (isSelectedValid == false) {
 				await playTurn(player, centreCard);
 			}
 			player.cardContainer.style.removeProperty("animation");
+			player.playerMat.style.transform = "scale(1)";
 			player.name.style.textShadow = null;
 
 			// Assign the last played card to the centre card
