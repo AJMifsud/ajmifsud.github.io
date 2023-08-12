@@ -118,21 +118,16 @@ window.onload = function () {
 	setInterval(spawnCard, 500); // Spawn a new card every second (adjust the interval as needed)
 
 
-	function assignNames() {
-		playerNames = []
-		const names = ["Andy", "Louis", "Robbie", "Patrick", "Dan",
+	function randomName() {
+		const names = [
+			"Andy", "Louis", "Robbie", "Patrick", "Dan",
 			"Ashley", "Christie", "Jemma", "Toby", "Charlie",
 			"Stafford", "Matt", "Helena", "Natasha", "Edison", "Hannah",
 			"Harry", "Adam", "Marin", "Bertie", "Jack", "Ella"
 		];
-		while (playerNames.length < 4) {
-			const randomIndex = Math.floor(Math.random() * names.length);
-			const randomName = names[randomIndex];
-
-			if (!playerNames.includes(randomName)) {
-				playerNames.push(randomName);
-			}
-		}
+	
+		const randomIndex = Math.floor(Math.random() * names.length);
+		return names[randomIndex];
 	}
 
 	function updatePlayerContainers(numPlayers) {
@@ -175,6 +170,7 @@ window.onload = function () {
 
 
 			const playerNameInput = document.createElement("input");
+			playerNameInput.classList.add("player-name-input");
 			playerNameInput.type = "text";
 			playerNameInput.name = `player${i + 1}`;
 			playerNameInput.placeholder = `Player ${i + 1}`;
@@ -183,10 +179,26 @@ window.onload = function () {
 			});
 
 			const playerNameLabel = document.createElement("label");
-			playerNameLabel.textContent = `Player ${i + 1}` + "'s Name: ";
+			playerNameLabel.innerHTML = `Player ${i + 1}'s Name:<br>`;
 			playerNameLabel.appendChild(playerNameInput);
+			const playerNameClear = document.createElement("button");
+			const playerNameRandomise = document.createElement("button");
+			playerNameClear.classList.add("name-clear-button");
+			playerNameRandomise.classList.add("random-name-button");
+			playerNameClear.title = "Clear Player Name"; // Tooltip text for Clear button
+			playerNameRandomise.title = "Randomise Player Name"; // Tooltip text for Randomise button
+			playerNameLabel.appendChild(playerNameClear);
+			playerNameLabel.appendChild(playerNameRandomise);
 			playerNameContainer.appendChild(playerNameLabel);
 
+			playerNameClear.addEventListener("click", function () {
+				playerNameInput.value = ""; // Clear the input field
+			});
+	
+			playerNameRandomise.addEventListener("click", function () {
+				playerNameInput.value = randomName();
+			});
+			
 			const playerIsBot = document.createElement("input");
 			playerIsBot.type = "checkbox";
 			playerIsBot.name = "botCheckbox" + i;
@@ -226,51 +238,14 @@ window.onload = function () {
 
 	numPlayersSelect.addEventListener("change", function () {
 
-		const numPlayers = this.value;
-		updatePlayerContainers(numPlayers);
 
 		while (playerNamesContainer.firstChild) {
 			playerNamesContainer.removeChild(playerNamesContainer.firstChild);
 		}
+		
+		const numPlayers = this.value;
+		updatePlayerContainers(numPlayers);
 
-		for (let i = 0; i < numPlayers; i++) {
-			const playerNameContainer = document.createElement("div");
-			playerNameContainer.classList.add("player-name-container");
-
-
-			const playerNameInput = document.createElement("input");
-			playerNameInput.type = "text";
-			playerNameInput.name = `player${i + 1}`;
-			playerNameInput.placeholder = `Player ${i + 1}`;
-			playerNameInput.addEventListener("input", function () {
-				updatePlayerName(i, playerNameInput.value);
-			});
-
-			const playerNameLabel = document.createElement("label");
-			playerNameLabel.textContent = `Player ${i + 1}` + "'s Name: ";
-			playerNameLabel.appendChild(playerNameInput);
-			playerNameContainer.appendChild(playerNameLabel);
-
-			const playerIsBot = document.createElement("input");
-			playerIsBot.type = "checkbox";
-			playerIsBot.name = "botCheckbox" + i;
-
-			if (i === 0) {
-				playerIsBot.disabled = true; // Disable the checkbox
-			}
-
-			const cbxLabel = document.createElement("label");
-			cbxLabel.textContent = "Controlled by Computer: ";
-			cbxLabel.appendChild(playerIsBot);
-
-			playerNameContainer.appendChild(cbxLabel);
-
-			playerIsBot.addEventListener("change", function () {
-				setPlayerBotStatus(i, playerIsBot.checked);
-			});
-
-			playerNamesContainer.appendChild(playerNameContainer);
-		}
 	});
 
 	jokersCheck.addEventListener('change', function () {
@@ -295,56 +270,6 @@ window.onload = function () {
 
 	openRulesButton.addEventListener('click', function () {
 		rulesContainer.style.scale = 1;
-	});
-
-	randomiseNamesButton.addEventListener("click", function () {
-		assignNames();
-		numPlayers = numPlayersSelect.value;
-		updatePlayerContainers(numPlayers);
-
-		while (playerNamesContainer.firstChild) {
-			playerNamesContainer.removeChild(playerNamesContainer.firstChild);
-		}
-
-		for (let i = 0; i < numPlayers; i++) {
-			const playerNameContainer = document.createElement("div");
-			playerNameContainer.classList.add("player-name-container");
-
-
-			const playerNameInput = document.createElement("input");
-			playerNameInput.type = "text";
-			playerNameInput.name = `player${i + 1}`;
-			playerNameInput.placeholder = `Player ${i + 1}`;
-			playerNameInput.value = playerNames[i];
-			playerNameInput.addEventListener("input", function () {
-				updatePlayerName(i, playerNameInput.value);
-			});
-
-			const playerNameLabel = document.createElement("label");
-			playerNameLabel.textContent = `Player ${i + 1}` + "'s Name: ";
-			playerNameLabel.appendChild(playerNameInput);
-			playerNameContainer.appendChild(playerNameLabel);
-
-			const playerIsBot = document.createElement("input");
-			playerIsBot.type = "checkbox";
-			playerIsBot.name = "botCheckbox" + i;
-
-			if (i === 0) {
-				playerIsBot.disabled = true; // Disable the checkbox
-			}
-
-			const cbxLabel = document.createElement("label");
-			cbxLabel.textContent = "Controlled by Computer: ";
-			cbxLabel.appendChild(playerIsBot);
-
-			playerNameContainer.appendChild(cbxLabel);
-
-			playerIsBot.addEventListener("change", function () {
-				setPlayerBotStatus(i, playerIsBot.checked);
-			});
-
-			playerNamesContainer.appendChild(playerNameContainer);
-		}
 	});
 
 	for (i = 0; i < settingsButton.length; i++) {

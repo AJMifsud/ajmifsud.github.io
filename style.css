@@ -280,7 +280,31 @@ html, body {
 	margin: 5px 5px;
 }
 
-.player-name-container, .player-names-container {
+.player-name-input {
+	max-width: 50%;
+}
+
+.name-clear-button, .random-name-button {
+	aspect-ratio: 1;
+	background-size: contain;
+	background-color: #00000000;
+	border: 0px solid;
+	margin: 5px;
+}
+
+.name-clear-button {
+	background-image: url("images/clear-name.png");
+}
+
+.random-name-button  {
+	background-image: url("images/random-name.png");	
+}
+
+#playernames-container{
+	width: 100%;
+}
+
+.player-name-container{
 	border: 1px solid;
 	border-radius: 5px;
 	display: flex;
