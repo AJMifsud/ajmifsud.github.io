@@ -17,7 +17,6 @@ window.onload = function () {
 	const numPlayersSelect = document.getElementById("numPlayers");
 	const playerNamesContainer = document.getElementById("playernames-container");
 	const gameBoard = document.getElementById("game-board");
-	const randomiseNamesButton = document.getElementById("randomise-names-button");
 	const playerLeftContainer = document.getElementById("playerleft-container");
 	const playerTopContainer = document.getElementById("playertop-container");
 	const playerRightContainer = document.getElementById("playerright-container");
@@ -197,6 +196,7 @@ window.onload = function () {
 	
 			playerNameRandomise.addEventListener("click", function () {
 				playerNameInput.value = randomName();
+				updatePlayerName(i, playerNameInput.value);
 			});
 			
 			const playerIsBot = document.createElement("input");
