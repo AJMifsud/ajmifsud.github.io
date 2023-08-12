@@ -43,10 +43,6 @@ window.onload = function () {
 	let playerNames = ["Player 1", "Player 2", "Player 3", "Player 4"];
 	const cardImagesPath = 'images/cards/';
 
-	
-	dealButton.disabled = true;
-	randomiseNamesButton.disabled = true;
-
 	function spawnCard() {
 	  	const card = document.createElement('div');
 	  	card.classList.add('card');
@@ -89,7 +85,6 @@ window.onload = function () {
 		audio.play();
   	}
 
-	
 	function aceOfSpades() {
 		// Create an audio element
 		const audio = document.createElement('audio');
@@ -275,9 +270,6 @@ window.onload = function () {
 			});
 
 			playerNamesContainer.appendChild(playerNameContainer);
-			
-			dealButton.disabled = false;
-			randomiseNamesButton.disabled = false;
 		}
 	});
 
@@ -354,7 +346,6 @@ window.onload = function () {
 			playerNamesContainer.appendChild(playerNameContainer);
 		}
 	});
-	  
 
 	for (i = 0; i < settingsButton.length; i++) {
 		settingsButton[i].addEventListener("click", function() {
@@ -369,7 +360,8 @@ window.onload = function () {
 			settings.style.maxHeight = "1000px"
 		  } 
 		});
-	  }
+	}
+
 
 	//----------//
 	//GAME LOGIC//
@@ -400,8 +392,8 @@ window.onload = function () {
 	let skipCount = 0;
 	let randomiseStarter = randomiseStarterCheck.checked ? "Yes" : "No";
 	let randomPlayerIndex;
-
-
+	
+	updatePlayerContainers(numPlayers);
 
 	// Define the Player class
 	class Player {
@@ -511,7 +503,6 @@ window.onload = function () {
 		return cardElement;
 	}
 
-
 	function removeCard(cardElement, container) {
 		container.removeChild(cardElement);
 	}
@@ -572,7 +563,6 @@ window.onload = function () {
 			createCardElement(card, player.faceUpContainer);
 		});
 	}
-
 
 	function createGameLog() {
 
@@ -1306,7 +1296,6 @@ window.onload = function () {
 		orderHand(player);
 		orderFaceUp(player);
 	}
-
 
 	async function playGame() {
 		currentPlayerIndex = 0;

@@ -330,6 +330,7 @@ html, body {
 	height: 33%;
 	border: 3px solid gold;
 	border-radius: 5px;
+	background-image: url("images/felt.png");
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -343,6 +344,7 @@ html, body {
 	max-height: 10%;
 	height: 10%;
 	width: 100%;
+	color: white;
 }
 
 #play-pile {
@@ -596,11 +598,14 @@ html, body {
 #burn-pile {
 	display: flex;
 	position: relative;
-	height: 40%;
-	width: 90%;
+	width: 75%;
+	aspect-ratio: 1;
 	justify-content: center;
 	align-items: center;
 	padding: 20px;
+	border: 3px solid gold;
+	border-radius: 5px;
+	background-image: url("images/felt.png");
 }
 
 #burn-pile .card {
@@ -612,11 +617,14 @@ html, body {
 #draw-pile {
 	display: flex;
 	position: relative;
-	height: 40%;
-	width: 90%;
+	width: 75%;
+	aspect-ratio: 1;
 	justify-content: center;
 	align-items: center;
 	padding:20px;
+	border: 3px solid gold;
+	border-radius: 5px;
+	background-image: url("images/felt.png");
 }
 
 #draw-pile .card {
