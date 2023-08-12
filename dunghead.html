@@ -16,20 +16,20 @@
 	</head>
 	<body>
 		<div id="wrapper">
-		<div id="top-container">
-			<div id="open-rules">
-				Game<br>Rules
+			<div id="top-container">
+				<div id="open-rules">
+					Game<br>Rules
+				</div>
+				<div id="logo-container">
+					<img id="logo" src="images/dunghead_logo.png" alt="logo">
+				</div>
+				<a href="https://docs.google.com/spreadsheets/d/1x6_RnsynriWTYPvkBiFDrfylFFzGDwJM4YmEGst_Q2c/edit?usp=sharing" target="_blank" rel="noopener noreferrer">
+					<div id="bug-report">Report<br>a Bug</div>
+				</a>
 			</div>
-			<div id="logo-container">
-				<img id="logo" src="images/dunghead_logo.png" alt="logo">
-			</div>
-			<a href="https://docs.google.com/spreadsheets/d/1x6_RnsynriWTYPvkBiFDrfylFFzGDwJM4YmEGst_Q2c/edit?usp=sharing" target="_blank" rel="noopener noreferrer">
-			<div id="bug-report">Report<br>a Bug</div>
-			</a>
-		</div>
 			<div id="rules-container">
 				<h2 style="position: absolute; top: 0;">Game Rules</h2>
-				<img id="close-rules" src="images/close_icon.png" alt="Close rules container">
+				<div id="close-rules"></div>
 				<div id="rules">
 					<p>Welcome to dunghead! A card game for 2 to 4 players!<br><br></p>
 					<p>At the start of the game, each player is dealt three cards facing down. These cards cannot be viewed or played until later in the game.<br><br>
@@ -82,112 +82,112 @@
 				</div>
 			</div>
 			<div id="page-container">
-			<div id="left-container">
-				<div id="sidebar">
-					<h2 style="margin-bottom: 20px; font-family: Poo; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;">Options</h2>
-					<div id="settings-container">
-						<button type="button" class="collapsible">Player Settings</button>
-						<div class = "settings">
-							<div id = "playerno-container">
-								<label for="numPlayers">Number of Players:</label>
-								<select name="numPlayers" id="numPlayers">
-									<option value="2">2</option>
-									<option value="3">3</option>
-									<option value="4">4</option>
-								</select>
+				<div id="left-container">
+					<div id="sidebar">
+						<h2 style="margin-bottom: 20px; font-family: Poo; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;">Options</h2>
+						<div id="settings-container">
+							<button type="button" class="collapsible">Player Settings</button>
+							<div class = "settings">
+								<div id = "playerno-container">
+									<label for="numPlayers">Number of Players:</label>
+									<select name="numPlayers" id="numPlayers">
+										<option value="2">2</option>
+										<option value="3">3</option>
+										<option value="4">4</option>
+									</select>
+								</div>
+								<div id="playernames-container">
+								</div>
 							</div>
-							<div id="playernames-container">
-							</div>
-						</div>
-						<button type="button" class="collapsible">Game Settings</button>
-						<div class = "settings">
+							<button type="button" class="collapsible">Game Settings</button>
+							<div class = "settings">
 								<br>
 								<label>
 								<input type="checkbox" name="withJokers"> Deal Jokers?
 								</label>
 								<p style="font-size: 80%; color: lightgray; width: 90%;">(Two jokers will be shuffled in the deck if ticked. Jokers may assume the role of ANY card.)</p>
 								<hr style="width: 90%;">
-							<label>
-							<input type="checkbox" name="showGameLog" checked> Show Game Log
-							</label>
-							<hr style="width: 90%;">
-							<label>
-							<input type="checkbox" name="randomise-starter"> Randomise First Player
-							</label>
-							<hr style="width: 90%;">
-							<label>
-							<input type="checkbox" name="double-deck-check"> Double Deck
-							</label>
-							<p style="font-size: 80%; color: lightgray; width: 90%;">(If jokers are enabled, a total of four jokers will be shuffled in the deck.)</p>
+								<label>
+								<input type="checkbox" name="showGameLog" checked> Show Game Log
+								</label>
+								<hr style="width: 90%;">
+								<label>
+								<input type="checkbox" name="randomise-starter"> Randomise First Player
+								</label>
+								<hr style="width: 90%;">
+								<label>
+								<input type="checkbox" name="double-deck-check"> Double Deck
+								</label>
+								<p style="font-size: 80%; color: lightgray; width: 90%;">(If jokers are enabled, a total of four jokers will be shuffled in the deck.)</p>
+							</div>
 						</div>
+						<hr style="width: 100%;">
+						<button id="deal-button">Deal New Game</button>
 					</div>
-					<hr style="width: 100%;">
-					<button id="deal-button">Deal New Game</button>
+				</div>
+				<div id="game-container">
+					<div id="game-board">
+						<div id="playerbottom-container" class="player-container">
+							<div class="player-name">Player 1</div>
+							<div class="player-hand-container">
+								<div id="playerbottom-hand" class="player-hand">
+									<div class="face-down-cards"></div>
+									<div class="face-up-cards"></div>
+									<div class="playable-cards"></div>
+								</div>
+								<div class="player-trophy"></div>
+							</div>
+						</div>
+						<div id="playerleft-container" class="player-container">
+							<div class="player-name">Player 2</div>
+							<div class="player-hand-container">
+								<div id="playerleft-hand" class="player-hand">
+									<div class="face-down-cards"></div>
+									<div class="face-up-cards"></div>
+									<div class="playable-cards"></div>
+								</div>
+								<div class="player-trophy"></div>
+							</div>
+						</div>
+						<div id="playertop-container" class="player-container">
+							<div class="player-name">Player 3</div>
+							<div class="player-hand-container">
+								<div id="playertop-hand" class="player-hand">
+									<div class="face-down-cards"></div>
+									<div class="face-up-cards"></div>
+									<div class="playable-cards"></div>
+								</div>
+								<div class="player-trophy"></div>
+							</div>
+						</div>
+						<div id="playerright-container" class="player-container">
+							<div class="player-name">Player 4</div>
+							<div class="player-hand-container">
+								<div id="playerright-hand" class="player-hand">
+									<div class="face-down-cards"></div>
+									<div class="face-up-cards"></div>
+									<div class="playable-cards"></div>
+								</div>
+								<div class="player-trophy"></div>
+							</div>
+						</div>
+						<div id="playpile-container">
+							<div id="playpile-count"></div>
+							<div id="play-pile"></div>
+						</div>
+						<button id="start-button">Start Game</button>
+						<div id="game-log-container"></div>
+					</div>
+				</div>
+				<div id = "deck-container">
+					<div id="burnpile-count"></div>
+					<div id="burn-pile">
+					</div>
+					<div id="drawpile-count"></div>
+					<div id="draw-pile">
+					</div>
 				</div>
 			</div>
-			<div id="game-container">
-				<div id="game-board">
-					<div id="playerbottom-container" class="player-container">
-						<div class="player-name">Player 1</div>
-						<div class="player-hand-container">
-						<div id="playerbottom-hand" class="player-hand">
-							<div class="face-down-cards"></div>
-							<div class="face-up-cards"></div>
-							<div class="playable-cards"></div>
-						</div>
-						<div class="player-trophy"></div>
-						</div>
-					</div>
-					<div id="playerleft-container" class="player-container">
-						<div class="player-name">Player 2</div>
-						<div class="player-hand-container">
-						<div id="playerleft-hand" class="player-hand">
-							<div class="face-down-cards"></div>
-							<div class="face-up-cards"></div>
-							<div class="playable-cards"></div>
-						</div>
-						<div class="player-trophy"></div>
-						</div>
-					</div>
-					<div id="playertop-container" class="player-container">
-						<div class="player-name">Player 3</div>
-						<div class="player-hand-container">
-						<div id="playertop-hand" class="player-hand">
-							<div class="face-down-cards"></div>
-							<div class="face-up-cards"></div>
-							<div class="playable-cards"></div>
-						</div>
-						<div class="player-trophy"></div>
-						</div>
-					</div>
-					<div id="playerright-container" class="player-container">
-						<div class="player-name">Player 4</div>
-						<div class="player-hand-container">
-						<div id="playerright-hand" class="player-hand">
-							<div class="face-down-cards"></div>
-							<div class="face-up-cards"></div>
-							<div class="playable-cards"></div>
-						</div>
-						<div class="player-trophy"></div>
-						</div>
-					</div>
-					<div id="playpile-container">
-						<div id="playpile-count"></div>
-						<div id="play-pile"></div>
-					</div>
-					<button id="start-button">Start Game</button>
-					<div id="game-log-container"></div>
-				</div>
-			</div>
-			<div id = "deck-container">
-				<div id="burnpile-count"></div>
-				<div id="burn-pile">
-				</div>
-				<div id="drawpile-count"></div>
-				<div id="draw-pile">
-				</div>
-			</div>
-		</div>
 		</div>
 	</body>
 </html>

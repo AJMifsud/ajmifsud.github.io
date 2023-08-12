@@ -43,60 +43,60 @@ window.onload = function () {
 	const cardImagesPath = 'images/cards/';
 
 	function spawnCard() {
-	  	const card = document.createElement('div');
-	  	card.classList.add('card');
-	  	const randomLeft = Math.random() * 100; // Adjust the value to specify the range of left values
+		const card = document.createElement('div');
+		card.classList.add('card');
+		const randomLeft = Math.random() * 100; // Adjust the value to specify the range of left values
 
 		const cardImageNames = ["10_of_Clubs.png", "10_of_Diamonds.png", "10_of_Hearts.png", "10_of_Spades.png", "2_of_Clubs.png", "2_of_Diamonds.png", "2_of_Hearts.png", "2_of_Spades.png", "3_of_Clubs.png", "3_of_Diamonds.png", "3_of_Hearts.png", "3_of_Spades.png", "4_of_Clubs.png", "4_of_Diamonds.png", "4_of_Hearts.png", "4_of_Spades.png", "5_of_Clubs.png", "5_of_Diamonds.png", "5_of_Hearts.png", "5_of_Spades.png", "6_of_Clubs.png", "6_of_Diamonds.png", "6_of_Hearts.png", "6_of_Spades.png", "7_of_Clubs.png", "7_of_Diamonds.png", "7_of_Hearts.png", "7_of_Spades.png", "8_of_Clubs.png", "8_of_Diamonds.png", "8_of_Hearts.png", "8_of_Spades.png", "9_of_Clubs.png", "9_of_Diamonds.png", "9_of_Hearts.png", "9_of_Spades.png", "Ace_of_Clubs.png", "Ace_of_Diamonds.png", "Ace_of_Hearts.png", "Ace_of_Spades.png", "ace_of_spades2.png", "black_joker.png", "Jack_of_Clubs.png", "jack_of_clubs2.png", "Jack_of_Diamonds.png", "jack_of_diamonds2.png", "Jack_of_Hearts.png", "jack_of_hearts2.png", "Jack_of_Spades.png", "jack_of_spades2.png", "King_of_Clubs.png", "king_of_clubs2.png", "King_of_Diamonds.png", "king_of_diamonds2.png", "King_of_Hearts.png", "king_of_hearts2.png", "King_of_Spades.png", "king_of_spades2.png", "Queen_of_Clubs.png", "queen_of_clubs2.png", "Queen_of_Diamonds.png", "queen_of_diamonds2.png", "Queen_of_Hearts.png", "queen_of_hearts2.png", "Queen_of_Spades.png", "queen_of_spades2.png", "red_joker.png"];
 		const randomIndex = Math.floor(Math.random() * cardImageNames.length);
 		const cardImage = cardImageNames[randomIndex];
 
 		const rotationFactor = Math.random() * 2 - 1; // Random value between -1 and 1
-  		card.style.setProperty('--rotation-factor', rotationFactor);
+		card.style.setProperty('--rotation-factor', rotationFactor);
 
-	  	card.style.left = `${randomLeft}%`;
-	  	card.style.animationDuration = `${Math.random() * 6 + 4}s`; // Random animation duration between 4 and 10 seconds
+		card.style.left = `${randomLeft}%`;
+		card.style.animationDuration = `${Math.random() * 6 + 4}s`; // Random animation duration between 4 and 10 seconds
 		card.style.backgroundImage = `url(${cardImagesPath}${cardImage})`;
 
-		if (cardImage.includes('Ace_of_Spades') || (cardImage.includes('ace_of_spades2'))){
+		if (cardImage.includes('Ace_of_Spades') || (cardImage.includes('ace_of_spades2'))) {
 			card.addEventListener('click', aceOfSpades);
 		}
 
-		if (cardImage.includes('Queen_of_Hearts') || (cardImage.includes('queen_of_hearts2'))){
+		if (cardImage.includes('Queen_of_Hearts') || (cardImage.includes('queen_of_hearts2'))) {
 			card.addEventListener('click', queenOfHearts);
 		}
 
-		if (cardImage.includes('joker')){
+		if (cardImage.includes('joker')) {
 			card.addEventListener('click', theJoker);
 		}
 
- 	 	card.addEventListener('animationend', () => {
- 	   		card.remove(); // Remove the card element from the DOM after the animation finishes
- 	 	});
+		card.addEventListener('animationend', () => {
+			card.remove(); // Remove the card element from the DOM after the animation finishes
+		});
 
-	  	wrapper.appendChild(card);
+		wrapper.appendChild(card);
 	}
-	
+
 	function queenOfHearts() {
 		// Create an audio element
 		const audio = document.createElement('audio');
 		audio.src = 'sounds/Queen_of_Hearts.wav';
 		audio.play();
-  	}
+	}
 
 	function aceOfSpades() {
 		// Create an audio element
 		const audio = document.createElement('audio');
 		audio.src = 'sounds/Ace_of_Spades.wav';
 		audio.play();
-  	}
-	
+	}
+
 	function theJoker() {
 		// Create an audio element
 		const audio = document.createElement('audio');
 		audio.src = 'sounds/Joker.wav';
 		audio.play();
-  	}
+	}
 
 	function fart() {
 		// Create an audio element
@@ -106,13 +106,13 @@ window.onload = function () {
 		audio.src = soundFiles[randomIndex];
 		audio.play();
 	}
-	    
+
 	function flush() {
 		// Create an audio element
 		const audio = document.createElement('audio');
 		audio.src = 'sounds/flush.wav';
 		audio.play();
-  	}
+	}
 
 	setInterval(spawnCard, 500); // Spawn a new card every second (adjust the interval as needed)
 
@@ -124,13 +124,13 @@ window.onload = function () {
 			"Stafford", "Matt", "Helena", "Natasha", "Edison", "Hannah",
 			"Harry", "Adam", "Marin", "Bertie", "Jack", "Ella"
 		];
-	
+
 		const randomIndex = Math.floor(Math.random() * names.length);
 		return names[randomIndex];
 	}
 
 	function updatePlayerContainers(numPlayers) {
-		
+
 		playerBottomContainer.style.display = "none";
 		playerLeftContainer.style.display = "none";
 		playerTopContainer.style.display = "none";
@@ -193,12 +193,12 @@ window.onload = function () {
 			playerNameClear.addEventListener("click", function () {
 				playerNameInput.value = ""; // Clear the input field
 			});
-	
+
 			playerNameRandomise.addEventListener("click", function () {
 				playerNameInput.value = randomName();
 				updatePlayerName(i, playerNameInput.value);
 			});
-			
+
 			const playerIsBot = document.createElement("input");
 			playerIsBot.type = "checkbox";
 			playerIsBot.name = "botCheckbox" + i;
@@ -242,7 +242,7 @@ window.onload = function () {
 		while (playerNamesContainer.firstChild) {
 			playerNamesContainer.removeChild(playerNamesContainer.firstChild);
 		}
-		
+
 		const numPlayers = this.value;
 		updatePlayerContainers(numPlayers);
 
@@ -273,17 +273,17 @@ window.onload = function () {
 	});
 
 	for (i = 0; i < settingsButton.length; i++) {
-		settingsButton[i].addEventListener("click", function() {
-		  this.classList.toggle("active");
-		  var settings = this.nextElementSibling;
-		  if (settings.style.maxHeight){
-			settings.style.height = null;
-			settings.style.maxHeight = null;
-			settings.style.padding = null;
-		  } else {
-			settings.style.height = "auto";
-			settings.style.maxHeight = "1000px"
-		  } 
+		settingsButton[i].addEventListener("click", function () {
+			this.classList.toggle("active");
+			var settings = this.nextElementSibling;
+			if (settings.style.maxHeight) {
+				settings.style.height = null;
+				settings.style.maxHeight = null;
+				settings.style.padding = null;
+			} else {
+				settings.style.height = "auto";
+				settings.style.maxHeight = "1000px"
+			}
 		});
 	}
 
@@ -317,7 +317,7 @@ window.onload = function () {
 	let skipCount = 0;
 	let randomiseStarter = randomiseStarterCheck.checked ? "Yes" : "No";
 	let randomPlayerIndex;
-	
+
 	updatePlayerContainers(numPlayers);
 
 	// Define the Player class
@@ -567,7 +567,7 @@ window.onload = function () {
 		setTimeout(() => {
 			deckContainer.style.transform = "scaleY(1)";
 			gameBoard.style.transform = "scale(1)";
-		  }, 100);		  
+		}, 100);
 
 		// Get the number of players from the input field
 		numPlayers = parseInt(document.getElementById('numPlayers').value);
@@ -579,8 +579,8 @@ window.onload = function () {
 		deck = createDeck(withJokers);
 
 		if (doubleDeckCheck.checked) {
-  			// Concatenate the deck with a second deck
-  			deck = deck.concat(createDeck(withJokers));
+			// Concatenate the deck with a second deck
+			deck = deck.concat(createDeck(withJokers));
 		}
 
 		shuffleDeck(deck);
@@ -670,9 +670,9 @@ window.onload = function () {
 
 	function waitForSeconds(seconds) {
 		return new Promise(resolve => {
-		  setTimeout(resolve, seconds * 1000);
+			setTimeout(resolve, seconds * 1000);
 		});
-	  }
+	}
 
 	async function playTurn(player, centreCard) {
 
@@ -723,7 +723,7 @@ window.onload = function () {
 		}
 
 		function findValidCards() {
-				
+
 			// Assign a random joker rank
 			player.hand.forEach(card => {
 				if (player.isBot && card.suit === "Jokers") {
@@ -733,7 +733,7 @@ window.onload = function () {
 					card.rank = jokerRanks[randomIndex];
 				}
 			});
-			
+
 			// Determine valid cards in the player's hand
 			validCards = player.hand.filter(card => {
 				if (centreCard && centreCard.rank === "7") {
@@ -761,10 +761,10 @@ window.onload = function () {
 
 		if (player.hand.length === 0 && player.faceUp.length === 0) {
 			appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b> must select a face down card to reveal")
-		
+
 			let selectedFaceDownCard = null;
 
-			if (!player.isBot){
+			if (!player.isBot) {
 				// Allow the player to click on a card
 				selectedFaceDownCard = await faceDownCardClick(player);
 			} else {
@@ -775,8 +775,8 @@ window.onload = function () {
 				const selectedCardElement = cardElements[randomIndex];
 
 				selectedFaceDownCard = {
-				  cardElement: selectedCardElement,
-				  card: selectedCardElement.card
+					cardElement: selectedCardElement,
+					card: selectedCardElement.card
 				};
 			}
 			// Get the index of the selected card in the player's face down cards and remove it then replace it in the player's hand
@@ -817,10 +817,10 @@ window.onload = function () {
 		} else {
 			canPlay = true;
 		}
-		
+
 		// Pickup on unplayable hand
 		if (canPlay == false) {
-			if(player.isBot){
+			if (player.isBot) {
 				await waitForSeconds(1);
 			}
 			pickup(playedCards, player)
@@ -873,7 +873,7 @@ window.onload = function () {
 				}
 			}
 		} else {
-			
+
 			await waitForSeconds(2);
 
 			/* Randomly select a card from the valid cards	
@@ -930,17 +930,17 @@ window.onload = function () {
 
 			if (hasEqualRank) {
 				remainingCards.forEach(card => {
-				  if (card.rank === selectedCard.rank) {
-					const nextCardIndex = player.hand.indexOf(card);
-					const selectedCardElement = {
-					  card: card,
-					  cardElement: cardElements[nextCardIndex]
-					};
-					selectedCards.push(card);
-					selectedCardElements.push(selectedCardElement);
-				  }
+					if (card.rank === selectedCard.rank) {
+						const nextCardIndex = player.hand.indexOf(card);
+						const selectedCardElement = {
+							card: card,
+							cardElement: cardElements[nextCardIndex]
+						};
+						selectedCards.push(card);
+						selectedCardElements.push(selectedCardElement);
+					}
 				});
-			  }			  
+			}
 		}
 
 		if (trickCards.includes(selectedCards[0].rank)) {
@@ -1029,31 +1029,31 @@ window.onload = function () {
 
 		// Draw cards up to 3 in hand
 		// If there are still cards in the deck:
-			while (player.hand.length < 3) {
-				if (deck.length > 0) {
-					// Draw a new card from the deck and add it to the player's hand
-					const card = deck.pop();
-					player.hand.push(card);
+		while (player.hand.length < 3) {
+			if (deck.length > 0) {
+				// Draw a new card from the deck and add it to the player's hand
+				const card = deck.pop();
+				player.hand.push(card);
 
-					// Add the new card to the player's hand on the screen
-					createCardElement(card, player.handContainer);
+				// Add the new card to the player's hand on the screen
+				createCardElement(card, player.handContainer);
 
-					// Update the card count display
-					updateDrawPileCount();
+				// Update the card count display
+				updateDrawPileCount();
 
-					// Remove the top card from the draw pile
-					removeCard(drawPile.lastChild, drawPile);
+				// Remove the top card from the draw pile
+				removeCard(drawPile.lastChild, drawPile);
 
-					// Log the new deck size to the console
-					console.log("Deck size: " + deck.length);
-				} else {
-					break;
-				}
+				// Log the new deck size to the console
+				console.log("Deck size: " + deck.length);
+			} else {
+				break;
 			}
+		}
 		orderHand(player);
 		orderFaceUp(player);
 
-		
+
 		return;
 	}
 
@@ -1080,8 +1080,8 @@ window.onload = function () {
 	function handleTrickCards() {
 		switch (selectedCards[0].rank) {
 			case "2":
-				if (!playerOut){
-				appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b> can play again")
+				if (!playerOut) {
+					appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b> can play again")
 				}
 				centreCard = undefined;
 				break;
@@ -1227,14 +1227,14 @@ window.onload = function () {
 		gameOver = false;
 		numWinners = 0;
 
-		if (randomiseStarter){
+		if (randomiseStarter) {
 			currentPlayerIndex = randomPlayerIndex;
 		}
 
 		// Play the game until there is a winner
 		while (!gameOver) {
 
-			
+
 			playerOut = false;
 			isSelectedValid = false;
 			let player = players[currentPlayerIndex];
@@ -1291,15 +1291,15 @@ window.onload = function () {
 				playerOut = true;
 				outPlayerIndex = currentPlayerIndex;
 
-				if (numWinners === 0){
+				if (numWinners === 0) {
 					player.playerTrophy.style.backgroundImage = 'url(images/first_place.png)';
-				} else if (numWinners === 1){
+				} else if (numWinners === 1) {
 					player.playerTrophy.style.backgroundImage = 'url(images/second_place.png)';
-				} else if (numWinners === 2){
+				} else if (numWinners === 2) {
 					player.playerTrophy.style.backgroundImage = 'url(images/third_place.png)';
 				}
 
-				
+
 				player.playerMat.style.transform = "rotateY(180deg)";
 
 				numWinners++;
@@ -1316,24 +1316,24 @@ window.onload = function () {
 				}
 			}
 
-			if(playerOut){
+			if (playerOut) {
 				// Remove the player from the array
 				players.splice(outPlayerIndex, 1);
 				numPlayers = players.length;
-				if (currentPlayerIndex > outPlayerIndex){
+				if (currentPlayerIndex > outPlayerIndex) {
 					currentPlayerIndex = (currentPlayerIndex - 1 + players.length) % players.length;
 				}
 			}
-			
+
 			if (players.length == 1) {
 				gameOver = true;
 				appendToGameLog("<b>" + players[0].playerName + " is the DUNGHEAD!</b>")
-				
+
 				players[0].playerTrophy.style.backgroundImage = 'url(images/dunghead.png)';
 				players[0].playerMat.style.transform = "rotateY(180deg)";
 				break;
 			}
-		
+
 			if (gameOver) {
 				break;
 			}
