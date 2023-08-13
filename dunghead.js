@@ -876,21 +876,6 @@ window.onload = function () {
 
 			await waitForSeconds(2);
 
-			/* Randomly select a card from the valid cards	
-			const cardElements = player.handContainer.querySelectorAll('.card');
-			const randomIndex = Math.floor(Math.random() * validCards.length);
-			const selectedCard = validCards[randomIndex];
-			const selectedCardIndex = player.hand.indexOf(selectedCard);
-			selectedCardRank = ranks.indexOf(selectedCard.rank);
-			remainingCards = player.hand.filter(card => card !== selectedCard);
-			hasEqualRank = remainingCards.some(card => card.rank === selectedCard.rank);
-
-			// Update the card element in the mock card element	
-			const selectedCardElement = {
-				card: selectedCard,
-				cardElement: cardElements[selectedCardIndex]
-			};*/
-
 			// Sort the valid cards by rank in ascending order
 			validCards.sort((a, b) => ranks.indexOf(a.rank) - ranks.indexOf(b.rank));
 			const cardElements = player.handContainer.querySelectorAll('.card');
@@ -1301,11 +1286,9 @@ window.onload = function () {
 					player.playerTrophy.style.backgroundImage = 'url(images/third_place.png)';
 				}
 
-
 				player.playerMat.style.transform = "rotateY(180deg)";
 
 				numWinners++;
-
 			}
 
 			// Determine next Player
