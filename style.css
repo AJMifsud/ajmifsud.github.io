@@ -237,8 +237,17 @@ html,body {
 	width:100%
 	}
 	
+	.collapsible:after {
+	float: right;
+	content: "▼";
+	}
+	
 	.collapsible.active {
-	background:rgba(0,0,0,0.4)
+	background:rgba(0,0,0,0.4);
+	}
+	
+	.collapsible.active:after {
+	content: "▲";
 	}
 	
 	.collapsible.active:hover {
