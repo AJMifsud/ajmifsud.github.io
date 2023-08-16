@@ -858,7 +858,6 @@ window.onload = function () {
 							selectedCards.push(nextCardElement.card);
 							remainingCards.splice(selectedCard, 1)
 						} else {
-							appendToGameLog("You have already selected this card.");
 							break; // Exit the loop if the player selects a card they have already chosen
 						}
 					} else {
@@ -1095,7 +1094,9 @@ window.onload = function () {
 				break;
 			case "7":
 				// Increment the player counter before it is incremented again, skipping the next player
-				appendToGameLog("<b>" + players[(currentPlayerIndex + 1) % players.length].playerName + "</b> must now either play below a 7 or a trick card!")
+				if (!playerOut && players.length > 1) {
+					appendToGameLog("<b>" + players[(currentPlayerIndex + 1) % players.length].playerName + "</b> must now either play below a 7 or a trick card!")
+				}
 				currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
 				break;
 			case "10":
