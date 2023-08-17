@@ -867,17 +867,17 @@ window.onload = function () {
 							selectedCardElements.push(nextCardElement);
 							selectedCards.push(nextCardElement.card);
 							remainingCards.splice(selectedCard, 1)
+
+							// Exit the loop if none of the cards in remainingCards have the same rank as selectedCard
+							if (!remainingCards.some(card => card.rank === selectedCard.rank)) {
+								break;
+							}
 						} else {
 							break; // Exit the loop if the player selects a card they have already chosen
 						}
 					} else {
 						appendToGameLog("Next selected card must be the same rank as the first selected card.");
 						break; // Exit the loop if the player selects a card with a different rank
-					}
-
-					// Exit the loop if none of the cards in remainingCards have the same rank as selectedCard
-					if (!remainingCards.some(card => card.rank === selectedCard.rank)) {
-						break;
 					}
 				}
 			}
