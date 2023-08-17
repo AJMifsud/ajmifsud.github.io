@@ -106,6 +106,15 @@ window.onload = function () {
 		audio.src = soundFiles[randomIndex];
 		audio.play();
 	}
+	
+	function cardSound() {
+		// Create an audio element
+		const audio = document.createElement('audio');
+		const soundFiles = ['sounds/card1.wav', 'sounds/card2.wav', 'sounds/card3.wav'];
+		const randomIndex = Math.floor(Math.random() * soundFiles.length);
+		audio.src = soundFiles[randomIndex];
+		audio.play();
+	}
 
 	function flush() {
 		// Create an audio element
@@ -696,6 +705,7 @@ window.onload = function () {
 					skipCount++;
 				}
 				i++;
+			cardSound();
 			});
 			centreCard = playedCards[playedCards.length - 1];
 		}
