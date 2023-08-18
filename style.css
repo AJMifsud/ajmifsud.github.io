@@ -55,10 +55,38 @@ html,body {
 }
 	
 #logo {
-	max-width:70%;
-	width:70%
+    width: -webkit-fill-available;
+    aspect-ratio: 521/57;
+    padding: 0px 10%;
 }
 	
+#sound-toggle {
+    border: none;
+    left: 0;
+    position: absolute;
+    aspect-ratio: 1;
+    height: 50%;
+    background: none;
+	background-size:cover;
+	margin: 5px;
+}
+
+#sound-toggle.off{
+	background-image:url(images/sound_off_up.png);
+}
+
+#sound-toggle.off:active {
+	background-image:url(images/sound_off_down.png);
+}
+
+#sound-toggle.on{
+	background-image:url(images/sound_on_up.png);
+}
+
+#sound-toggle.on:active {
+	background-image:url(images/sound_on_down.png);
+}
+
 #page-container {
 	align-items:center;
 	aspect-ratio:9 / 16;

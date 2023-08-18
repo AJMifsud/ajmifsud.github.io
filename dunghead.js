@@ -13,6 +13,7 @@ window.onload = function () {
 	}
 
 	const wrapper = document.getElementById('wrapper');
+	const soundToggle = document.getElementById("sound-toggle");
 	const settingsButton = document.getElementsByClassName("collapsible");
 	const numPlayersSelect = document.getElementById("numPlayers");
 	const playerNamesContainer = document.getElementById("playernames-container");
@@ -41,6 +42,8 @@ window.onload = function () {
 	const playpileCount = document.getElementById('playpile-count');
 	let playerNames = ["Player 1", "Player 2", "Player 3", "Player 4"];
 	const cardImagesPath = 'images/cards/';
+	let soundsEnabled = true;
+	
 
 	function spawnCard() {
 		const card = document.createElement('div');
@@ -78,49 +81,61 @@ window.onload = function () {
 	}
 
 	function queenOfHearts() {
+		if (soundsEnabled){
 		// Create an audio element
 		const audio = document.createElement('audio');
 		audio.src = 'sounds/Queen_of_Hearts.wav';
 		audio.play();
+		}
 	}
 
 	function aceOfSpades() {
+		if (soundsEnabled){
 		// Create an audio element
 		const audio = document.createElement('audio');
 		audio.src = 'sounds/Ace_of_Spades.wav';
 		audio.play();
+		}
 	}
 
 	function theJoker() {
+		if (soundsEnabled){
 		// Create an audio element
 		const audio = document.createElement('audio');
 		audio.src = 'sounds/Joker.wav';
 		audio.play();
+		}
 	}
 
 	function fart() {
+		if (soundsEnabled){
 		// Create an audio element
 		const audio = document.createElement('audio');
 		const soundFiles = ['sounds/fart1.wav', 'sounds/fart2.wav', 'sounds/fart3.wav', 'sounds/fart4.wav', 'sounds/fart5.wav', 'sounds/fart6.wav', 'sounds/fart7.wav', 'sounds/fart8.wav', 'sounds/fart9.wav', 'sounds/fart10.wav'];
 		const randomIndex = Math.floor(Math.random() * soundFiles.length);
 		audio.src = soundFiles[randomIndex];
 		audio.play();
+		}
 	}
 	
 	function cardSound() {
+		if (soundsEnabled){
 		// Create an audio element
 		const audio = document.createElement('audio');
 		const soundFiles = ['sounds/card1.wav', 'sounds/card2.wav', 'sounds/card3.wav'];
 		const randomIndex = Math.floor(Math.random() * soundFiles.length);
 		audio.src = soundFiles[randomIndex];
 		audio.play();
+		}
 	}
 
 	function flush() {
+		if (soundsEnabled){
 		// Create an audio element
 		const audio = document.createElement('audio');
 		audio.src = 'sounds/flush.wav';
 		audio.play();
+		}
 	}
 
 	setInterval(spawnCard, 250); // Spawn a new card every second (adjust the interval as needed)
@@ -276,6 +291,18 @@ window.onload = function () {
 	closeRulesButton.addEventListener('click', function () {
 		rulesContainer.style.scale = 0;
 	});
+	
+	soundToggle.addEventListener('click', function () {
+		if (soundsEnabled) {
+			soundsEnabled = false
+			soundToggle.classList.remove("on");
+			soundToggle.classList.add("off");
+		} else {
+			soundsEnabled = true;
+			soundToggle.classList.remove("off");
+			soundToggle.classList.add("on");
+		}
+	});
 
 	openRulesButton.addEventListener('click', function () {
 		rulesContainer.style.scale = 1;
@@ -296,6 +323,7 @@ window.onload = function () {
 		});
 	}
 
+	soundToggle.classList.add("on");
 
 	//----------//
 	//GAME LOGIC//
