@@ -887,8 +887,6 @@ window.onload = function () {
 
 				while (true) {
 					let nextCardElement = await handCardClick(player);
-					const nextCardIndex = remainingCards.indexOf(nextCardElement.card);
-					remainingCards.splice(nextCardIndex, 1);
 
 					// If the next selected card is the same rank as the first selected
 					if (nextCardElement.card.rank === selectedCard.rank) {
