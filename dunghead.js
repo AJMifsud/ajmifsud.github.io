@@ -352,7 +352,6 @@ window.onload = function () {
 	let isTrickCard = false;
 	let matchFour = false
 	let skipCount = 0;
-	let randomiseStarter = randomiseStarterCheck.checked ? "Yes" : "No";
 	let randomPlayerIndex;
 
 	updatePlayerContainers(numPlayers);
@@ -1251,7 +1250,7 @@ window.onload = function () {
 		gameOver = false;
 		numWinners = 0;
 
-		if (randomiseStarter) {
+		if (randomiseStarterCheck.checked) {
 			currentPlayerIndex = randomPlayerIndex;
 		}
 
