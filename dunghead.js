@@ -43,7 +43,7 @@ window.onload = function () {
 	let playerNames = ["Player 1", "Player 2", "Player 3", "Player 4"];
 	const cardImagesPath = 'images/cards/';
 	let soundsEnabled = true;
-	
+
 
 	function spawnCard() {
 		const card = document.createElement('div');
@@ -81,60 +81,60 @@ window.onload = function () {
 	}
 
 	function queenOfHearts() {
-		if (soundsEnabled){
-		// Create an audio element
-		const audio = document.createElement('audio');
-		audio.src = 'sounds/Queen_of_Hearts.wav';
-		audio.play();
+		if (soundsEnabled) {
+			// Create an audio element
+			const audio = document.createElement('audio');
+			audio.src = 'sounds/Queen_of_Hearts.wav';
+			audio.play();
 		}
 	}
 
 	function aceOfSpades() {
-		if (soundsEnabled){
-		// Create an audio element
-		const audio = document.createElement('audio');
-		audio.src = 'sounds/Ace_of_Spades.wav';
-		audio.play();
+		if (soundsEnabled) {
+			// Create an audio element
+			const audio = document.createElement('audio');
+			audio.src = 'sounds/Ace_of_Spades.wav';
+			audio.play();
 		}
 	}
 
 	function theJoker() {
-		if (soundsEnabled){
-		// Create an audio element
-		const audio = document.createElement('audio');
-		audio.src = 'sounds/Joker.wav';
-		audio.play();
+		if (soundsEnabled) {
+			// Create an audio element
+			const audio = document.createElement('audio');
+			audio.src = 'sounds/Joker.wav';
+			audio.play();
 		}
 	}
 
 	function fart() {
-		if (soundsEnabled){
-		// Create an audio element
-		const audio = document.createElement('audio');
-		const soundFiles = ['sounds/fart1.wav', 'sounds/fart2.wav', 'sounds/fart3.wav', 'sounds/fart4.wav', 'sounds/fart5.wav', 'sounds/fart6.wav', 'sounds/fart7.wav', 'sounds/fart8.wav', 'sounds/fart9.wav', 'sounds/fart10.wav'];
-		const randomIndex = Math.floor(Math.random() * soundFiles.length);
-		audio.src = soundFiles[randomIndex];
-		audio.play();
+		if (soundsEnabled) {
+			// Create an audio element
+			const audio = document.createElement('audio');
+			const soundFiles = ['sounds/fart1.wav', 'sounds/fart2.wav', 'sounds/fart3.wav', 'sounds/fart4.wav', 'sounds/fart5.wav', 'sounds/fart6.wav', 'sounds/fart7.wav', 'sounds/fart8.wav', 'sounds/fart9.wav', 'sounds/fart10.wav'];
+			const randomIndex = Math.floor(Math.random() * soundFiles.length);
+			audio.src = soundFiles[randomIndex];
+			audio.play();
 		}
 	}
-	
+
 	function cardSound() {
-		if (soundsEnabled){
-		// Create an audio element
-		const audio = document.createElement('audio');
-		const soundFiles = ['sounds/card1.wav', 'sounds/card2.wav', 'sounds/card3.wav'];
-		const randomIndex = Math.floor(Math.random() * soundFiles.length);
-		audio.src = soundFiles[randomIndex];
-		audio.play();
+		if (soundsEnabled) {
+			// Create an audio element
+			const audio = document.createElement('audio');
+			const soundFiles = ['sounds/card1.wav', 'sounds/card2.wav', 'sounds/card3.wav'];
+			const randomIndex = Math.floor(Math.random() * soundFiles.length);
+			audio.src = soundFiles[randomIndex];
+			audio.play();
 		}
 	}
 
 	function flush() {
-		if (soundsEnabled){
-		// Create an audio element
-		const audio = document.createElement('audio');
-		audio.src = 'sounds/flush.wav';
-		audio.play();
+		if (soundsEnabled) {
+			// Create an audio element
+			const audio = document.createElement('audio');
+			audio.src = 'sounds/flush.wav';
+			audio.play();
 		}
 	}
 
@@ -291,7 +291,7 @@ window.onload = function () {
 	closeRulesButton.addEventListener('click', function () {
 		rulesContainer.style.scale = 0;
 	});
-	
+
 	soundToggle.addEventListener('click', function () {
 		if (soundsEnabled) {
 			soundsEnabled = false
@@ -732,7 +732,7 @@ window.onload = function () {
 					skipCount++;
 				}
 				i++;
-			cardSound();
+				cardSound();
 			});
 			centreCard = playedCards[playedCards.length - 1];
 		}
@@ -893,7 +893,12 @@ window.onload = function () {
 						if (!selectedCards.includes(nextCardElement.card)) {
 							selectedCardElements.push(nextCardElement);
 							selectedCards.push(nextCardElement.card);
-							remainingCards.splice(selectedCard, 1)
+
+							// Find the index of the selected card in remainingCards and remove it
+							const selectedCardIndex = remainingCards.findIndex(card => card.rank === selectedCard.rank);
+							if (selectedCardIndex !== -1) {
+								remainingCards.splice(selectedCardIndex, 1);
+							}
 						} else {
 							break; // Exit the loop if the player selects a card they have already chosen
 						}
@@ -908,6 +913,7 @@ window.onload = function () {
 					}
 				}
 			}
+
 		} else {
 
 			await waitForSeconds(2);
