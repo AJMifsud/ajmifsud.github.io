@@ -228,7 +228,7 @@ window.onload = function () {
 			playerIsBot.name = "botCheckbox" + i;
 
 			if (i === 0) {
-				playerIsBot.disabled = true; // Disable the checkbox
+				//playerIsBot.disabled = true; // Disable the checkbox
 			}
 
 			const cbxLabel = document.createElement("label");
@@ -956,7 +956,16 @@ window.onload = function () {
 			selectedCardElements.push(selectedCardElement);
 
 			if (hasEqualRank) {
-				remainingCards.forEach(card => {
+				for (let i = 0; i < remainingCards.length; i++) {
+					if (selectedCard.rank === "3") {
+							if (i == (players.length - 2)){
+								break;
+							}
+					}
+					if (selectedCard.rank === "2") {
+						break;
+					}
+					const card = remainingCards[i];
 					if (card.rank === selectedCard.rank) {
 						const nextCardIndex = player.hand.indexOf(card);
 						const selectedCardElement = {
@@ -966,8 +975,8 @@ window.onload = function () {
 						selectedCards.push(card);
 						selectedCardElements.push(selectedCardElement);
 					}
-				});
-			}
+				}
+			}			
 		}
 
 		if (trickCards.includes(selectedCards[0].rank)) {
