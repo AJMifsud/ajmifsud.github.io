@@ -229,7 +229,7 @@ window.onload = function () {
 			playerIsBot.name = "botCheckbox" + i;
 
 			if (i === 0) {
-				//playerIsBot.disabled = true; // Disable the checkbox
+				playerIsBot.disabled = true; // Disable the checkbox
 			}
 
 			const cbxLabel = document.createElement("label");
@@ -667,6 +667,8 @@ window.onload = function () {
 			if (botCheckboxes[i].checked) {
 				player.isBot = true;
 				handContainer.classList.add("bot");
+			} else {
+				handContainer.classList.remove("bot");
 			}
 			player.container.style.display = 'flex';
 			player.faceUpContainer.style.display = "flex"; // Re-Enable face up container if disabled from last game
