@@ -43,6 +43,7 @@ window.onload = function () {
 	let playerNames = ["Player 1", "Player 2", "Player 3", "Player 4"];
 	const cardImagesPath = 'images/cards/';
 	let soundsEnabled = true;
+	let selectedBotSpeed = document.querySelector('input[name="botSpeed"]:checked').value;
 
 
 	function spawnCard() {
@@ -270,6 +271,15 @@ window.onload = function () {
 		const numPlayers = this.value;
 		updatePlayerContainers(numPlayers);
 
+	});
+
+	const botSpeeds = document.querySelectorAll('input[name="botSpeed"]');
+	botSpeeds.forEach(radioButton => {
+	  radioButton.addEventListener("change", function() {
+		if (this.checked) {
+		  selectedBotSpeed = this.value;
+		}
+	  });
 	});
 
 	jokersCheck.addEventListener('change', function () {
@@ -805,7 +815,7 @@ window.onload = function () {
 				// Allow the player to click on a card
 				selectedFaceDownCard = await faceDownCardClick(player);
 			} else {
-				await waitForSeconds(1);
+				await waitForSeconds(selectedBotSpeed / 2);
 				// Randomly select a face-down card if the player is a bot
 				const cardElements = player.faceDownContainer.querySelectorAll('.card');
 				const randomIndex = Math.floor(Math.random() * cardElements.length);
@@ -858,7 +868,7 @@ window.onload = function () {
 		// Pickup on unplayable hand
 		if (canPlay == false) {
 			if (player.isBot) {
-				await waitForSeconds(1);
+				await waitForSeconds(selectedBotSpeed / 2);
 			}
 			pickup(playedCards, player)
 			isSelectedValid = true;
@@ -916,7 +926,7 @@ window.onload = function () {
 
 		} else {
 
-			await waitForSeconds(2);
+			await waitForSeconds(selectedBotSpeed);
 
 			// Sort the valid cards by rank in ascending order
 			validCards.sort((a, b) => ranks.indexOf(a.rank) - ranks.indexOf(b.rank));

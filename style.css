@@ -305,10 +305,6 @@ html,body {
     color: lightgray;
 }
 	
-#playerno-container {
-	margin:5px
-}
-	
 .player-name-input {
 	max-width:50%
 }

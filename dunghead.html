@@ -90,16 +90,26 @@
 						<div id="settings-container">
 							<button type="button" class="collapsible">Player Settings</button>
 							<div class = "settings">
-								<div id = "playerno-container">
-									<label for="numPlayers">Number of Players:</label>
+								<label for="numPlayers">Number of Players:
 									<select name="numPlayers" id="numPlayers">
 										<option value="2">2</option>
 										<option value="3">3</option>
 										<option value="4">4</option>
 									</select>
-								</div>
+								</label>
 								<div id="playernames-container">
 								</div>
+								<hr style="width: 90%;">
+								<label for="botSpeed">Bot Speed:<br>
+									<input type="radio" name="botSpeed" id="instantSpeed" value="0">
+									<label for="instantSpeed">Instant<br></label>
+
+									<input type="radio" name="botSpeed" id="normalSpeed" value="1.5" checked>
+									<label for="normalSpeed">Normal<br></label>
+									
+									<input type="radio" name="botSpeed" id="slowSpeed" value="3">
+									<label for="slowSpeed">Slow<br></label>
+								  </label>								  
 							</div>
 							<button type="button" class="collapsible">Game Settings</button>
 							<div class = "settings">
