@@ -828,6 +828,7 @@ window.onload = function () {
 					card: selectedCardElement.card
 				};
 			}
+		
 			// Get the index of the selected card in the player's face down cards and remove it then replace it in the player's hand
 			const selectedCardIndex = player.faceDown.indexOf(selectedFaceDownCard);
 			player.faceDown.splice(selectedCardIndex, 1);
@@ -835,6 +836,8 @@ window.onload = function () {
 			// Remove the card element from the player's face down container and add it to the player hand container
 			removeCard(selectedFaceDownCard.cardElement, player.faceDownContainer);
 			createCardElement(selectedFaceDownCard.card, player.handContainer);
+
+			appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b> revealed a " + selectedFaceDownCard.card.rank + " of " + selectedFaceDownCard.card.suit)
 		}
 
 		findValidCards();
