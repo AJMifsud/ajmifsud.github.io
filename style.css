@@ -130,7 +130,8 @@ html,body {
 	text-align:center;
 	text-shadow:-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff,1px 1px 0 #fff;
 	top:0;
-	width:10%
+	width:10%;
+	transition: background 0.2s ease, text-shadow 0.2s ease, color 0.2s ease;
 }
 	
 #bug-report {
@@ -152,7 +153,8 @@ html,body {
 	text-align:center;
 	text-shadow:-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff,1px 1px 0 #fff;
 	top:0;
-	width:10%
+	width:10%;
+	transition: background 0.2s ease, text-shadow 0.2s ease, color 0.2s ease;
 }
 	
 #rules-container {
@@ -263,20 +265,21 @@ html,body {
 	padding:18px;
 	text-align:left;
 	text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;
-	width:100%
+	width:100%;
+	transition: background 0.2s ease, text-shadow 0.6s ease;
 }
 	
 .collapsible:after {
 	float: right;
 	content: "▼";
 }
+
+.collapsible.active:after {
+	content: "▲";
+}
 	
 .collapsible.active {
 	background:rgba(0,0,0,0.4);
-}
-	
-.collapsible.active:after {
-	content: "▲";
 }
 	
 .collapsible.active:hover {
@@ -723,7 +726,12 @@ html,body {
 	color:#fff;
 	cursor:pointer;
 	text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;
-	transition:transform .6s
+}	
+
+#open-rules:not(:hover), #bug-report:not(:hover) {
+	background:rgba(255,255,255,0.2);
+	color:#572714;
+	text-shadow:-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff,1px 1px 0 #fff;
 }
 	
 #burn-pile,#draw-pile {
