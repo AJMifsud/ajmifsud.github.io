@@ -576,10 +576,11 @@ html,body {
 	
 .card-back,.card-front {
 	backface-visibility:hidden;
-	background-size:contain;
+	background-size:cover;
 	height:100%;
 	position:absolute;
-	width:100%
+	width:100%;
+    box-sizing: border-box;
 }
 	
 .rotated {

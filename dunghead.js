@@ -435,6 +435,10 @@ window.onload = function () {
 			card.rank = event.target.value;
 		};
 
+		if (card.rank === "2" || card.rank === "3" || card.rank === "7" || card.rank === "10" || card.suit === "Jokers") {
+			cardFrontElement.style.border = "2px solid #0089ff";
+		}		
+
 		if (card.suit === "Jokers") {
 			const selectElement = document.createElement("select");
 			selectElement.classList.add("joker-ranks");
@@ -463,6 +467,7 @@ window.onload = function () {
 
 			cardElement.appendChild(selectElement);
 		}
+
 		cardElement.appendChild(cardFrontElement);
 		cardElement.appendChild(cardBackElement);
 
