@@ -30,6 +30,7 @@ window.onload = function () {
 	const randomiseStarterCheck = document.querySelector('input[name="randomise-starter"]');
 	const doubleDeckCheck = document.querySelector('input[name="double-deck-check"]');
 	let gameLogContainer = document.getElementById('game-log-container');
+	let playerTurnMessage = document.getElementById('player-turn');
 	const deckContainer = document.getElementById('deck-container');
 	const drawPile = document.getElementById('draw-pile');
 	const drawpileCount = document.getElementById('drawpile-count');
@@ -580,6 +581,13 @@ window.onload = function () {
 		gameLogContainer.scrollTop = gameLog.scrollHeight;
 	}
 
+	function updatePlayerTurn(message) {
+		// Wrap the player's name in a <strong> element using CSS inline style
+		const styledMessage = message.replace(/<b>(.*?)<\/b>/g, '<strong style="font-weight: bold;">$1</strong>');
+
+		// Set the content of the paragraph element
+		playerTurnMessage.innerHTML = styledMessage;
+	}
 
 	// Function to update the play pile card count display
 	function updatePlayPileCount() {
@@ -614,6 +622,8 @@ window.onload = function () {
 		isTrickCard = false;
 		matchFour = false
 		randomPlayerIndex = Math.floor(Math.random() * numPlayers);
+		
+		updatePlayerTurn("");
 
 		setTimeout(() => {
 			deckContainer.style.transform = "scaleY(1)";
@@ -1298,7 +1308,7 @@ window.onload = function () {
 			let player = players[currentPlayerIndex];
 			currentPlayerName = players[currentPlayerIndex].playerName;
 			console.log(`${player.playerName}'s turn`);
-			appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b>'s turn");
+			updatePlayerTurn("<b>" + players[currentPlayerIndex].playerName + "</b>'s turn");
 
 			console.log("Card to beat: ", centreCard);
 
