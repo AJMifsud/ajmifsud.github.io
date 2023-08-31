@@ -654,7 +654,8 @@ window.onload = function () {
 		shuffleDeck(deck);
 
 		// Clear cards from game container
-		let cards = document.querySelectorAll('.card');
+		let container = document.getElementById('page-container'); 
+		let cards = container.querySelectorAll('.card');
 		cards.forEach(card => card.remove());
 		
 		drawpileCount.innerHTML = null;
