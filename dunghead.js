@@ -592,7 +592,7 @@ window.onload = function () {
 	// Function to update the play pile card count display
 	function updatePlayPileCount() {
 		const numCards = playedCards.length;
-		playpileCount.textContent = `Cards in play pile : ${numCards}`;
+		playpileCount.innerHTML = `Cards in play pile:<br>${numCards}`;
 	}
 
 	// Function to update the draw pile card count display
@@ -649,9 +649,10 @@ window.onload = function () {
 		// Clear cards from game container
 		let cards = document.querySelectorAll('.card');
 		cards.forEach(card => card.remove());
-		updateDrawPileCount();
-		updateBurnPileCount();
-		updatePlayPileCount();
+		
+		drawpileCount.innerHTML = null;
+		burnpileCount.innerHTML = null;
+		playpileCount.innerHTML = null;
 
 		// Create the player objects and add them to the players array
 		for (let i = 0; i < numPlayers; i++) {
@@ -751,7 +752,7 @@ window.onload = function () {
 				const selectedCardHandIndex = player.hand.indexOf(card);
 				player.hand.splice(selectedCardHandIndex, 1);
 				playedCards.push(card);
-				appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b> played " + card.rank + " of " + card.suit);
+				appendToGameLog("<b>" + players[currentPlayerIndex].playerName + "</b> played the " + card.rank + " of " + card.suit);
 				removeCard(selectedCardElements[i].cardElement, player.handContainer);
 				createCardElement(card, playPile);
 				rotateCard(playPile.lastChild, playPile);
@@ -1294,6 +1295,10 @@ window.onload = function () {
 		currentPlayerIndex = 0;
 		gameOver = false;
 		numWinners = 0;
+		
+		updateDrawPileCount();
+		updateBurnPileCount();
+		updatePlayPileCount();
 
 		if (randomiseStarterCheck.checked) {
 			currentPlayerIndex = randomPlayerIndex;

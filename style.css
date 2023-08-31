@@ -392,11 +392,11 @@ html,body {
 	color:#fff;
 	height:10%;
 	margin:10px;
+	white-space: nowrap;
 	max-height:10%;
 	position:absolute;
 	text-align:center;
 	top:0;
-	width:100%
 }
 	
 #play-pile {
