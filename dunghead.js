@@ -31,6 +31,7 @@ window.onload = function () {
 	const doubleDeckCheck = document.querySelector('input[name="double-deck-check"]');
 	let gameLogContainer = document.getElementById('game-log-container');
 	let playerTurnMessage = document.getElementById('player-turn');
+	let info = document.getElementById('info');
 	const deckContainer = document.getElementById('deck-container');
 	const drawPile = document.getElementById('draw-pile');
 	const drawpileCount = document.getElementById('drawpile-count');
@@ -586,6 +587,14 @@ window.onload = function () {
 		// Set the content of the paragraph element
 		playerTurnMessage.innerHTML = styledMessage;
 	}
+	
+	function updateInfo(message) {
+		// Wrap the player's name in a <strong> element using CSS inline style
+		const styledMessage = message.replace(/<b>(.*?)<\/b>/g, '<strong style="font-weight: bold;">$1</strong>');
+
+		// Set the content of the paragraph element
+		info.innerHTML = styledMessage;
+	}
 
 	// Function to update the play pile card count display
 	function updatePlayPileCount() {
@@ -911,7 +920,7 @@ window.onload = function () {
 
 			// Select next card if duplicate rank is in hand
 			if (hasEqualRank) {
-				appendToGameLog("Another card in your hand has the same rank as the selected card.");
+				updateInfo("Another card in your hand has the same rank as the selected card.");
 
 				while (true) {
 					let nextCardElement = await handCardClick(player);
@@ -932,7 +941,6 @@ window.onload = function () {
 							break; // Exit the loop if the player selects a card they have already chosen
 						}
 					} else {
-						appendToGameLog("Next selected card must be the same rank as the first selected card.");
 						break; // Exit the loop if the player selects a card with a different rank
 					}
 
@@ -1041,7 +1049,7 @@ window.onload = function () {
 				} else {
 					console.log("Selected card must be either below a 7 or a trick card.");
 					// Log an error message to the console.
-					appendToGameLog("Selected card must be either below a 7 or a trick card.");
+					updateInfo("Selected card must be either below a 7 or a trick card.");
 					// Append an error message to the game log.
 				}
 			} else {
@@ -1069,7 +1077,7 @@ window.onload = function () {
 					// Set isSelectedValid to false.
 					console.log("Selected card must be a higher rank than the centre card.");
 					// Log an error message to the console.
-					appendToGameLog("Selected card must be an equal to or higher in rank than the centre card.");
+					updateInfo("Selected card must be equal to or higher in rank than the centre card.");
 					// Append an error message to the game log.
 				}
 			}
@@ -1083,7 +1091,7 @@ window.onload = function () {
 
 		if (selectedCards[0].rank == "Joker") {
 			isSelectedValid = false;
-			appendToGameLog("You must assign a rank to a Joker before it can be played");
+			updateInfo("You must assign a rank to a Joker before it can be played");
 		}
 
 		if (canPlay && isSelectedValid) {
@@ -1307,7 +1315,7 @@ window.onload = function () {
 		// Play the game until there is a winner
 		while (!gameOver) {
 
-
+			updateInfo("");
 			playerOut = false;
 			isSelectedValid = false;
 			let player = players[currentPlayerIndex];
@@ -1400,7 +1408,8 @@ window.onload = function () {
 
 			if (players.length == 1) {
 				gameOver = true;
-				appendToGameLog("<b>" + players[0].playerName + " is the DUNGHEAD!</b>")
+				appendToGameLog("Game Over!")
+				updatePlayerTurn("<b>" + players[0].playerName + " is the DUNGHEAD!</b>")
 
 				players[0].playerTrophy.style.backgroundImage = 'url(images/dunghead.png)';
 				players[0].playerMat.style.transform = "rotateY(180deg)";

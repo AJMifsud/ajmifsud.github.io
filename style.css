@@ -665,6 +665,7 @@ html,body {
 	text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;
 	height:30%;
 	justify-content:center;
+	text-align: center;
 	position:absolute;
 	left:0;
 	top:0;
@@ -708,6 +709,20 @@ html,body {
 	max-width:100%;
 	justify-content:flex-end;
 	flex-direction: column;
+}
+
+#info {
+	display: flex;
+	align-items:center;
+	color:#fff;
+	text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;
+	height:30%;
+	justify-content:center;
+	text-align: center;
+	position:absolute;
+	right:0;
+	bottom:0;
+	width:30%
 }
 	
 #start-button {
