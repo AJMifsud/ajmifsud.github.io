@@ -556,8 +556,6 @@ window.onload = function () {
 		// Create a new div element for the game log
 		gameLog = document.createElement('div');
 		gameLog.id = 'game-log';
-		gameLog.innerText = '#Game Log#';
-		gameLog.innerText += '\nNew Game\n';
 
 		// Append the new console log element to the sidebar
 		gameLogContainer.appendChild(gameLog);
@@ -1299,6 +1297,8 @@ window.onload = function () {
 		updateDrawPileCount();
 		updateBurnPileCount();
 		updatePlayPileCount();
+
+		appendToGameLog("New Game");
 
 		if (randomiseStarterCheck.checked) {
 			currentPlayerIndex = randomPlayerIndex;
