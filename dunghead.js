@@ -195,35 +195,39 @@ window.onload = function () {
 			playerNameContainer.classList.add("player-name-container");
 
 
-			const playerNameInput = document.createElement("input");
-			playerNameInput.classList.add("player-name-input");
-			playerNameInput.type = "text";
-			playerNameInput.name = `player${i + 1}`;
-			playerNameInput.placeholder = `Player ${i + 1}`;
-			playerNameInput.addEventListener("input", function () {
-				updatePlayerName(i, playerNameInput.value);
+			const playerNameTextbox = document.createElement("input");
+			playerNameTextbox.classList.add("player-name-textbox");
+			playerNameTextbox.type = "text";
+			playerNameTextbox.name = `player${i + 1}`;
+			playerNameTextbox.placeholder = `Player ${i + 1}`;
+			playerNameTextbox.addEventListener("input", function () {
+				updatePlayerName(i, playerNameTextbox.value);
 			});
 
-			const playerNameLabel = document.createElement("label");
-			playerNameLabel.innerHTML = `Player ${i + 1}'s Name:<br>`;
-			playerNameLabel.appendChild(playerNameInput);
-			const playerNameClear = document.createElement("button");
+			const playerNameLabel = document.createElement("label"); // Create new label
+			playerNameLabel.classList.add("player-name-label");
+			playerNameLabel.innerHTML = `Player ${i + 1}'s Name:<br>`; // Add text
+			const playerNameInputs = document.createElement("div"); // Create inputs div
+			playerNameInputs.classList.add("player-name-inputs"); // Add to inputs class
+			const playerNameClear = document.createElement("button"); // Create buttons
 			const playerNameRandomise = document.createElement("button");
-			playerNameClear.classList.add("name-clear-button");
+			playerNameClear.classList.add("name-clear-button"); // Add classes
 			playerNameRandomise.classList.add("random-name-button");
 			playerNameClear.title = "Clear Player Name"; // Tooltip text for Clear button
 			playerNameRandomise.title = "Randomise Player Name"; // Tooltip text for Randomise button
-			playerNameLabel.appendChild(playerNameClear);
-			playerNameLabel.appendChild(playerNameRandomise);
+			playerNameInputs.appendChild(playerNameTextbox);
+			playerNameInputs.appendChild(playerNameClear);
+			playerNameInputs.appendChild(playerNameRandomise);
+			playerNameLabel.appendChild(playerNameInputs);
 			playerNameContainer.appendChild(playerNameLabel);
 
 			playerNameClear.addEventListener("click", function () {
-				playerNameInput.value = ""; // Clear the input field
+				playerNameTextbox.value = ""; // Clear the input field
 			});
 
 			playerNameRandomise.addEventListener("click", function () {
-				playerNameInput.value = randomName();
-				updatePlayerName(i, playerNameInput.value);
+				playerNameTextbox.value = randomName();
+				updatePlayerName(i, playerNameTextbox.value);
 			});
 
 			const playerIsBot = document.createElement("input");

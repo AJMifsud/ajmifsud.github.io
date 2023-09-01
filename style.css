@@ -309,8 +309,18 @@ html,body {
     color: lightgray;
 }
 	
-.player-name-input {
-	max-width:50%
+.player-name-inputs {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.player-name-label {
+	width: -webkit-fill-available;
+}
+
+.player-name-textbox {
+	max-width: 50%;
 }
 	
 .name-clear-button,.random-name-button {
@@ -318,7 +328,10 @@ html,body {
 	background-color:#00000000;
 	background-size:contain;
 	border:0 solid;
-	margin:5px
+	margin:5px;
+	transition: transform 1s;
+	cursor: pointer;
+	padding: 10px;
 }
 	
 .name-clear-button {
@@ -327,6 +340,10 @@ html,body {
 	
 .random-name-button {
 	background-image:url(images/random-name.png)
+}
+
+.random-name-button:hover {
+	transform: rotateZ(360deg);
 }
 	
 #playernames-container {
@@ -344,6 +361,10 @@ html,body {
 	padding:5px 0
 }
 	
+#bot-speeds{
+	text-align: left;
+}
+
 #game-container {
 	align-items:center;
 	display:inline-flex;
@@ -746,7 +767,7 @@ html,body {
 	cursor:pointer;
 }
 	
-#deal-button,#randomise-names-button {
+#deal-button {
 	background-color:#f0f0f0;
 	border:none;
 	border-radius:5px;
@@ -763,8 +784,8 @@ html,body {
 	margin-top:10px
 }
 	
-#deal-button:hover,#randomise-names-button:hover {
-	animation:wiggle .8s;
+#deal-button:hover{
+	animation:wiggle 4s;
 	transform-origin:center
 }
 	
