@@ -1000,11 +1000,10 @@ window.onload = function () {
 			if (hasEqualRank) {
 				for (let i = 0; i < remainingCards.length; i++) {
 					if (selectedCard.rank === "3") {
-							if (i == (players.length - 2)){
+							if (i == (players.length - 1)){
 								break;
 							}
-					}
-					if (selectedCard.rank === "2") {
+					} else if (selectedCard.rank === "2") {
 						break;
 					}
 					const card = remainingCards[i];
