@@ -1000,7 +1000,7 @@ window.onload = function () {
 			if (hasEqualRank) {
 				for (let i = 0; i < remainingCards.length; i++) {
 					if (selectedCard.rank === "3") {
-							if (i == (players.length - 1)){
+							if (i == (players.length - 2)){
 								break;
 							}
 					} else if (selectedCard.rank === "2") {
