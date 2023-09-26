@@ -43,7 +43,7 @@ window.onload = function () {
 	const playPile = document.getElementById('play-pile');
 	const playpileCount = document.getElementById('playpile-count');
 	let playerNames = ["Player 1", "Player 2", "Player 3", "Player 4"];
-	const cardImagesPath = 'images/cards/';
+	const cardImagesPath = 'dunghead/images/cards/';
 	let soundsEnabled = true;
 	let selectedBotSpeed = document.querySelector('input[name="botSpeed"]:checked').value;
 
@@ -87,7 +87,7 @@ window.onload = function () {
 		if (soundsEnabled) {
 			// Create an audio element
 			const audio = document.createElement('audio');
-			audio.src = 'sounds/Queen_of_Hearts.wav';
+			audio.src = 'dunghead/sounds/Queen_of_Hearts.wav';
 			audio.play();
 		}
 	}
@@ -96,7 +96,7 @@ window.onload = function () {
 		if (soundsEnabled) {
 			// Create an audio element
 			const audio = document.createElement('audio');
-			audio.src = 'sounds/Ace_of_Spades.wav';
+			audio.src = 'dunghead/sounds/Ace_of_Spades.wav';
 			audio.play();
 		}
 	}
@@ -105,7 +105,7 @@ window.onload = function () {
 		if (soundsEnabled) {
 			// Create an audio element
 			const audio = document.createElement('audio');
-			audio.src = 'sounds/Joker.wav';
+			audio.src = 'dunghead/sounds/Joker.wav';
 			audio.play();
 		}
 	}
@@ -114,7 +114,7 @@ window.onload = function () {
 		if (soundsEnabled) {
 			// Create an audio element
 			const audio = document.createElement('audio');
-			const soundFiles = ['sounds/fart1.wav', 'sounds/fart2.wav', 'sounds/fart3.wav', 'sounds/fart4.wav', 'sounds/fart5.wav', 'sounds/fart6.wav', 'sounds/fart7.wav', 'sounds/fart8.wav', 'sounds/fart9.wav', 'sounds/fart10.wav'];
+			const soundFiles = ['dunghead/sounds/fart1.wav', 'dunghead/sounds/fart2.wav', 'dunghead/sounds/fart3.wav', 'dunghead/sounds/fart4.wav', 'dunghead/sounds/fart5.wav', 'dunghead/sounds/fart6.wav', 'dunghead/sounds/fart7.wav', 'dunghead/sounds/fart8.wav', 'dunghead/sounds/fart9.wav', 'dunghead/sounds/fart10.wav'];
 			const randomIndex = Math.floor(Math.random() * soundFiles.length);
 			audio.src = soundFiles[randomIndex];
 			audio.play();
@@ -125,7 +125,7 @@ window.onload = function () {
 		if (soundsEnabled) {
 			// Create an audio element
 			const audio = document.createElement('audio');
-			const soundFiles = ['sounds/card1.wav', 'sounds/card2.wav', 'sounds/card3.wav'];
+			const soundFiles = ['dunghead/sounds/card1.wav', 'dunghead/sounds/card2.wav', 'dunghead/sounds/card3.wav'];
 			const randomIndex = Math.floor(Math.random() * soundFiles.length);
 			audio.src = soundFiles[randomIndex];
 			audio.play();
@@ -136,7 +136,7 @@ window.onload = function () {
 		if (soundsEnabled) {
 			// Create an audio element
 			const audio = document.createElement('audio');
-			audio.src = 'sounds/flush.wav';
+			audio.src = 'dunghead/sounds/flush.wav';
 			audio.play();
 		}
 	}
@@ -396,8 +396,8 @@ window.onload = function () {
 				const card = {
 					suit,
 					rank,
-					frontImage: `images/cards/${rank}_of_${suit}.png`,
-					backImage: "images/cards/card_back.png"
+					frontImage: `dunghead/images/cards/${rank}_of_${suit}.png`,
+					backImage: "dunghead/images/cards/card_back.png"
 				};
 				deck.push(card);
 			}
@@ -407,12 +407,12 @@ window.onload = function () {
 			deck.push({
 				suit: "Jokers",
 				rank: "Joker",
-				frontImage: "images/cards/black_joker.png",
+				frontImage: "dunghead/images/cards/black_joker.png",
 			});
 			deck.push({
 				suit: "Jokers",
 				rank: "Joker",
-				frontImage: "images/cards/red_joker.png"
+				frontImage: "dunghead/images/cards/red_joker.png"
 			});
 		}
 
@@ -1379,11 +1379,11 @@ window.onload = function () {
 				outPlayerIndex = currentPlayerIndex;
 
 				if (numWinners === 0) {
-					player.playerTrophy.style.backgroundImage = 'url(images/first_place.png)';
+					player.playerTrophy.style.backgroundImage = 'url(dunghead/images/first_place.png)';
 				} else if (numWinners === 1) {
-					player.playerTrophy.style.backgroundImage = 'url(images/second_place.png)';
+					player.playerTrophy.style.backgroundImage = 'url(dunghead/images/second_place.png)';
 				} else if (numWinners === 2) {
-					player.playerTrophy.style.backgroundImage = 'url(images/third_place.png)';
+					player.playerTrophy.style.backgroundImage = 'url(dunghead/images/third_place.png)';
 				}
 
 				player.playerMat.style.transform = "rotateY(180deg)";
@@ -1415,7 +1415,7 @@ window.onload = function () {
 				appendToGameLog("Game Over!")
 				updatePlayerTurn("<b>" + players[0].playerName + " is the DUNGHEAD!</b>")
 
-				players[0].playerTrophy.style.backgroundImage = 'url(images/dunghead.png)';
+				players[0].playerTrophy.style.backgroundImage = 'url(dunghead/images/dunghead.png)';
 				players[0].playerMat.style.transform = "rotateY(180deg)";
 				break;
 			}

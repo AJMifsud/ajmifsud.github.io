@@ -1,5 +1,5 @@
 html,body {
-	background-image:url(images/wood.jpg);
+	background-image:url(/dunghead/images/wood.jpg);
 	margin:0;
 	padding:0;
 	font-family:Poo;
@@ -73,19 +73,19 @@ html,body {
 }
 
 #sound-toggle.off{
-	background-image:url(images/sound_off_up.png);
+	background-image:url(/dunghead/images/sound_off_up.png);
 }
 
 #sound-toggle.off:active {
-	background-image:url(images/sound_off_down.png);
+	background-image:url(/dunghead/images/sound_off_down.png);
 }
 
 #sound-toggle.on{
-	background-image:url(images/sound_on_up.png);
+	background-image:url(/dunghead/images/sound_on_up.png);
 }
 
 #sound-toggle.on:active {
-	background-image:url(images/sound_on_down.png);
+	background-image:url(/dunghead/images/sound_on_down.png);
 }
 
 #page-container {
@@ -217,12 +217,12 @@ html,body {
 	right:25px;
 	top:25px;
 	width:25px;
-	background-image:url(images/close_icon.png);
+	background-image:url(/dunghead/images/close_icon.png);
 	background-size:contain;
 }
 	
 #close-rules:hover {
-	background-image:url(images/close_icon_hover.png);
+	background-image:url(/dunghead/images/close_icon_hover.png);
 	background-size:contain;
 }
 	
@@ -335,11 +335,11 @@ html,body {
 }
 	
 .name-clear-button {
-	background-image:url(images/clear-name.png)
+	background-image:url(/dunghead/images/clear-name.png)
 }
 	
 .random-name-button {
-	background-image:url(images/random-name.png)
+	background-image:url(/dunghead/images/random-name.png)
 }
 
 .random-name-button:hover {
@@ -379,7 +379,7 @@ html,body {
 	align-items:center;
 	aspect-ratio:1;
 	backface-visibility:hidden;
-	background-image:url(images/green_felt.png);
+	background-image:url(/dunghead/images/green_felt.png);
 	border:10px solid #ffd700;
 	border-style: outset;
 	border-radius:20%;
@@ -400,7 +400,7 @@ html,body {
 	
 #playpile-container {
 	align-items:center;
-	background-image:url(images/felt.png);
+	background-image:url(/dunghead/images/felt.png);
 	border:3px solid #ffd700;
 	border-radius:5px;
 	display:flex;
@@ -466,7 +466,7 @@ html,body {
 .player-hand-container {
 	align-items:center;
 	backface-visibility:hidden;
-	background-image:url(images/felt.png);
+	background-image:url(/dunghead/images/felt.png);
 	border:1px solid #ffd700;
 	border-radius:2px;
 	display:flex;
@@ -592,7 +592,7 @@ html,body {
 }
 	
 .card-back {
-	background-image:url(images/cards/card_back.png);
+	background-image:url(/dunghead/images/cards/card_back.png);
 	transform:rotateY(180deg)
 }
 	
@@ -647,7 +647,7 @@ html,body {
 	
 #deck-container {
 	align-items:center;
-	background-image:url(images/green_felt.png);
+	background-image:url(/dunghead/images/green_felt.png);
 	border:1px solid #ffd700;
 	border-radius:30px 0 0 30px;
 	border-right-width:0;
@@ -748,7 +748,7 @@ html,body {
 }
 	
 #start-button {
-	background-image:url(images/dunghead.png);
+	background-image:url(/dunghead/images/dunghead.png);
 	background-color:#f0f0f000;
 	background-size: contain;
 	border: 0;
@@ -805,7 +805,7 @@ html,body {
 #burn-pile,#draw-pile {
 	align-items:center;
 	aspect-ratio:1;
-	background-image:url(images/felt.png);
+	background-image:url(/dunghead/images/felt.png);
 	border:3px solid #ffd700;
 	border-radius:5px;
 	display:flex;
@@ -886,5 +886,5 @@ html,body {
 	
 @font-face {
 	font-family:Poo;
-	src:url(Chalkduster.ttf)
+	src:url(/dunghead/Chalkduster.ttf)
 }
