@@ -54,3 +54,51 @@ html,body {
     padding: 0;
     border-radius: 10%;
 }
+
+#start-button{
+    display: inline-flex;
+    align-items: center;
+    border:  solid 0px;
+    border-radius: 0.25rem;
+    box-sizing: border-box;
+    padding: 1.5rem;
+    font-size: 1.125rem;
+    color: white;
+    height: 3rem;
+    background: rgb(85 183 37);
+    box-shadow: rgb(42, 91, 18) 0px 3px;
+}
+
+.keyboard {
+    width: 40%;
+    padding: 10px;
+    display: grid;
+    grid-template-columns: repeat(20, 1fr);
+    grid-template-rows: repeat(3, 60px);
+    grid-gap: 5px;
+}
+
+.key {
+    border-radius: 5px;
+    font-size: 20px;
+    text-align: center;
+    padding-top: 17px;
+    grid-column: span 2;
+    font-weight: bolder;
+    transition: box-shadow 75ms ease 0s, transform 50ms ease 0s;
+    box-shadow: rgb(98, 98, 98) 0px 3px;
+    background: rgb(217 220 222);
+}
+
+.backspace, .enter, .a, .l{
+    grid-column: span 3;
+}
+
+.key:hover {
+    background: rgb(197, 197, 197);
+}
+
+.key:active{
+    transform: translateY(3px);
+    box-shadow: rgb(98, 98, 98) 0px 0px;
+}
