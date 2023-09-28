@@ -1,5 +1,6 @@
 window.onload = function () {
 
+	const guesses = document.querySelectorAll('.guesses');
 	const startButton = document.getElementById("start-button");
 	const keyboard = document.getElementById("keyboard");
 	const minus = document.getElementById("minus");
@@ -14,12 +15,30 @@ window.onload = function () {
 	plus.addEventListener("click", function () {
 		if (wordLength.value <= 19){
 		wordLength.value++;
+
+        guesses.forEach(guess => {
+            const letter = document.createElement('div');
+            letter.className = 'letter';
+            guess.appendChild(letter);
+        });
+
+		startButton.style.display = "flex";
+		keyboard.style.display = "none";
 	}
 	});
 
 	minus.addEventListener("click", function () {
 		if (wordLength.value >= 4){
 		wordLength.value--;
+
+        guesses.forEach(word => {
+            const letters = word.querySelectorAll('.letter');
+            const lastLetter = letters[letters.length - 1];
+            	word.removeChild(lastLetter);
+        });
+		
+		startButton.style.display = "flex";
+		keyboard.style.display = "none";
 	}
 	});
 }
