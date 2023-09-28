@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="wordy/style.css">
+    <script src="wordy/wordy.js"></script>
     <title>Wordy! A Wordle remake by Andy!</title>
 </head>
 <body>
@@ -44,8 +45,16 @@
             <div class="letter"></div>
         </div>
     </div>
+    <hr style="width: 85%;">
+    <span style="color: white;">Word Length:</span>
+    <div id="length-control">
+          <div id="minus"></div>
+          <input type="text" id="word-length" value=3 readonly="">
+          <div id="plus"></div>
+    </div>
+    <hr style="width: 85%;">
     <button id="start-button"><strong>START</strong></button>
-    <div class="keyboard">
+    <div id="keyboard">
             <div class="key">Q</div>
             <div class="key">w</div>
             <div class="key">E</div>
