@@ -2,7 +2,8 @@ html,body {
     background-color: rgb(22, 24, 25);
 	margin:0;
 	padding:0;
-    font-family: "Century Gothic"
+    font-family: "Century Gothic";
+    min-width: 400px;
 }
 
 #wrapper{
@@ -32,34 +33,36 @@ html,body {
     grid-template-rows: repeat(6, 1fr);
     gap: 5px 0px;
     align-items: center;
-    height: 50%;
+    max-height: 450px;
     width: 80%;
     padding: 15px 0;
+    overflow-x: auto;
 }
 
 .guessed-words{
     display: grid;
-	grid-template-columns:repeat(3,minmax(75px,75px));
+    grid-auto-flow:column;  
+	/*grid-template-columns: repeat(auto-fit, minmax(0, 1fr));*/
     justify-items: center;
     justify-content: center;
-    padding: 5px 0px;
-    gap: 2.5px;
+    gap: 5px;
     height: 100%;
 }
 
 .letter{
-    height: 100%;
     aspect-ratio: 1;
     background-color:rgb(48, 52, 54);
-    padding: 0;
     border-radius: 10%;
+    min-width: 45px;
+    min-height: 45px;
 }
 
 #length-control{
     display: flex;
+    justify-content: center;
     background: #FFFFFF;
 	border-radius: 25px;
-	height: 50px;
+	min-height: 30px;
 	width: 150px;
     float: left;
 }
@@ -148,9 +151,12 @@ html,body {
     grid-template-columns: repeat(20, 1fr);
     grid-template-rows: repeat(3, 1fr);
     grid-gap: 5px;
+    justify-content: center;
 }
 
 .key {
+    display: flex;
+    justify-content: center;
     border-radius: 5px;
     font-size: 20px;
     text-align: center;
