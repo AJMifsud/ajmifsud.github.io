@@ -37,12 +37,11 @@ html,body {
     width: 80%;
     padding: 15px 0;
     overflow-x: auto;
+    height: 50%;
 }
 
 .guesses{
-    display: grid;
-    grid-auto-flow:column;  
-	/*grid-template-columns: repeat(auto-fit, minmax(0, 1fr));*/
+    display: flex;
     justify-items: center;
     justify-content: center;
     gap: 5px;
@@ -76,9 +75,11 @@ html,body {
     display: flex;
     align-items: center;
     justify-content: center;
-    border: solid 1px rgb(0 0 0 / 25%);
+    border: none;
     background: grey;
     border-radius: 50%;
+    box-shadow: inset rgb(200 200 200) 0 0 5px 3px;
+    transition: transform, box-shadow 0.2s;
 
     &:before, &:after{
         content: "";
@@ -87,7 +88,13 @@ html,body {
         display: flex;
         position: absolute;
     }
+
+    &:active{
+        transform: scale(90%);
+        box-shadow: inset rgb(50 50 50) 0 0 5px 3px;
+    }
 }
+
 
 #minus{
     /*Horizontal line*/
