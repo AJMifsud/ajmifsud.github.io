@@ -10,6 +10,9 @@ window.onload = function () {
 	startButton.addEventListener("click", function () {
 		startButton.style.display = "none";
 		keyboard.style.display = "grid";
+		let word = "dog";
+		letters = splitWord(word);
+		console.log(letters); // Output the array of characters in uppercase
 	});
 
 	plus.addEventListener("click", function () {
@@ -41,4 +44,9 @@ window.onload = function () {
 		keyboard.style.display = "none";
 	}
 	});
+
+	function splitWord(word) {
+		const letters = word.toUpperCase().split('');
+		return letters;
+	  }
 }
