@@ -56,6 +56,10 @@ html,body {
     min-height: 45px;
     min-width: 45px;
     width: -webkit-fill-available;
+    justify-content: center;
+    align-items: center;
+    font-size: xxx-large;
+    color: white;
 }
 
 #length-control{
