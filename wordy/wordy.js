@@ -7,18 +7,45 @@ window.onload = function () {
 	const wordLength = document.getElementById("word-length");
 	const plus = document.getElementById("plus");
 
-	startButton.addEventListener("click", function () {
+	function waitForInput(eventType, element) {
+		return new Promise(resolve => {
+		  function eventHandler(event) {
+			resolve(event);
+			element.removeEventListener(eventType, eventHandler);
+		  }
+		  element.addEventListener(eventType, eventHandler);
+		});
+	  }
+
+	  startButton.addEventListener("click", async function () {
 		startButton.style.display = "none";
 		keyboard.style.display = "grid";
 		let word = "dog";
-		letters = splitWord(word);
-		//console.log(letters); // Output the array of characters in uppercase
-		let isCorrect = false;
-
-		//while (!isCorrect){
-
-		//}
-	});
+		let letters = splitWord(word);
+	  
+		for (const guess of guesses) {
+		  const guessLetters = guess.querySelectorAll('.letter');
+	  
+		  for (let i = 0; i < guessLetters.length; i++) {
+			const letter = guessLetters[i];
+			const event = await Promise.race([
+			  waitForInput('keydown', document),
+			  waitForInput('click', startButton)
+			]);
+	  
+			if (event.type === 'keydown') {
+				const key = event.key;
+			  
+				// Check if the key is a character (a-z) and convert to uppercase
+				if (key.match(/^[a-zA-Z]$/)) {
+				  const newText = key.toUpperCase();
+				  letter.textContent = newText;
+				}
+			  }
+		  }
+		}
+	  });
+	
 
 	plus.addEventListener("click", function () {
 		if (wordLength.value <= 20){
