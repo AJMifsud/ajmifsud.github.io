@@ -12,11 +12,16 @@ window.onload = function () {
 		keyboard.style.display = "grid";
 		let word = "dog";
 		letters = splitWord(word);
-		console.log(letters); // Output the array of characters in uppercase
+		//console.log(letters); // Output the array of characters in uppercase
+		let isCorrect = false;
+
+		//while (!isCorrect){
+
+		//}
 	});
 
 	plus.addEventListener("click", function () {
-		if (wordLength.value <= 19){
+		if (wordLength.value <= 20){
 		wordLength.value++;
 
         guesses.forEach(guess => {
