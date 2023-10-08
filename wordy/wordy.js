@@ -1,5 +1,6 @@
-window.onload = function () {
+window.onload = async function () {
 
+	const words = await getWords();
 	const guesses = document.querySelectorAll('.guesses');
 	const startButton = document.getElementById("start-button");
 	const keyboard = document.getElementById("keyboard");
@@ -14,20 +15,11 @@ window.onload = function () {
 		});
 	});
 
-
-	function waitForInput() {
-		return new Promise(resolve => {
-			function eventHandler(event) {
-				resolve(event);
-			}
-			keys.forEach(key => key.addEventListener('click', eventHandler));
-			document.addEventListener('keydown', eventHandler);
-		});
-	}
 	startButton.addEventListener("click", async function () {
 		startButton.style.display = "none";
 		keyboard.style.display = "grid";
-		let word = "dog";
+		const word = randomWord(words, parseInt(wordLength.value));
+		console.log(`Random Word: ` + word);
 		let letters = splitWord(word);
 
 		for (const guess of guesses) {
@@ -66,6 +58,17 @@ window.onload = function () {
 							i--;
 						}
 					} else if (key === 'Enter') {
+
+						for (i = 0; i < guessLetters.length; i++) {
+							const letterValue = guessLetters[i].textContent.toUpperCase();
+							if (letters[i] == letterValue) {
+								guessLetters[i].style.background = "rgb(85, 183, 37)";
+							} else if (letters.includes(letterValue)) {
+								guessLetters[i].style.background = "rgb(218, 195, 22)";
+							} else {
+								guessLetters[i].style.background = "rgb(119, 130, 136)";
+							}
+						}
 						break;
 					}
 				}
@@ -110,6 +113,32 @@ window.onload = function () {
 		}
 	});
 
+	async function getWords() {
+		const response = await fetch('wordy/words.csv');
+		const csvData = await response.text();
+		const words = csvData.split(',');
+		return words;
+	}
+
+	function waitForInput() {
+		return new Promise(resolve => {
+			function eventHandler(event) {
+				resolve(event);
+			}
+			keys.forEach(key => key.addEventListener('click', eventHandler));
+			document.addEventListener('keydown', eventHandler);
+		});
+	}
+
+	function randomWord(words, wordLength) {
+		// Filter words based on the specified length
+		const filteredWords = words.filter(word => word.length === wordLength);
+		
+		// Randomly select a word from the filtered list
+		const randomIndex = Math.floor(Math.random() * filteredWords.length);
+		return filteredWords[randomIndex];
+	}
+	  
 	function splitWord(word) {
 		const letters = word.toUpperCase().split('');
 		return letters;
