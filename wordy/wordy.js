@@ -3,20 +3,27 @@ window.onload = function () {
 	const guesses = document.querySelectorAll('.guesses');
 	const startButton = document.getElementById("start-button");
 	const keyboard = document.getElementById("keyboard");
+	const keys = keyboard.querySelectorAll('.key');
 	const minus = document.getElementById("minus");
 	const wordLength = document.getElementById("word-length");
 	const plus = document.getElementById("plus");
 
-	function waitForInput(eventType, element) {
+	keys.forEach(button => {
+		button.addEventListener('click', function (event) {
+			waitForInput('click', event.target);
+		});
+	});
+
+
+	function waitForInput() {
 		return new Promise(resolve => {
 			function eventHandler(event) {
 				resolve(event);
-				element.removeEventListener(eventType, eventHandler);
 			}
-			element.addEventListener(eventType, eventHandler);
+			keys.forEach(key => key.addEventListener('click', eventHandler));
+			document.addEventListener('keydown', eventHandler);
 		});
 	}
-
 	startButton.addEventListener("click", async function () {
 		startButton.style.display = "none";
 		keyboard.style.display = "grid";
@@ -30,10 +37,23 @@ window.onload = function () {
 			while (i < guessLetters.length) {
 				const event = await Promise.race([
 					waitForInput('keydown', document),
-					waitForInput('click', startButton)
+					waitForInput('click', keys)
 				]);
 
-				if (event.type === 'keydown') {
+				if (event.type === 'click') {
+					if (event.target.textContent == "<<") {
+						guessLetters[i].textContent = '';
+						if (i > 0) {
+							i--;
+						}
+					} else if (event.target.textContent == "ENTER") {
+						break;
+					} else {
+						const newText = event.target.textContent.toUpperCase();
+						guessLetters[i].textContent = newText;
+						i++;
+					}
+				} else if (event.type === 'keydown') {
 					const key = event.key;
 
 					if (key.match(/^[a-zA-Z]$/)) {
@@ -45,17 +65,18 @@ window.onload = function () {
 						if (i > 0) {
 							i--;
 						}
+					} else if (key === 'Enter') {
+						break;
 					}
 				}
+
 				if (i == guessLetters.length) {
 					if (i > 0) {
 						i--;
 					}
 				}
-
 			}
 		}
-
 	});
 
 
@@ -75,7 +96,7 @@ window.onload = function () {
 	});
 
 	minus.addEventListener("click", function () {
-		if (wordLength.value >= 4) {
+		if (wordLength.value >= 3) {
 			wordLength.value--;
 
 			guesses.forEach(word => {

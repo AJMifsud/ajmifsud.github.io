@@ -60,6 +60,7 @@ html,body {
     align-items: center;
     font-size: xxx-large;
     color: white;
+    font-weight: bold;
 }
 
 #length-control{
