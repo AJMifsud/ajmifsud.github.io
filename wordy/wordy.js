@@ -60,7 +60,7 @@ window.onload = function () {
 
 
 	plus.addEventListener("click", function () {
-		if (wordLength.value <= 20) {
+		if (wordLength.value <= 29) {
 			wordLength.value++;
 
 			guesses.forEach(guess => {
