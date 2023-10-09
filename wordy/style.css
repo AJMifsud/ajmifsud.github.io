@@ -61,6 +61,7 @@ html,body {
     font-size: xxx-large;
     color: white;
     font-weight: bold;
+    transition: background-color 0.3s ease;
 }
 
 #length-control{
@@ -181,9 +182,9 @@ html,body {
     padding: 15px;
     grid-column: span 2;
     font-weight: bolder;
-    transition: box-shadow 75ms ease 0s, transform 50ms ease 0s;
+    transition: box-shadow 75ms ease 0s, transform 50ms ease 0s, background-color 0.3s ease;
     box-shadow: rgb(98, 98, 98) 0px 3px;
-    background: rgb(217 220 222);
+    background-color: rgb(217 220 222);
 }
 
 .backspace, .enter, .a, .l{
