@@ -39,6 +39,18 @@ window.onload = async function () {
 							i--;
 						}
 					} else if (event.target.textContent == "ENTER") {
+
+						for (i = 0; i < guessLetters.length; i++) {
+							const letterValue = guessLetters[i].textContent.toUpperCase();
+							if (letters[i] == letterValue) {
+								guessLetters[i].style.background = "rgb(85, 183, 37)";
+							} else if (letters.includes(letterValue)) {
+								guessLetters[i].style.background = "rgb(218, 195, 22)";
+							} else {
+								guessLetters[i].style.background = "rgb(119, 130, 136)";
+							}
+						}
+
 						break;
 					} else {
 						const newText = event.target.textContent.toUpperCase();
@@ -69,6 +81,7 @@ window.onload = async function () {
 								guessLetters[i].style.background = "rgb(119, 130, 136)";
 							}
 						}
+						
 						break;
 					}
 				}
