@@ -156,10 +156,14 @@ window.onload = async function () {
 						guessLetters[i].style.background = "rgb(48, 52, 54)";
 						guessLetters[i].textContent = null;
 				}
+				
 			});
 
 			startButton.style.display = "flex";
 			keyboard.style.display = "none";
+			for (i = 0; i < keys.length; i++) {
+				keys[i].style.background = "rgb(217, 220, 222)";
+			}
 		}
 	});
 
@@ -181,6 +185,9 @@ window.onload = async function () {
 
 			startButton.style.display = "flex";
 			keyboard.style.display = "none";
+			for (i = 0; i < keys.length; i++) {
+				keys[i].style.background = "rgb(217, 220, 222)";
+			}
 		}
 	});
 
