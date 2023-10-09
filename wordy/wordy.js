@@ -23,6 +23,7 @@ window.onload = async function () {
 		let letters = splitWord(word);
 
 		for (const guess of guesses) {
+			let correct = true;
 			const guessLetters = guess.querySelectorAll('.letter');
 			let i = 0;
 
@@ -52,6 +53,7 @@ window.onload = async function () {
 								}
 							//If contained letters
 							} else if (letters.includes(letterValue)) {
+								correct = false;
 								guessLetters[i].style.background = "rgb(218, 195, 22)";
 								for (j = 0; j < keys.length; j++) {
 									if (keys[j].textContent == letterValue){
@@ -59,6 +61,7 @@ window.onload = async function () {
 									}
 								}
 							} else {
+								correct = false;
 								guessLetters[i].style.background = "rgb(119, 130, 136)";
 								for (j = 0; j < keys.length; j++) {
 									if (keys[j].textContent == letterValue){
@@ -100,6 +103,7 @@ window.onload = async function () {
 								}
 							//If contained letters
 							} else if (letters.includes(letterValue)) {
+								correct = false;
 								guessLetters[i].style.background = "rgb(218, 195, 22)";
 								for (j = 0; j < keys.length; j++) {
 									if (keys[j].textContent == letterValue){
@@ -107,6 +111,7 @@ window.onload = async function () {
 									}
 								}
 							} else {
+								correct = false;
 								guessLetters[i].style.background = "rgb(119, 130, 136)";
 								for (j = 0; j < keys.length; j++) {
 									if (keys[j].textContent == letterValue){
@@ -126,7 +131,14 @@ window.onload = async function () {
 					}
 				}
 			}
+
+			if (correct){
+				break;
+			}
+			
 		}
+
+		return;
 	});
 
 
