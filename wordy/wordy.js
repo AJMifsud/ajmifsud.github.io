@@ -91,6 +91,12 @@ window.onload = async function () {
 				const letter = document.createElement('div');
 				letter.className = 'letter';
 				guess.appendChild(letter);
+				
+				const guessLetters = guess.querySelectorAll('.letter');
+				for (i = 0; i < guessLetters.length; i++) {
+						guessLetters[i].style.background = "rgb(48, 52, 54)";
+						guessLetters[i].textContent = null;
+				}
 			});
 
 			startButton.style.display = "flex";
@@ -103,9 +109,15 @@ window.onload = async function () {
 			wordLength.value--;
 
 			guesses.forEach(word => {
-				const letters = word.querySelectorAll('.letter');
-				const lastLetter = letters[letters.length - 1];
+				const guessLetters = word.querySelectorAll('.letter');
+				const lastLetter = guessLetters[guessLetters.length - 1];
 				word.removeChild(lastLetter);
+
+				for (i = 0; i < guessLetters.length; i++) {
+						guessLetters[i].style.background = "rgb(48, 52, 54)";
+						guessLetters[i].textContent = null;
+				}
+				
 			});
 
 			startButton.style.display = "flex";
