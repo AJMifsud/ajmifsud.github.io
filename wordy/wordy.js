@@ -42,12 +42,29 @@ window.onload = async function () {
 
 						for (i = 0; i < guessLetters.length; i++) {
 							const letterValue = guessLetters[i].textContent.toUpperCase();
+							//If correct letters
 							if (letters[i] == letterValue) {
 								guessLetters[i].style.background = "rgb(85, 183, 37)";
+								for (j = 0; j < keys.length; j++) {
+									if (keys[j].textContent == letters[i]){
+										keys[j].style.background = "rgb(85, 183, 37)";
+									}
+								}
+							//If contained letters
 							} else if (letters.includes(letterValue)) {
 								guessLetters[i].style.background = "rgb(218, 195, 22)";
+								for (j = 0; j < keys.length; j++) {
+									if (keys[j].textContent == letterValue){
+										keys[j].style.background = "rgb(218, 195, 22)";
+									}
+								}
 							} else {
 								guessLetters[i].style.background = "rgb(119, 130, 136)";
+								for (j = 0; j < keys.length; j++) {
+									if (keys[j].textContent == letterValue){
+										keys[j].style.background = "rgb(119, 130, 136)";
+									}
+								}
 							}
 						}
 
