@@ -40,37 +40,7 @@ window.onload = async function () {
 							i--;
 						}
 					} else if (event.target.textContent == "ENTER") {
-
-						for (i = 0; i < guessLetters.length; i++) {
-							const letterValue = guessLetters[i].textContent.toUpperCase();
-							//If correct letters
-							if (letters[i] == letterValue) {
-								guessLetters[i].style.background = "rgb(85, 183, 37)";
-								for (j = 0; j < keys.length; j++) {
-									if (keys[j].textContent == letters[i]){
-										keys[j].style.background = "rgb(85, 183, 37)";
-									}
-								}
-							//If contained letters
-							} else if (letters.includes(letterValue)) {
-								correct = false;
-								guessLetters[i].style.background = "rgb(218, 195, 22)";
-								for (j = 0; j < keys.length; j++) {
-									if (keys[j].textContent == letterValue){
-										keys[j].style.background = "rgb(218, 195, 22)";
-									}
-								}
-							} else {
-								correct = false;
-								guessLetters[i].style.background = "rgb(119, 130, 136)";
-								for (j = 0; j < keys.length; j++) {
-									if (keys[j].textContent == letterValue){
-										keys[j].style.background = "rgb(119, 130, 136)";
-									}
-								}
-							}
-						}
-
+						correct = applyStyles(guessLetters, letters, keys, correct);
 						break;
 					} else {
 						const newText = event.target.textContent.toUpperCase();
@@ -90,37 +60,7 @@ window.onload = async function () {
 							i--;
 						}
 					} else if (key === 'Enter') {
-
-						for (i = 0; i < guessLetters.length; i++) {
-							const letterValue = guessLetters[i].textContent.toUpperCase();
-							//If correct letters
-							if (letters[i] == letterValue) {
-								guessLetters[i].style.background = "rgb(85, 183, 37)";
-								for (j = 0; j < keys.length; j++) {
-									if (keys[j].textContent == letters[i]){
-										keys[j].style.background = "rgb(85, 183, 37)";
-									}
-								}
-							//If contained letters
-							} else if (letters.includes(letterValue)) {
-								correct = false;
-								guessLetters[i].style.background = "rgb(218, 195, 22)";
-								for (j = 0; j < keys.length; j++) {
-									if (keys[j].textContent == letterValue){
-										keys[j].style.background = "rgb(218, 195, 22)";
-									}
-								}
-							} else {
-								correct = false;
-								guessLetters[i].style.background = "rgb(119, 130, 136)";
-								for (j = 0; j < keys.length; j++) {
-									if (keys[j].textContent == letterValue){
-										keys[j].style.background = "rgb(119, 130, 136)";
-									}
-								}
-							}
-						}
-
+						correct = applyStyles(guessLetters, letters, keys, correct);
 						break;
 					}
 				}
@@ -220,5 +160,42 @@ window.onload = async function () {
 	function splitWord(word) {
 		const letters = word.toUpperCase().split('');
 		return letters;
+	}
+
+	function applyStyles(guessLetters, letters, keys) {
+		for (let i = 0; i < guessLetters.length; i++) {
+			const letterValue = guessLetters[i].textContent.toUpperCase();
+	
+			// If correct letters
+			if (letters[i] === letterValue) {
+				correct = true;
+				guessLetters[i].style.background = "rgb(85, 183, 37)";
+				for (let j = 0; j < keys.length; j++) {
+					if (keys[j].textContent === letters[i]) {
+						keys[j].style.background = "rgb(85, 183, 37)";
+					}
+				}
+			}
+			// If contained letters
+			else if (letters.includes(letterValue)) {
+				correct = false;
+				guessLetters[i].style.background = "rgb(218, 195, 22)";
+				for (let j = 0; j < keys.length; j++) {
+					if (keys[j].textContent === letterValue) {
+						keys[j].style.background = "rgb(218, 195, 22)";
+					}
+				}
+			}
+			else {
+				correct = false;
+				guessLetters[i].style.background = "rgb(119, 130, 136)";
+				for (let j = 0; j < keys.length; j++) {
+					if (keys[j].textContent === letterValue) {
+						keys[j].style.background = "rgb(119, 130, 136)";
+					}
+				}
+			}
+		}
+		return correct;
 	}
 }
