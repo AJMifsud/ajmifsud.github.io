@@ -162,13 +162,12 @@ window.onload = async function () {
 		return letters;
 	}
 
-	function applyStyles(guessLetters, letters, keys) {
+	function applyStyles(guessLetters, letters, keys, correct) {
 		for (let i = 0; i < guessLetters.length; i++) {
 			const letterValue = guessLetters[i].textContent.toUpperCase();
 	
 			// If correct letters
 			if (letters[i] === letterValue) {
-				correct = true;
 				guessLetters[i].style.background = "rgb(85, 183, 37)";
 				for (let j = 0; j < keys.length; j++) {
 					if (keys[j].textContent === letters[i]) {
@@ -182,7 +181,9 @@ window.onload = async function () {
 				guessLetters[i].style.background = "rgb(218, 195, 22)";
 				for (let j = 0; j < keys.length; j++) {
 					if (keys[j].textContent === letterValue) {
+						if (keys[j].style.background !== "rgb(85, 183, 37)"){
 						keys[j].style.background = "rgb(218, 195, 22)";
+					}
 					}
 				}
 			}
