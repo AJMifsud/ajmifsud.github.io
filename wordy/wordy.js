@@ -12,6 +12,7 @@ window.onload = async function () {
 	const winLose = document.getElementById("win-lose");
 	const answer = document.getElementById("answer");
 	const defineButton  = document.getElementById("define-button");
+	const definitions  = document.getElementById("definitions");
 
 	keys.forEach(button => {
 		button.addEventListener('click', function (event) {
@@ -85,9 +86,11 @@ window.onload = async function () {
 		if (correct){
 			
 			defineButton.addEventListener("click", function () {
-				const searchUrl = `https://api.dictionaryapi.dev/api/v2/entries/en/${word}`;
+				const apiKey = '8UNDwGcuUTy05FYJ';  // Replace with your actual API key
 			
-				fetch(searchUrl)
+				const apiUrl = `https://www.stands4.com/services/v2/defs.php?uid=12132&tokenid=8UNDwGcuUTy05FYJ&word=${word}&format=json`;
+			
+				fetch(apiUrl)
 					.then(response => {
 						if (!response.ok) {
 							throw new Error('Network response was not ok');
@@ -96,21 +99,26 @@ window.onload = async function () {
 					})
 					.then(data => {
 						// Check if the API returned a valid response
-						if (Array.isArray(data) && data.length > 0) {
-							// Iterate through each meaning and definition
-							data.forEach(item => {
-								console.log('Part of speech:', item.meanings[0].partOfSpeech);
-								item.meanings.forEach(meaning => {
-									console.log('  Definition:', meaning.definitions[0].definition);
-									console.log('  Examples:', meaning.definitions[0].example);
-								});
-							});
+						if (data && data.result && data.result.length > 0) {
+							let definition;
+							// Iterate through each result and display information
+							for (let i = 0; i < 3 && i < data.result.length; i++) {
+								const result = data.result[i];
+								definition += (`Definition ${i + 1}:`, result.definition);
+			
+								// Display the example only if it is provided and non-empty
+								if (result.example && typeof result.example === 'string' && result.example.trim() !== '') {
+									definition += (`Example ${i + 1}:`, result.example);
+								}
+							}
+							definitions.textContent = definition;
 						} else {
-							console.log('No definition found.');
+							definitions.textContent = 'No definition found.';
 						}
 					})
 					.catch(error => console.error('Error fetching definition:', error));
 			});
+			
 			
 
 			
@@ -122,9 +130,11 @@ window.onload = async function () {
 		} else {
 			
 			defineButton.addEventListener("click", function () {
-				const searchUrl = `https://api.dictionaryapi.dev/api/v2/entries/en/${word}`;
+				const apiKey = '8UNDwGcuUTy05FYJ';  // Replace with your actual API key
 			
-				fetch(searchUrl)
+				const apiUrl = `https://www.stands4.com/services/v2/defs.php?uid=12132&tokenid=8UNDwGcuUTy05FYJ&word=${word}&format=json`;
+			
+				fetch(apiUrl)
 					.then(response => {
 						if (!response.ok) {
 							throw new Error('Network response was not ok');
@@ -133,21 +143,26 @@ window.onload = async function () {
 					})
 					.then(data => {
 						// Check if the API returned a valid response
-						if (Array.isArray(data) && data.length > 0) {
-							// Iterate through each meaning and definition
-							data.forEach(item => {
-								console.log('Part of speech:', item.meanings[0].partOfSpeech);
-								item.meanings.forEach(meaning => {
-									console.log('  Definition:', meaning.definitions[0].definition);
-									console.log('  Examples:', meaning.definitions[0].example);
-								});
-							});
+						if (data && data.result && data.result.length > 0) {
+							let definition = "";
+							// Iterate through each result and display information
+							for (let i = 0; i < 3 && i < data.result.length; i++) {
+								const result = data.result[i];
+								definition += (`Definition ${i + 1}:`, result.definition);
+			
+								// Display the example only if it is provided and non-empty
+								if (result.example && typeof result.example === 'string' && result.example.trim() !== '') {
+									definition += (`Example ${i + 1}:`, result.example + "<br>");
+								}
+							}
+							definitions.innerHTML = definition;
 						} else {
-							console.log('No definition found.');
+							definitions.textContent = 'No definition found.';
 						}
 					})
 					.catch(error => console.error('Error fetching definition:', error));
 			});
+			
 			
 
 			wordReveal.style.display = "inline-flex";

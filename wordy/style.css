@@ -204,18 +204,18 @@ html,body {
 
 #word-reveal{
     position: absolute;
-    width: 30%;
+    width: 50%;
     min-width: 350px;
     aspect-ratio: 2/1;
     left: 50%;
     top: 50%;
-    transform: translate(-50%, -100%);
+    transform: translate(-50%, -50%);
     background: white;
     display: none;
     border-radius: 6px;
     overflow: hidden;
     flex-direction: column;
-    justify-content: flex-start;
+    justify-content: space-between;
     align-items: center;
     font-size: x-large;
 }
@@ -233,10 +233,14 @@ html,body {
     display: flex;
     width: 100%;
     text-align: center;
-    height: -webkit-fill-available;
     justify-content: center;
     align-items: center;
     flex-direction: column;
+}
+
+#definitions{
+    overflow-y: auto;
+    font-size: small;
 }
 
 #buttons{
