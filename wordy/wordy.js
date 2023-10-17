@@ -11,6 +11,7 @@ window.onload = async function () {
 	const wordReveal = document.getElementById("word-reveal");
 	const winLose = document.getElementById("win-lose");
 	const answer = document.getElementById("answer");
+	const defineButton  = document.getElementById("define-button");
 
 	keys.forEach(button => {
 		button.addEventListener('click', function (event) {
@@ -83,12 +84,72 @@ window.onload = async function () {
 		}
 		if (correct){
 			
+			defineButton.addEventListener("click", function () {
+				const searchUrl = `https://api.dictionaryapi.dev/api/v2/entries/en/${word}`;
+			
+				fetch(searchUrl)
+					.then(response => {
+						if (!response.ok) {
+							throw new Error('Network response was not ok');
+						}
+						return response.json();
+					})
+					.then(data => {
+						// Check if the API returned a valid response
+						if (Array.isArray(data) && data.length > 0) {
+							// Iterate through each meaning and definition
+							data.forEach(item => {
+								console.log('Part of speech:', item.meanings[0].partOfSpeech);
+								item.meanings.forEach(meaning => {
+									console.log('  Definition:', meaning.definitions[0].definition);
+									console.log('  Examples:', meaning.definitions[0].example);
+								});
+							});
+						} else {
+							console.log('No definition found.');
+						}
+					})
+					.catch(error => console.error('Error fetching definition:', error));
+			});
+			
+
+			
 			wordReveal.style.display = "inline-flex";
 			winLose.style.background = "rgb(85, 183, 37)";
 			winLose.textContent = "You Won!";
 			answer.innerHTML = "The word was: <br> <strong>" + word + "</strong>";
 			return;
 		} else {
+			
+			defineButton.addEventListener("click", function () {
+				const searchUrl = `https://api.dictionaryapi.dev/api/v2/entries/en/${word}`;
+			
+				fetch(searchUrl)
+					.then(response => {
+						if (!response.ok) {
+							throw new Error('Network response was not ok');
+						}
+						return response.json();
+					})
+					.then(data => {
+						// Check if the API returned a valid response
+						if (Array.isArray(data) && data.length > 0) {
+							// Iterate through each meaning and definition
+							data.forEach(item => {
+								console.log('Part of speech:', item.meanings[0].partOfSpeech);
+								item.meanings.forEach(meaning => {
+									console.log('  Definition:', meaning.definitions[0].definition);
+									console.log('  Examples:', meaning.definitions[0].example);
+								});
+							});
+						} else {
+							console.log('No definition found.');
+						}
+					})
+					.catch(error => console.error('Error fetching definition:', error));
+			});
+			
+
 			wordReveal.style.display = "inline-flex";
 			winLose.style.background = "rgb(226, 61, 61	)";
 			winLose.textContent = "You Lost!";
@@ -215,4 +276,5 @@ window.onload = async function () {
 		}
 		return correct;
 	}
+
 }
