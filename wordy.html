@@ -1,98 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="apple-touch-icon" sizes="120x120" href="wordy/icons/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="wordy/icons/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="wordy/icons/favicon-16x16.png">
-    <link rel="manifest" href="wordy/icons/site.webmanifest">
-    <link rel="mask-icon" href="wordy/icons/safari-pinned-tab.svg" color="#5bbad5">
-    <link rel="shortcut icon" href="wordy/icons/favicon.ico">
-    <meta name="msapplication-TileColor" content="#da532c">
-    <meta name="msapplication-config" content="wordy/icons/browserconfig.xml">
-    <meta name="theme-color" content="#ffffff">
-    <link rel="stylesheet" type="text/css" href="wordy/style.css">
-    <script src="wordy/wordy.js"></script>
-    <title>Wordy! A Wordle remake by Andy!</title>
-</head>
-<body>
-<div id="wrapper">
-    <div id="header">
-    <span id="title"><strong>Word</strong>y!</span>
-    <hr style="width: 85%;">
-    </div>
-    <div id="game-grid">
-        <div class="guesses" id="guess-1">
-            <div class="letter"></div>
-            <div class="letter"></div>
-            <div class="letter"></div>
-        </div>
-        <div class="guesses" id="guess-2">
-            <div class="letter"></div>
-            <div class="letter"></div>
-            <div class="letter"></div>
-        </div>
-        <div class="guesses" id="guess-3">
-            <div class="letter"></div>
-            <div class="letter"></div>
-            <div class="letter"></div>
-        </div>
-        <div class="guesses" id="guess-4">
-            <div class="letter"></div>
-            <div class="letter"></div>
-            <div class="letter"></div>
-        </div>
-        <div class="guesses" id="guess-5">
-            <div class="letter"></div>
-            <div class="letter"></div>
-            <div class="letter"></div>
-        </div>
-        <div class="guesses" id="guess-6">
-            <div class="letter"></div>
-            <div class="letter"></div>
-            <div class="letter"></div>
-        </div>
-    </div>
-    <hr style="width: 85%;">
-    <span style="color: white;">Word Length:</span>
-    <div id="length-control">
-          <div id="minus"></div>
-          <input type="text" id="word-length" value=3 readonly="">
-          <div id="plus"></div>
-    </div>
-    <hr style="width: 85%;">
-    <button id="start-button"><strong>START</strong></button>
-    <div id="keyboard">
-            <div class="key">Q</div>
-            <div class="key">W</div>
-            <div class="key">E</div>
-            <div class="key">R</div>
-            <div class="key">T</div>
-            <div class="key">Y</div>
-            <div class="key">U</div>
-            <div class="key">I</div>
-            <div class="key">O</div>
-            <div class="key">P</div>
-            <div class="key a">A</div>
-            <div class="key">S</div>
-            <div class="key">D</div>
-            <div class="key">F</div>
-            <div class="key">G</div>
-            <div class="key">H</div>
-            <div class="key">J</div>
-            <div class="key">K</div>
-            <div class="key l">L</div>
-            <div class="key backspace">&lt;&lt;</div>
-            <div class="key">Z</div>
-            <div class="key">X</div>
-            <div class="key">C</div>
-            <div class="key">V</div>
-            <div class="key">B</div>
-            <div class="key">N</div>
-            <div class="key">M</div>
-            <div class="key enter">ENTER</div>
-    </div>
-</div>
-</body>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="apple-touch-icon" sizes="120x120" href="wordy/icons/apple-touch-icon.png">
+		<link rel="icon" type="image/png" sizes="32x32" href="wordy/icons/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="wordy/icons/favicon-16x16.png">
+		<link rel="manifest" href="wordy/icons/site.webmanifest">
+		<link rel="mask-icon" href="wordy/icons/safari-pinned-tab.svg" color="#5bbad5">
+		<link rel="shortcut icon" href="wordy/icons/favicon.ico">
+		<meta name="msapplication-TileColor" content="#da532c">
+		<meta name="msapplication-config" content="wordy/icons/browserconfig.xml">
+		<meta name="theme-color" content="#ffffff">
+		<link rel="stylesheet" type="text/css" href="wordy/style.css">
+		<script src="wordy/wordy.js"></script>
+		<title>Wordy! A Wordle remake by Andy!</title>
+	</head>
+	<body>
+		<div id="wrapper">
+			<div id="header">
+				<span id="title"><strong>Word</strong>y!</span>
+				<hr style="width: 85%;">
+			</div>
+			<div id="game-grid">
+				<div class="guesses" id="guess-1">
+					<div class="letter"></div>
+					<div class="letter"></div>
+					<div class="letter"></div>
+				</div>
+				<div class="guesses" id="guess-2">
+					<div class="letter"></div>
+					<div class="letter"></div>
+					<div class="letter"></div>
+				</div>
+				<div class="guesses" id="guess-3">
+					<div class="letter"></div>
+					<div class="letter"></div>
+					<div class="letter"></div>
+				</div>
+				<div class="guesses" id="guess-4">
+					<div class="letter"></div>
+					<div class="letter"></div>
+					<div class="letter"></div>
+				</div>
+				<div class="guesses" id="guess-5">
+					<div class="letter"></div>
+					<div class="letter"></div>
+					<div class="letter"></div>
+				</div>
+				<div class="guesses" id="guess-6">
+					<div class="letter"></div>
+					<div class="letter"></div>
+					<div class="letter"></div>
+				</div>
+			</div>
+			<hr style="width: 85%;">
+			<span style="color: white;">Word Length:</span>
+			<div id="length-control">
+				<div id="minus"></div>
+				<input type="text" id="word-length" value=3 readonly="">
+				<div id="plus"></div>
+			</div>
+			<hr style="width: 85%;">
+			<button id="start-button">START</button>
+			<div id="keyboard">
+				<div class="key">Q</div>
+				<div class="key">W</div>
+				<div class="key">E</div>
+				<div class="key">R</div>
+				<div class="key">T</div>
+				<div class="key">Y</div>
+				<div class="key">U</div>
+				<div class="key">I</div>
+				<div class="key">O</div>
+				<div class="key">P</div>
+				<div class="key a">A</div>
+				<div class="key">S</div>
+				<div class="key">D</div>
+				<div class="key">F</div>
+				<div class="key">G</div>
+				<div class="key">H</div>
+				<div class="key">J</div>
+				<div class="key">K</div>
+				<div class="key l">L</div>
+				<div class="key backspace">&lt;&lt;</div>
+				<div class="key">Z</div>
+				<div class="key">X</div>
+				<div class="key">C</div>
+				<div class="key">V</div>
+				<div class="key">B</div>
+				<div class="key">N</div>
+				<div class="key">M</div>
+				<div class="key enter">ENTER</div>
+			</div>
+            <div id="word-reveal">
+                <div id="win-lose"></div>
+                <div id="answer"></div>
+                <div id="buttons">
+                    <button id="next-button">NEXT</button>
+                    <button id="define-button"></button>
+                </div>
+            </div>
+		</div>
+	</body>
 </html>

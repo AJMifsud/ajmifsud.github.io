@@ -8,6 +8,9 @@ window.onload = async function () {
 	const minus = document.getElementById("minus");
 	const wordLength = document.getElementById("word-length");
 	const plus = document.getElementById("plus");
+	const wordReveal = document.getElementById("word-reveal");
+	const winLose = document.getElementById("win-lose");
+	const answer = document.getElementById("answer");
 
 	keys.forEach(button => {
 		button.addEventListener('click', function (event) {
@@ -21,9 +24,10 @@ window.onload = async function () {
 		const word = randomWord(words, parseInt(wordLength.value));
 		console.log(`Random Word: ` + word);
 		let letters = splitWord(word);
+		let correct = true;
 
 		for (const guess of guesses) {
-			let correct = true;
+			correct = true;
 			const guessLetters = guess.querySelectorAll('.letter');
 			let i = 0;
 
@@ -77,8 +81,20 @@ window.onload = async function () {
 			}
 			
 		}
+		if (correct){
+			
+			wordReveal.style.display = "inline-flex";
+			winLose.style.background = "rgb(85, 183, 37)";
+			winLose.textContent = "You Won!";
+			answer.innerHTML = "The word was: <br> <strong>" + word + "</strong>";
+			return;
+		} else {
+			wordReveal.style.display = "inline-flex";
+			winLose.style.background = "rgb(226, 61, 61	)";
+			winLose.textContent = "You Lost!";
+			answer.innerHTML = "The word was: <br> <strong>" + word + "</strong>";
+		}
 
-		return;
 	});
 
 
