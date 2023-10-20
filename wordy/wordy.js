@@ -13,7 +13,9 @@ window.onload = async function () {
 	const winLose = document.getElementById("win-lose");
 	const answer = document.getElementById("answer");
 	const defineButton  = document.getElementById("define-button");
+	const nextButton  = document.getElementById("next-button");
 	const definitionsContainer  = document.getElementById("definitions");
+	let gameInProgress = false;
 
 	keys.forEach(button => {
 		button.addEventListener('click', function (event) {
@@ -22,12 +24,28 @@ window.onload = async function () {
 	});
 
 	startButton.addEventListener("click", async function () {
+		resetGrid();
+		resetKeyboard();
 		startButton.style.display = "none";
 		keyboard.style.display = "grid";
 		const word = randomWord(words, parseInt(wordLength.value));
 		console.log(`Random Word: ` + word);
 		let letters = splitWord(word);
-		let correct = true;
+		let correct = false;
+
+		defineButton.addEventListener("click", function () {
+			fetchDefinitions(word);
+		});
+
+		nextButton.addEventListener("click", function () {
+			wordReveal.style.display = "none";
+			definitionsContainer.innerHTML = "";
+			startButton.style.display = "flex";
+			keyboard.style.display = "none";
+			correct = true;
+			resetGrid();
+			resetKeyboard();
+		});
 
 		for (const guess of guesses) {
 			correct = true;
@@ -35,16 +53,21 @@ window.onload = async function () {
 			let i = 0;
 
 			while (i < guessLetters.length) {
+				guessLetters[i].style.boxShadow = "inset rgb(255 255 255 / 30%) 0 0 5px 2px";
 				const event = await Promise.race([
 					waitForInput('keydown', document),
 					waitForInput('click', keys)
 				]);
-
+				guessLetters[i].style.boxShadow = "none";
 				if (event.type === 'click') {
 					if (event.target.textContent == "<<") {
-						guessLetters[i].textContent = '';
-						if (i > 0) {
-							i--;
+						if (!guessLetters[i].textContent){
+							if (i > 0) {
+								i--;
+							}
+							guessLetters[i].textContent = null;
+						} else {
+							guessLetters[i].textContent = null;
 						}
 					} else if (event.target.textContent == "ENTER") {
 						correct = applyStyles(guessLetters, letters, keys, correct);
@@ -62,15 +85,20 @@ window.onload = async function () {
 						guessLetters[i].textContent = newText;
 						i++;
 					} else if (key === 'Backspace') {
-						guessLetters[i].textContent = '';
-						if (i > 0) {
-							i--;
+						if (!guessLetters[i].textContent){
+							if (i > 0) {
+								i--;
+							}
+							guessLetters[i].textContent = null;
+						} else {
+							guessLetters[i].textContent = null;
 						}
 					} else if (key === 'Enter') {
 						correct = applyStyles(guessLetters, letters, keys, correct);
 						break;
 					}
 				}
+				
 
 				if (i == guessLetters.length) {
 					if (i > 0) {
@@ -81,32 +109,22 @@ window.onload = async function () {
 
 			if (correct){
 				break;
-			}
+			}	  
 			
 		}
 		if (correct){
-			
-			defineButton.addEventListener("click", function () {
-				fetchDefinitions(word);
-			});
-			
 			wordReveal.style.display = "inline-flex";
 			winLose.style.background = "rgb(85, 183, 37)";
 			winLose.textContent = "You Won!";
 			answer.innerHTML = "The word was: <br> <strong>" + word + "</strong>";
 			return;
 		} else {
-			
-			defineButton.addEventListener("click", function () {
-				fetchDefinitions(word);
-			});
-			
 			wordReveal.style.display = "inline-flex";
 			winLose.style.background = "rgb(226, 61, 61	)";
 			winLose.textContent = "You Lost!";
 			answer.innerHTML = "The word was: <br> <strong>" + word + "</strong>";
+			return;
 		}
-
 	});
 
 	plus.addEventListener("click", function () {
@@ -117,21 +135,14 @@ window.onload = async function () {
 				const letter = document.createElement('div');
 				letter.className = 'letter';
 				guess.appendChild(letter);
-				
-				const guessLetters = guess.querySelectorAll('.letter');
-				for (i = 0; i < guessLetters.length; i++) {
-						guessLetters[i].style.background = "rgb(48, 52, 54)";
-						guessLetters[i].textContent = null;
-				}
-				
 			});
-
+			resetGrid();
+			resetKeyboard();
 			startButton.style.display = "flex";
 			keyboard.style.display = "none";
-			for (i = 0; i < keys.length; i++) {
-				keys[i].style.background = "rgb(217, 220, 222)";
-			}
 		}
+		correct = true;
+		return;
 	});
 
 	minus.addEventListener("click", function () {
@@ -142,21 +153,30 @@ window.onload = async function () {
 				const guessLetters = word.querySelectorAll('.letter');
 				const lastLetter = guessLetters[guessLetters.length - 1];
 				word.removeChild(lastLetter);
-
-				for (i = 0; i < guessLetters.length; i++) {
-						guessLetters[i].style.background = "rgb(48, 52, 54)";
-						guessLetters[i].textContent = null;
-				}
-				
 			});
-
+			resetGrid();
+			resetKeyboard();
 			startButton.style.display = "flex";
 			keyboard.style.display = "none";
-			for (i = 0; i < keys.length; i++) {
-				keys[i].style.background = "rgb(217, 220, 222)";
-			}
 		}
+		correct = true;
 	});
+
+	function resetGrid() {
+		guesses.forEach(guess => {
+		  const guessLetters = guess.querySelectorAll('.letter');
+		  for (let i = 0; i < guessLetters.length; i++) {
+			guessLetters[i].style.background = "rgb(48, 52, 54)";
+			guessLetters[i].textContent = null;
+		  }
+		});
+	}
+	  
+	function resetKeyboard(){
+		for (i = 0; i < keys.length; i++) {
+			keys[i].style.background = "rgb(217, 220, 222)";
+		}
+	}
 
 	async function getWords() {
 		const response = await fetch('wordy/words.csv');
