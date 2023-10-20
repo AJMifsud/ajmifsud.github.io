@@ -1,3 +1,4 @@
+
 window.onload = async function () {
 
 	const words = await getWords();
@@ -12,7 +13,7 @@ window.onload = async function () {
 	const winLose = document.getElementById("win-lose");
 	const answer = document.getElementById("answer");
 	const defineButton  = document.getElementById("define-button");
-	const definitions  = document.getElementById("definitions");
+	const definitionsContainer  = document.getElementById("definitions");
 
 	keys.forEach(button => {
 		button.addEventListener('click', function (event) {
@@ -86,41 +87,8 @@ window.onload = async function () {
 		if (correct){
 			
 			defineButton.addEventListener("click", function () {
-				const apiKey = '8UNDwGcuUTy05FYJ';  // Replace with your actual API key
-			
-				const apiUrl = `https://www.stands4.com/services/v2/defs.php?uid=12132&tokenid=8UNDwGcuUTy05FYJ&word=${word}&format=json`;
-			
-				fetch(apiUrl)
-					.then(response => {
-						if (!response.ok) {
-							throw new Error('Network response was not ok');
-						}
-						return response.json();
-					})
-					.then(data => {
-						// Check if the API returned a valid response
-						if (data && data.result && data.result.length > 0) {
-							let definition;
-							// Iterate through each result and display information
-							for (let i = 0; i < 3 && i < data.result.length; i++) {
-								const result = data.result[i];
-								definition += (`Definition ${i + 1}:`, result.definition);
-			
-								// Display the example only if it is provided and non-empty
-								if (result.example && typeof result.example === 'string' && result.example.trim() !== '') {
-									definition += (`Example ${i + 1}:`, result.example);
-								}
-							}
-							definitions.textContent = definition;
-						} else {
-							definitions.textContent = 'No definition found.';
-						}
-					})
-					.catch(error => console.error('Error fetching definition:', error));
+				fetchDefinitions(word);
 			});
-			
-			
-
 			
 			wordReveal.style.display = "inline-flex";
 			winLose.style.background = "rgb(85, 183, 37)";
@@ -130,41 +98,9 @@ window.onload = async function () {
 		} else {
 			
 			defineButton.addEventListener("click", function () {
-				const apiKey = '8UNDwGcuUTy05FYJ';  // Replace with your actual API key
-			
-				const apiUrl = `https://www.stands4.com/services/v2/defs.php?uid=12132&tokenid=8UNDwGcuUTy05FYJ&word=${word}&format=json`;
-			
-				fetch(apiUrl)
-					.then(response => {
-						if (!response.ok) {
-							throw new Error('Network response was not ok');
-						}
-						return response.json();
-					})
-					.then(data => {
-						// Check if the API returned a valid response
-						if (data && data.result && data.result.length > 0) {
-							let definition = "";
-							// Iterate through each result and display information
-							for (let i = 0; i < 3 && i < data.result.length; i++) {
-								const result = data.result[i];
-								definition += (`Definition ${i + 1}:`, result.definition);
-			
-								// Display the example only if it is provided and non-empty
-								if (result.example && typeof result.example === 'string' && result.example.trim() !== '') {
-									definition += (`Example ${i + 1}:`, result.example + "<br>");
-								}
-							}
-							definitions.innerHTML = definition;
-						} else {
-							definitions.textContent = 'No definition found.';
-						}
-					})
-					.catch(error => console.error('Error fetching definition:', error));
+				fetchDefinitions(word);
 			});
 			
-			
-
 			wordReveal.style.display = "inline-flex";
 			winLose.style.background = "rgb(226, 61, 61	)";
 			winLose.textContent = "You Lost!";
@@ -172,7 +108,6 @@ window.onload = async function () {
 		}
 
 	});
-
 
 	plus.addEventListener("click", function () {
 		if (wordLength.value <= 29) {
@@ -292,4 +227,39 @@ window.onload = async function () {
 		return correct;
 	}
 
+	function fetchDefinitions(word) {
+		const apiUrl = `https://www.stands4.com/services/v2/defs.php?uid=12132&tokenid=8UNDwGcuUTy05FYJ&word=${word}&format=json`;
+	
+		fetch(apiUrl)
+			.then(response => {
+				if (!response.ok) {
+					throw new Error('Network response was not ok');
+				}
+				return response.json();
+			})
+			.then(data => {
+				// Check if the API returned a valid response
+				if (data && data.result && data.result.length > 0) {
+					let definitions = "<strong>Definitions</strong>:<br>";
+					let examples = '<br><strong>Examples</strong>:<br>"';
+					// Iterate through each result and display information
+					for (let i = 0; i < data.result.length; i++) {
+						const result = data.result[i];
+						const definition = `${i + 1}. ${result.definition.charAt(0).toUpperCase() + result.definition.slice(1).toLowerCase()}` + "<br>";
+	
+						if (result.example && typeof result.example === 'string' && result.example.trim() !== '') {
+							const example = `${i + 1}. ${result.example.charAt(1).toUpperCase() + result.example.slice(2).toLowerCase()}` + "<br>";
+							examples += example;
+						}
+						definitions += definition;
+					}
+	
+					definitions += examples;
+					definitionsContainer.innerHTML = definitions;
+				} else {
+					definitionsContainer.textContent = 'No definition found.';
+				}
+			})
+			.catch(error => console.error('Error fetching definition:', error));
+	}
 }
