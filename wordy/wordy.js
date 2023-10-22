@@ -15,7 +15,7 @@ window.onload = async function () {
 	const defineButton  = document.getElementById("define-button");
 	const nextButton  = document.getElementById("next-button");
 	const definitionsContainer  = document.getElementById("definitions");
-	const shadowColors = ["rgb(85, 183, 37)", "rgb(113, 159, 42)", "rgb(141, 134, 47)", "rgb(170, 110, 51)", "rgb(198, 85, 56)", "rgb(226, 61, 61)"];
+	const shadowColors = ["rgb(85, 183, 37)", "rgb(109, 163, 41)", "rgb(132, 142, 45)", "rgb(156, 122, 49)", "rgb(179, 102, 53)", "rgb(203, 81, 57)", "rgb(226, 61, 61)"];
 
 	keys.forEach(button => {
 		button.addEventListener('click', function (event) {
@@ -53,7 +53,6 @@ window.onload = async function () {
 			correct = true;
 			const guessLetters = guess.querySelectorAll('.letter');
 			let i = 0;
-			guess.style.boxShadow = `${shadowColors[guessIndex % shadowColors.length]} 0 0 5px 10px, inset ${shadowColors[guessIndex % shadowColors.length]} 0 0 10px 10px`;
 			while (i < guessLetters.length) {
 				guessLetters[i].style.boxShadow = "inset rgb(255 255 255 / 30%) 0 0 5px 5px";
 				const event = await Promise.race([
@@ -72,8 +71,21 @@ window.onload = async function () {
 							guessLetters[i].textContent = null;
 						}
 					} else if (event.target.textContent == "ENTER") {
-						correct = applyStyles(guessLetters, letters, keys, correct);
-						break;
+						let validGuess = true;
+						guessLetters.forEach(letter => {
+							if (!letter.textContent) {
+								validGuess = false;
+							}
+						});
+						if (!validGuess) {
+							i = 0;
+							guessLetters.forEach(letter => {
+								letter.textContent = null;
+							});
+						} else {
+							correct = applyStyles(guessLetters, letters, keys, correct);
+							break;
+						}
 					} else {
 						const newText = event.target.textContent.toUpperCase();
 						guessLetters[i].textContent = newText;
@@ -96,8 +108,21 @@ window.onload = async function () {
 							guessLetters[i].textContent = null;
 						}
 					} else if (key === 'Enter') {
-						correct = applyStyles(guessLetters, letters, keys, correct);
-						break;
+						let validGuess = true;
+						guessLetters.forEach(letter => {
+							if (!letter.textContent) {
+								validGuess = false;
+							}
+						});
+						if (!validGuess) {
+							i = 0;
+							guessLetters.forEach(letter => {
+								letter.textContent = null;
+							});
+						} else {
+							correct = applyStyles(guessLetters, letters, keys, correct);
+							break;
+						}
 					}
 				}
 				

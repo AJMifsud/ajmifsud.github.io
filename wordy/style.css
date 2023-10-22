@@ -31,22 +31,41 @@ html,body {
 #game-grid{
     display: grid;
     grid-template-rows: repeat(6, 1fr);
-    gap: 5px 0px;
     align-items: center;
     width: 80%;
-    padding: 15px 0;
+    padding: 15px;
     overflow-x: auto;
-    max-height: 450px;
+    max-height: 500px;
+    gap: 2px;
 }
 
 .guesses{
     display: flex;
     justify-items: center;
     justify-content: center;
-    gap: 5px;
-    height: 100%;
-    transition: box-shadow 1s ease 0s;
+    gap: 10px;
+    transition: opacity 0.5s linear;
+    padding: 3px 0px;
+    border: none;
+    border-radius: 10px;
+    background-color: rgb(22, 24, 25);
+    position: relative;
+    opacity: 1;
+    z-index: 0;
 }
+
+.guesses::before {
+    position: absolute;
+    content: "";
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    transition: opacity 0.5s linear;
+    opacity: 1;
+    border-radius: 10px;
+    z-index: -1;
+  }
 
 .letter{
     display: flex;
