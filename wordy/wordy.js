@@ -53,6 +53,8 @@ window.onload = async function () {
 			correct = true;
 			const guessLetters = guess.querySelectorAll('.letter');
 			let i = 0;
+			guess.style.background = `linear-gradient(to bottom, ${shadowColors[guessIndex % shadowColors.length]} 0%, ${shadowColors[guessIndex % shadowColors.length]} 100%)`;
+			
 			while (i < guessLetters.length) {
 				guessLetters[i].style.boxShadow = "inset rgb(255 255 255 / 30%) 0 0 5px 5px";
 				const event = await Promise.race([
@@ -192,7 +194,7 @@ window.onload = async function () {
 
 	function resetGrid() {
 		guesses.forEach(guess => {
-			guess.style.boxShadow = "none";
+			guess.style.background = "rgb(22, 24, 25)";
 			const guessLetters = guess.querySelectorAll('.letter');
 			for (let i = 0; i < guessLetters.length; i++) {
 				guessLetters[i].style.background = "rgb(48, 52, 54)";
