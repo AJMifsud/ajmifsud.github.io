@@ -99,7 +99,7 @@
         }
         .modal-content {
             background: var(--panel); padding: 25px; border-radius: 12px;
-            width: 900px; height: 85vh; border: 1px solid var(--border);
+            width: 950px; height: 85vh; border: 1px solid var(--border);
             display: flex; flex-direction: column;
         }
         .modal-tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-shrink: 0; }
@@ -126,10 +126,10 @@
         }
         
         .mgmt-list-item {
-            display: grid; grid-template-columns: 2fr 1fr 1fr 60px; gap: 10px;
-            padding: 10px; border-bottom: 1px solid var(--border); align-items: center;
+            display: grid; grid-template-columns: 1.5fr 0.8fr 0.8fr 80px 50px; gap: 8px;
+            padding: 8px; border-bottom: 1px solid var(--border); align-items: center;
         }
-        .mgmt-list-item input { margin-bottom: 0; padding: 5px; font-size: 0.8rem; }
+        .mgmt-list-item input { margin-bottom: 0; padding: 5px; font-size: 0.75rem; }
 
         .folder-tree-item { margin-left: 15px; border-left: 1px solid var(--border); padding-left: 8px; }
         .folder-header { display: flex; align-items: center; gap: 10px; padding: 6px 10px; background: #1e293b; border-radius: 4px; margin: 4px 0; position: sticky; top: 0; z-index: 2; }
@@ -161,7 +161,12 @@
             <button class="ui-btn" style="background:none; color:var(--primary); padding:0; font-size: 0.7rem;" onclick="toggleEditMode()" id="editToggle">Edit</button>
         </div>
         
-        <input type="text" id="game-search" placeholder="Search library to mark done..." autocomplete="off">
+        <div id="stats-container" style="margin-bottom: 15px;"></div>
+        
+        <div style="position: relative; margin-bottom: 5px;">
+            <input type="text" id="game-search" placeholder="Search library to mark done..." autocomplete="off" style="padding-right: 30px; margin-bottom: 0;">
+            <span id="clear-search-btn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #64748b; font-weight: bold; display: none;">✕</span>
+        </div>
         <p id="search-hint" style="font-size: 0.65rem; color: #64748b; margin: 0 0 10px 0; display:none;">Click a game to add to history ↑</p>
 
         <div id="history-container"></div>
@@ -198,6 +203,7 @@
         <div class="modal-content">
             <div class="modal-tabs">
                 <button class="tab-btn active" onclick="switchTab('modify')">Library Manager</button>
+                <button class="tab-btn" onclick="switchTab('settings')">API Settings</button>
                 <button class="tab-btn" onclick="switchTab('backup')">Backup/Restore</button>
             </div>
 
@@ -223,7 +229,7 @@
                 
                 <div id="standard-manager-view" style="display: flex; flex-direction: column; flex-grow: 1; overflow: hidden;">
                     <div class="mgmt-list-item" style="border-bottom: 2px solid var(--border); font-weight:bold; color:var(--primary); font-size:0.7rem; text-transform: uppercase; flex-shrink: 0;">
-                        <span>Game Title</span><span>RetroAchievements ID</span><span>Image ID</span><span>Action</span>
+                        <span>Title</span><span>RA ID</span><span>Img ID</span><span>API</span><span>Action</span>
                     </div>
                     <div class="mgmt-list-scroll" id="modify-game-list"></div>
                     <div style="margin-top: 15px; display: flex; gap: 10px; flex-shrink: 0;">
@@ -231,6 +237,19 @@
                         <button class="ui-btn btn-danger" style="flex: 1;" onclick="clearEntireLibrary()">Remove All Games</button>
                     </div>
                 </div>
+            </div>
+
+            <div id="mgmt-settings" class="mgmt-section">
+                <h3 style="margin-top:0;">RetroAchievements API Settings</h3>
+                <p style="font-size: 0.8rem; color: #94a3b8;">Enter your credentials to enable fetching game data (Titles and Images) automatically.</p>
+                
+                <label style="font-size: 0.7rem; text-transform: uppercase; display: block; margin-bottom: 5px;">RA Username</label>
+                <input type="text" id="ra-username" placeholder="Your Username" oninput="saveCredentials()">
+                
+                <label style="font-size: 0.7rem; text-transform: uppercase; display: block; margin-bottom: 5px;">Web API Key</label>
+                <input type="password" id="ra-api-key" placeholder="Your Web API Key" oninput="saveCredentials()">
+                
+                <p style="font-size: 0.7rem; color: #64748b;">You can find your API key at retroachievements.org/controlpanel.php</p>
             </div>
 
             <div id="mgmt-backup" class="mgmt-section">
@@ -330,7 +349,21 @@
 
         let completedData = JSON.parse(localStorage.getItem('completedData_v3')) || {};
         let gamePool = {}, currentWheelItems = [], selectedConsole = null, selectedGame = null, rotation = 0, isSpinning = false, isEditing = false;
+        let collapsedConsoles = {};
         const canvas = document.getElementById('wheelCanvas'), ctx = canvas.getContext('2d'), overlay = document.getElementById('icon-overlay');
+
+        /* --- IMAGE CACHING SYSTEM --- */
+        const gameImgCache = {};
+        function preloadGameImages(games) {
+            games.forEach(game => {
+                if (game.imgId && !gameImgCache[game.imgId]) {
+                    const img = new Image();
+                    img.crossOrigin = "anonymous";
+                    img.src = `https://media.retroachievements.org/Images/${game.imgId}.png`;
+                    img.onload = () => { gameImgCache[game.imgId] = img; };
+                }
+            });
+        }
 
         function rebuildPool() {
             gamePool = {};
@@ -374,14 +407,42 @@
         }
 
         const searchInput = document.getElementById('game-search');
+        const clearBtn = document.getElementById('clear-search-btn');
         const container = document.getElementById('history-container');
-        searchInput.addEventListener('input', () => { renderSidebar(); });
+        
+        searchInput.addEventListener('input', () => { 
+            clearBtn.style.display = searchInput.value.length > 0 ? 'block' : 'none';
+            renderSidebar(); 
+        });
+        
+        clearBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            clearBtn.style.display = 'none';
+            renderSidebar();
+        });
+        
         container.addEventListener('click', (e) => {
             const clickedItem = e.target.closest('.search-result-item');
             if (clickedItem) handleQuickComplete(clickedItem.getAttribute('data-con'), clickedItem.getAttribute('data-game'));
         });
 
+        function toggleConsoleCollapse(con) {
+            collapsedConsoles[con] = !collapsedConsoles[con];
+            renderSidebar();
+        }
+
         function renderSidebar() {
+            let totalGames = 0;
+            let totalCompleted = 0;
+            Object.keys(userLibrary).forEach(con => {
+                totalGames += userLibrary[con].filter(g => g.name && g.name.trim() !== "").length;
+            });
+            Object.keys(completedData).forEach(con => {
+                totalCompleted += completedData[con].length;
+            });
+
+            document.getElementById('stats-container').innerHTML = `<div style="font-size: 0.8rem; margin-bottom: 8px; color: var(--text);">Total Completed: <strong>${totalCompleted} / ${totalGames}</strong></div>`;
+
             const term = searchInput.value.toLowerCase();
             const hint = document.getElementById('search-hint');
             container.innerHTML = '';
@@ -405,15 +466,56 @@
                 const hr = document.createElement('hr'); hr.style.cssText = "border:0; border-top:1px solid var(--border); margin:15px 0;";
                 container.appendChild(hr);
             } else { hint.style.display = 'none'; }
+
+            let hasAnyCompleted = false;
+
             Object.keys(completedData).sort().forEach(con => {
-                const section = document.createElement('div'); section.className = 'console-section';
+                const comp = completedData[con].length;
+                if (comp === 0) return;
+                hasAnyCompleted = true;
+
+                if (collapsedConsoles[con] === undefined) collapsedConsoles[con] = true;
+                const isCollapsed = collapsedConsoles[con];
+
+                const tot = userLibrary[con] ? userLibrary[con].filter(g => g.name && g.name.trim() !== "").length : comp; 
+                const pct = Math.min(100, Math.round((comp / Math.max(1, tot)) * 100));
+                const color = CONSOLE_COLORS[con] || 'var(--primary)';
+                const icon = CONSOLE_IMAGES[con] || '';
                 const displayTitle = CONSOLE_FULL_NAMES[con] || con;
-                let listHtml = `<div class="console-header-box"><img src="${CONSOLE_IMAGES[con]}" class="console-icon"><span class="console-title">${displayTitle}</span></div><ul class="history-list">`;
-                completedData[con].forEach(g => { 
-                    listHtml += `<li class="history-item"><span>${g}</span><button class="delete-btn" onclick="removeHistoryEntry('${con}', this.previousElementSibling.innerText)">✕</button></li>`; 
-                });
-                section.innerHTML = listHtml + '</ul>'; container.appendChild(section);
+
+                const section = document.createElement('div'); 
+                section.className = 'console-section';
+                section.id = `console-group-${con}`;
+                
+                let listHtml = `
+                <div onclick="toggleConsoleCollapse('${con}')" style="cursor:pointer; user-select:none; transition: background 0.2s; padding: 6px; border-radius: 4px;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+                    <div class="console-header-box" style="margin-bottom: 6px; border-bottom: none; padding-bottom: 0;">
+                        ${icon ? `<img src="${icon}" class="console-icon">` : `<span style="font-size:10px; width:32px; display:inline-block; text-align:center;">${con}</span>`}
+                        <span class="console-title" style="flex-grow:1;">${displayTitle}</span>
+                        <span style="font-size:0.6rem; color:#94a3b8; transition: transform 0.2s; transform: rotate(${isCollapsed ? '0deg' : '180deg'}); display: inline-block;">▼</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; padding-left: 44px; margin-bottom: 4px;">
+                        <div style="flex-grow: 1; background: #1e293b; height: 8px; border-radius: 4px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);">
+                            <div style="background: ${color}; width: ${pct}%; height: 100%; border-radius: 4px; box-shadow: 0 0 5px ${color};"></div>
+                        </div>
+                        <span style="font-size: 0.7rem; color: #94a3b8; width: 35px; text-align: right;">${comp}/${tot}</span>
+                    </div>
+                </div>`;
+                
+                if (!isCollapsed) {
+                    listHtml += `<ul class="history-list" style="margin-top: 8px;">`;
+                    completedData[con].forEach(g => { 
+                        listHtml += `<li class="history-item"><span>${g}</span><button class="delete-btn" onclick="removeHistoryEntry('${con}', this.previousElementSibling.innerText)">✕</button></li>`; 
+                    });
+                    listHtml += `</ul>`;
+                }
+                section.innerHTML = listHtml; 
+                container.appendChild(section);
             });
+
+            if (!hasAnyCompleted && !term) {
+                document.getElementById('stats-container').innerHTML += `<div style="font-size: 0.7rem; color: #64748b; font-style: italic;">No completed games yet.</div>`;
+            }
         }
 
         function handleQuickComplete(con, gameName) {
@@ -436,18 +538,46 @@
             if (!items.length) return;
             const centerX = 700, centerY = 700, radius = 650, sliceAngle = (2 * Math.PI) / items.length;
             ctx.clearRect(0, 0, 1400, 1400);
+            
             if (selectedConsole === null) {
                 overlay.querySelectorAll('.wheel-icon').forEach(icon => { if (!items.includes(icon.dataset.id)) icon.remove(); });
             } else { overlay.innerHTML = ''; }
+
             items.forEach((item, i) => {
                 const label = (typeof item === 'string') ? item : item.name;
                 const angle = rotation + i * sliceAngle;
+                
                 ctx.beginPath(); ctx.moveTo(centerX, centerY); ctx.arc(centerX, centerY, radius, angle, angle + sliceAngle);
+                ctx.closePath();
+                
+                ctx.save();
                 ctx.fillStyle = (selectedConsole === null) ? (CONSOLE_COLORS[label] || WHEEL_COLORS[i % WHEEL_COLORS.length]) : WHEEL_COLORS[i % WHEEL_COLORS.length];
-                ctx.fill(); ctx.stroke();
+                ctx.fill();
+                
+                if (selectedConsole !== null && item.imgId && gameImgCache[item.imgId]) {
+                    ctx.clip(); 
+                    const img = gameImgCache[item.imgId];
+                    const rad = angle + sliceAngle / 2;
+                    const imgX = centerX + Math.cos(rad) * (radius / 1.6);
+                    const imgY = centerY + Math.sin(rad) * (radius / 1.6);
+                    const imgSize = 400; 
+                    
+                    ctx.globalAlpha = 0.6; 
+                    ctx.drawImage(img, imgX - imgSize/2, imgY - imgSize/2, imgSize, imgSize);
+                    
+                    ctx.globalAlpha = 0.3;
+                    ctx.fillStyle = "black";
+                    ctx.fill();
+                    ctx.globalAlpha = 1.0;
+                }
+                
+                ctx.restore();
+                ctx.stroke();
+
                 ctx.save();
                 ctx.translate(centerX, centerY); ctx.rotate(angle + sliceAngle / 2); ctx.textAlign = "right"; 
                 ctx.fillStyle = (ctx.fillStyle === '#e2e8f0' || ctx.fillStyle === '#cbd5e1' || ctx.fillStyle === '#d1d5db') ? "#1e293b" : "white";
+                
                 if (selectedConsole === null) {
                     ctx.font = "bold 32px Inter"; ctx.fillText(label, radius - 300, 12); 
                     if (CONSOLE_IMAGES[label]) {
@@ -459,7 +589,11 @@
                         const rad = (angle + sliceAngle / 2), dist = 230;
                         img.style.transform = `translate(-50%, -50%) translate(${Math.cos(rad)*dist}px, ${Math.sin(rad)*dist}px) rotate(${rad}rad)`;
                     }
-                } else { ctx.font = "bold 32px Inter"; wrapText(ctx, label, radius - 50, 12, 450, 40); }
+                } else { 
+                    ctx.font = "bold 32px Inter"; 
+                    ctx.shadowColor = "rgba(0,0,0,0.8)"; ctx.shadowBlur = 4;
+                    wrapText(ctx, label, radius - 50, 12, 450, 40); 
+                }
                 ctx.restore();
             });
         }
@@ -475,14 +609,18 @@
             const index = Math.floor(((angle - (rotation % (Math.PI * 2)) + (Math.PI * 2)) % (Math.PI * 2)) / sliceAngle);
             const clickedItem = currentWheelItems[index];
             if (selectedConsole === null && clickedItem) { playTick(); onConsoleSelected(clickedItem); }
-            else if (clickedItem?.raId) { playTick(); window.open(`https://retroachievements.org/game/${clickedItem.raId}`, '_blank'); }
+            else if (clickedItem) { playTick(); window.open(`https://retroachievements.org/search?query=${clickedItem.name.replace(/ /g, '+')}&scope=games`, '_blank'); }
         });
 
         function onConsoleSelected(con) {
             selectedConsole = con;
             document.getElementById('status-label').innerText = `Selected console - ${CONSOLE_FULL_NAMES[con] || con}`;
             document.getElementById('status-main').innerText = "Spin the wheel for a random game";
-            setTimeout(() => { currentWheelItems = shuffleArray(gamePool[selectedConsole] || []); rotation = 0; drawWheel(currentWheelItems); setUI('game-ready'); }, 500);
+            setTimeout(() => { 
+                currentWheelItems = shuffleArray(gamePool[selectedConsole] || []); 
+                preloadGameImages(currentWheelItems); 
+                rotation = 0; drawWheel(currentWheelItems); setUI('game-ready'); 
+            }, 500);
         }
 
         function animateSpin(items, cb) {
@@ -531,7 +669,41 @@
             Object.keys(CONSOLE_FULL_NAMES).sort((a,b) => CONSOLE_FULL_NAMES[a].localeCompare(CONSOLE_FULL_NAMES[b])).forEach(con => { 
                 s.innerHTML += `<option value="${con}">${CONSOLE_FULL_NAMES[con]}</option>`; 
             });
+            document.getElementById('ra-username').value = localStorage.getItem('ra_user') || '';
+            document.getElementById('ra-api-key').value = localStorage.getItem('ra_key') || '';
             document.getElementById('manager-modal').style.display = 'flex'; renderModifyList();
+        }
+
+        function saveCredentials() {
+            localStorage.setItem('ra_user', document.getElementById('ra-username').value);
+            localStorage.setItem('ra_key', document.getElementById('ra-api-key').value);
+        }
+
+        async function fetchFromRA(con, idx) {
+            const user = localStorage.getItem('ra_user');
+            const key = localStorage.getItem('ra_key');
+            const gameId = userLibrary[con][idx].raId;
+
+            if (!user || !key || !gameId) return alert("Please ensure Username, API Key, and Game RA ID are set.");
+
+            try {
+                const proxyUrl = "https://corsproxy.io/?"; 
+                const apiUrl = `https://retroachievements.org/API/API_GetGame.php?z=${user}&y=${key}&i=${gameId}`;
+                const response = await fetch(proxyUrl + encodeURIComponent(apiUrl));
+                const data = await response.json();
+
+                if (data && data.Title) {
+                    userLibrary[con][idx].name = data.Title;
+                    userLibrary[con][idx].imgId = data.ImageIcon ? data.ImageIcon.replace('.png', '') : "";
+                    localStorage.setItem('userLibrary_v3', JSON.stringify(userLibrary));
+                    renderModifyList();
+                } else {
+                    alert("Game not found. Please check the RA ID.");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Failed to fetch data. Check API settings or internet connection.");
+            }
         }
 
         function cleanupLibrary() {
@@ -562,7 +734,13 @@
             if (userLibrary[con]) {
                 userLibrary[con].forEach((game, idx) => {
                     const div = document.createElement('div'); div.className = 'mgmt-list-item';
-                    div.innerHTML = `<input type="text" value="${game.name || ''}" placeholder="Title" oninput="updateGameField('${con}', ${idx}, 'name', this.value)"><input type="text" value="${game.raId || ''}" placeholder="RA ID" oninput="updateGameField('${con}', ${idx}, 'raId', this.value)"><input type="text" value="${game.imgId || ''}" placeholder="Img ID" oninput="updateGameField('${con}', ${idx}, 'imgId', this.value)"><button class="ui-btn btn-danger" style="padding:5px;" onclick="removeFromLibrary('${con}', ${idx})">DEL</button>`;
+                    div.innerHTML = `
+                        <input type="text" value="${game.name || ''}" placeholder="Title" oninput="updateGameField('${con}', ${idx}, 'name', this.value)">
+                        <input type="text" value="${game.raId || ''}" placeholder="RA ID" oninput="updateGameField('${con}', ${idx}, 'raId', this.value)">
+                        <input type="text" value="${game.imgId || ''}" placeholder="Img ID" oninput="updateGameField('${con}', ${idx}, 'imgId', this.value)">
+                        <button class="ui-btn btn-primary" style="padding:5px; font-size:0.6rem;" onclick="fetchFromRA('${con}', ${idx})">FETCH</button>
+                        <button class="ui-btn btn-danger" style="padding:5px;" onclick="removeFromLibrary('${con}', ${idx})">DEL</button>
+                    `;
                     list.appendChild(div);
                 });
             }
@@ -573,7 +751,9 @@
         function closeManager() { cleanupLibrary(); document.getElementById('manager-modal').style.display = 'none'; resetToConsole(); }
         function switchTab(tab) {
             document.querySelectorAll('.mgmt-section, .tab-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById(`mgmt-${tab}`).classList.add('active'); event.target.classList.add('active');
+            document.getElementById(`mgmt-${tab}`).classList.add('active'); 
+            const btns = document.querySelectorAll('.tab-btn');
+            btns.forEach(btn => { if (btn.innerText.toLowerCase().includes(tab)) btn.classList.add('active'); });
             if(tab === 'modify') renderModifyList();
         }
 
@@ -590,17 +770,13 @@
             let node = { id: Math.random().toString(36), name: name, children: [], games: [], selectedConsole: null, checked: true };
             const currentPath = parentPath ? `${parentPath}/${name}` : name;
             const seenInThisFolder = new Set();
-
             for await (const entry of handle.values()) {
                 if (entry.kind === 'directory') node.children.push(await buildFolderTree(entry, entry.name, currentPath));
                 else {
                     const ext = entry.name.split('.').pop().toLowerCase();
-                    const clean = entry.name.split('.').slice(0, -1).join('.')
-                        .replace(/\(.*\)|\[.*\]/g, '').replace(/Track\s*\d+/gi, '').trim();
-
+                    const clean = entry.name.split('.').slice(0, -1).join('.').replace(/\(.*\)|\[.*\]/g, '').replace(/Track\s*\d+/gi, '').trim();
                     if (!clean || seenInThisFolder.has(clean.toLowerCase())) continue;
                     seenInThisFolder.add(clean.toLowerCase());
-
                     let system = EXTENSION_MAP[ext] || (SHARED_EXTENSIONS[ext]?.find(s => currentPath.toUpperCase().includes(s)));
                     if (!node.selectedConsole && system) node.selectedConsole = system;
                     node.games.push({ name: clean, checked: true });
