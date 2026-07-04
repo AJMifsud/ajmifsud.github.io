@@ -522,7 +522,7 @@
                         const libGame = userLibrary[con]?.find(game => game.name === g);
                         let imgHtml = '';
                         if (libGame && libGame.imgId) {
-                            imgHtml = `<img src="https://media.retroachievements.org/Images/${game.imgId}.png" style="width:24px; height:24px; object-fit:cover; margin-right:8px; border-radius:4px; flex-shrink:0;">`;
+                            imgHtml = `<img src="https://media.retroachievements.org${libGame.imgId}.png" style="width:24px; height:24px; object-fit:cover; margin-right:8px; border-radius:4px; flex-shrink:0;">`;
                         }
                         listHtml += `<li class="history-item"><div style="display:flex; align-items:center;">${imgHtml}<span class="game-title-text">${g}</span></div><button class="delete-btn" onclick="removeHistoryEntry('${con}', this.previousElementSibling.querySelector('.game-title-text').innerText)">✕</button></li>`; 
                     });
