@@ -126,7 +126,7 @@
         }
         
         .mgmt-list-item {
-            display: grid; grid-template-columns: 1.5fr 0.8fr 0.8fr 80px 50px; gap: 8px;
+            display: grid; grid-template-columns: 1.5fr 0.8fr 80px 50px; gap: 8px;
             padding: 8px; border-bottom: 1px solid var(--border); align-items: center;
         }
         .mgmt-list-item input { margin-bottom: 0; padding: 5px; font-size: 0.75rem; }
@@ -229,10 +229,11 @@
                 
                 <div id="standard-manager-view" style="display: flex; flex-direction: column; flex-grow: 1; overflow: hidden;">
                     <div class="mgmt-list-item" style="border-bottom: 2px solid var(--border); font-weight:bold; color:var(--primary); font-size:0.7rem; text-transform: uppercase; flex-shrink: 0;">
-                        <span>Title</span><span>RA ID</span><span>Img ID</span><span>API</span><span>Action</span>
+                        <span>Title</span><span>RA ID</span><span>API</span><span>Action</span>
                     </div>
                     <div class="mgmt-list-scroll" id="modify-game-list"></div>
                     <div style="margin-top: 15px; display: flex; gap: 10px; flex-shrink: 0;">
+                        <select id="add-game-console-select" style="flex: 1; margin-bottom: 0; padding: 10px;"></select>
                         <button class="ui-btn btn-success" style="flex: 1;" onclick="addEmptyGame()">+ Add New Game</button>
                         <button class="ui-btn btn-danger" style="flex: 1;" onclick="clearEntireLibrary()">Remove All Games</button>
                     </div>
@@ -325,6 +326,19 @@
             "GBC": "#9333ea", "GC": "#6b21a8", "GBA": "#2563eb",
             "MD": "#1f2937", "N64": "#374151", "PS2": "#1e3a8a",
             "PSP": "#475569", "Wii": "#e2e8f0", "NDS": "#64748b", "VB": "#dc2626"
+        };
+
+        const RA_CONSOLE_IDS = {
+            "MD": 1, "N64": 2, "SNES": 3, "GB": 4, "GBA": 5, "GBC": 6,
+            "NES": 7, "PCECD": 76, "SCD": 9, "32X": 10, "SMS": 11, "PS1": 12,
+            "LYNX": 13, "NGP": 14, "GG": 15, "GC": 16, "JAG": 17, "NDS": 18,
+            "Wii": 19, "PS2": 21, "MO2": 23, "MINI": 24, "A2600": 25, "ARC": 27,
+            "VB": 28, "MSX": 29, "SG1K": 33, "CPC": 37, "A2": 38, "SAT": 39,
+            "DC": 40, "PSP": 41, "3DO": 43, "CV": 44, "INTV": 45, "VECT": 46,
+            "PC88": 47, "PCFX": 49, "A7800": 51, "WS": 53, "NGCD": 56, "CHF": 57,
+            "WSV": 63, "DUCK": 69, "ARD": 71, "WASM4": 72, "A2001": 73,
+            "VC4000": 74, "ELEK": 75, "PCE": 8, "JCD": 77, "DSi": 78, "UZE": 80,
+            "FDS": 7
         };
 
         const WHEEL_COLORS = ['#4f46e5', '#06b6d4', '#8b5cf6', '#ec4899', '#10b981', '#f59e0b', '#ef4444'];
@@ -505,7 +519,12 @@
                 if (!isCollapsed) {
                     listHtml += `<ul class="history-list" style="margin-top: 8px;">`;
                     completedData[con].forEach(g => { 
-                        listHtml += `<li class="history-item"><span>${g}</span><button class="delete-btn" onclick="removeHistoryEntry('${con}', this.previousElementSibling.innerText)">✕</button></li>`; 
+                        const libGame = userLibrary[con]?.find(game => game.name === g);
+                        let imgHtml = '';
+                        if (libGame && libGame.imgId) {
+                            imgHtml = `<img src="https://media.retroachievements.org/Images/${libGame.imgId}.png" style="width:24px; height:24px; object-fit:cover; margin-right:8px; border-radius:4px; flex-shrink:0;">`;
+                        }
+                        listHtml += `<li class="history-item"><div style="display:flex; align-items:center;">${imgHtml}<span class="game-title-text">${g}</span></div><button class="delete-btn" onclick="removeHistoryEntry('${con}', this.previousElementSibling.querySelector('.game-title-text').innerText)">✕</button></li>`; 
                     });
                     listHtml += `</ul>`;
                 }
@@ -609,7 +628,7 @@
             const index = Math.floor(((angle - (rotation % (Math.PI * 2)) + (Math.PI * 2)) % (Math.PI * 2)) / sliceAngle);
             const clickedItem = currentWheelItems[index];
             if (selectedConsole === null && clickedItem) { playTick(); onConsoleSelected(clickedItem); }
-            else if (clickedItem) { playTick(); window.open(`https://retroachievements.org/search?query=${clickedItem.name.replace(/ /g, '+')}&scope=games`, '_blank'); }
+            else if (clickedItem) { playTick(); window.open(`https://retroachievements.org/game/${clickedItem.raId}`, '_blank'); }
         });
 
         function onConsoleSelected(con) {
@@ -664,11 +683,29 @@
 
         function toggleEditMode() { isEditing = !isEditing; document.getElementById('sidebar').classList.toggle('editing', isEditing); }
 
-        function openManager() {
-            const s = document.getElementById('modify-console-select'); s.innerHTML = '';
-            Object.keys(CONSOLE_FULL_NAMES).sort((a,b) => CONSOLE_FULL_NAMES[a].localeCompare(CONSOLE_FULL_NAMES[b])).forEach(con => { 
+        function updateModifySelect(selectedCon) {
+            const s = document.getElementById('modify-console-select');
+            const activeConsoles = Object.keys(userLibrary).filter(con => userLibrary[con] && userLibrary[con].length > 0);
+            s.innerHTML = activeConsoles.length === 0 ? `<option value="">No consoles in library</option>` : '';
+            activeConsoles.sort((a,b) => CONSOLE_FULL_NAMES[a].localeCompare(CONSOLE_FULL_NAMES[b])).forEach(con => { 
                 s.innerHTML += `<option value="${con}">${CONSOLE_FULL_NAMES[con]}</option>`; 
             });
+            if (selectedCon && activeConsoles.includes(selectedCon)) {
+                s.value = selectedCon;
+            } else if (activeConsoles.length > 0) {
+                s.selectedIndex = 0;
+            }
+        }
+
+        function openManager() {
+            updateModifySelect();
+
+            const addS = document.getElementById('add-game-console-select');
+            addS.innerHTML = '<option value="">Select Console to Add...</option>';
+            Object.keys(CONSOLE_FULL_NAMES).sort((a,b) => CONSOLE_FULL_NAMES[a].localeCompare(CONSOLE_FULL_NAMES[b])).forEach(con => { 
+                addS.innerHTML += `<option value="${con}">${CONSOLE_FULL_NAMES[con]}</option>`; 
+            });
+
             document.getElementById('ra-username').value = localStorage.getItem('ra_user') || '';
             document.getElementById('ra-api-key').value = localStorage.getItem('ra_key') || '';
             document.getElementById('manager-modal').style.display = 'flex'; renderModifyList();
@@ -682,23 +719,34 @@
         async function fetchFromRA(con, idx) {
             const user = localStorage.getItem('ra_user');
             const key = localStorage.getItem('ra_key');
-            const gameId = userLibrary[con][idx].raId;
+            const gameTitle = userLibrary[con][idx].name;
 
-            if (!user || !key || !gameId) return alert("Please ensure Username, API Key, and Game RA ID are set.");
+            if (!user || !key || !gameTitle) return alert("Please ensure Username, API Key, and Game Title are set.");
+
+            const raConsoleId = RA_CONSOLE_IDS[con];
+            if (!raConsoleId) return alert("Console mapping not found for " + con);
 
             try {
                 const proxyUrl = "https://corsproxy.io/?"; 
-                const apiUrl = `https://retroachievements.org/API/API_GetGame.php?z=${user}&y=${key}&i=${gameId}`;
+                const apiUrl = `https://retroachievements.org/API/API_GetGameList.php?z=${user}&y=${key}&i=${raConsoleId}`;
                 const response = await fetch(proxyUrl + encodeURIComponent(apiUrl));
                 const data = await response.json();
 
-                if (data && data.Title) {
-                    userLibrary[con][idx].name = data.Title;
-                    userLibrary[con][idx].imgId = data.ImageIcon ? data.ImageIcon.replace('.png', '') : "";
-                    localStorage.setItem('userLibrary_v3', JSON.stringify(userLibrary));
-                    renderModifyList();
+                if (Array.isArray(data)) {
+                    const normalizedSearch = gameTitle.toLowerCase().trim();
+                    const matchedGame = data.find(g => g.Title.toLowerCase().includes(normalizedSearch));
+                    
+                    if (matchedGame) {
+                        userLibrary[con][idx].name = matchedGame.Title;
+                        userLibrary[con][idx].raId = matchedGame.ID.toString();
+                        userLibrary[con][idx].imgId = matchedGame.ImageIcon ? matchedGame.ImageIcon.replace('.png', '') : "";
+                        localStorage.setItem('userLibrary_v3', JSON.stringify(userLibrary));
+                        renderModifyList();
+                    } else {
+                        alert("Game not found in RA database for this console. Try a different title.");
+                    }
                 } else {
-                    alert("Game not found. Please check the RA ID.");
+                    alert("Failed to retrieve the game list from RA.");
                 }
             } catch (err) {
                 console.error(err);
@@ -715,29 +763,34 @@
         }
 
         function handleConsoleChange() { cleanupLibrary(); renderModifyList(); }
+        
         function addEmptyGame() {
-            const con = document.getElementById('modify-console-select').value;
+            const addSelect = document.getElementById('add-game-console-select');
+            const con = addSelect.value;
+            if (!con) return alert("Please select a console from the dropdown to add a new game.");
             if (!userLibrary[con]) userLibrary[con] = [];
-            userLibrary[con].push({ name: "", raId: "", imgId: "" }); renderModifyList();
+            userLibrary[con].push({ name: "", raId: "", imgId: "" }); 
+            updateModifySelect(con);
+            renderModifyList();
         }
 
         function clearEntireLibrary() {
             if (confirm("Are you sure you want to remove all games from your library? This cannot be undone.")) {
                 userLibrary = {}; localStorage.setItem('userLibrary_v3', JSON.stringify(userLibrary));
-                renderModifyList(); rebuildPool(); renderSidebar();
+                updateModifySelect(); renderModifyList(); rebuildPool(); renderSidebar();
             }
         }
 
         function renderModifyList() {
-            const con = document.getElementById('modify-console-select').value;
+            const selectEl = document.getElementById('modify-console-select');
+            const con = selectEl ? selectEl.value : '';
             const list = document.getElementById('modify-game-list'); list.innerHTML = '';
-            if (userLibrary[con]) {
+            if (con && userLibrary[con]) {
                 userLibrary[con].forEach((game, idx) => {
                     const div = document.createElement('div'); div.className = 'mgmt-list-item';
                     div.innerHTML = `
                         <input type="text" value="${game.name || ''}" placeholder="Title" oninput="updateGameField('${con}', ${idx}, 'name', this.value)">
                         <input type="text" value="${game.raId || ''}" placeholder="RA ID" oninput="updateGameField('${con}', ${idx}, 'raId', this.value)">
-                        <input type="text" value="${game.imgId || ''}" placeholder="Img ID" oninput="updateGameField('${con}', ${idx}, 'imgId', this.value)">
                         <button class="ui-btn btn-primary" style="padding:5px; font-size:0.6rem;" onclick="fetchFromRA('${con}', ${idx})">FETCH</button>
                         <button class="ui-btn btn-danger" style="padding:5px;" onclick="removeFromLibrary('${con}', ${idx})">DEL</button>
                     `;
@@ -747,8 +800,19 @@
         }
 
         function updateGameField(con, idx, field, val) { userLibrary[con][idx][field] = val; localStorage.setItem('userLibrary_v3', JSON.stringify(userLibrary)); }
-        function removeFromLibrary(con, idx) { userLibrary[con].splice(idx, 1); if (userLibrary[con].length === 0) delete userLibrary[con]; localStorage.setItem('userLibrary_v3', JSON.stringify(userLibrary)); renderModifyList(); }
-        function closeManager() { cleanupLibrary(); document.getElementById('manager-modal').style.display = 'none'; resetToConsole(); }
+        
+        function removeFromLibrary(con, idx) { 
+            userLibrary[con].splice(idx, 1); 
+            if (userLibrary[con].length === 0) {
+                delete userLibrary[con]; 
+                updateModifySelect(); 
+            }
+            localStorage.setItem('userLibrary_v3', JSON.stringify(userLibrary)); 
+            renderModifyList(); 
+        }
+
+        function closeManager() { cleanupLibrary(); updateModifySelect(); document.getElementById('manager-modal').style.display = 'none'; resetToConsole(); }
+        
         function switchTab(tab) {
             document.querySelectorAll('.mgmt-section, .tab-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(`mgmt-${tab}`).classList.add('active'); 
@@ -846,7 +910,7 @@
                 n.children.forEach(traverse);
             };
             traverse(scanTree); localStorage.setItem('userLibrary_v3', JSON.stringify(userLibrary));
-            closeScanner(); renderModifyList();
+            closeScanner(); updateModifySelect(); renderModifyList();
         }
 
         function closeScanner() { document.getElementById('scanner-view').classList.remove('active-flex'); document.getElementById('standard-manager-view').classList.remove('hidden'); }
@@ -863,7 +927,7 @@
             reader.onload = (e) => {
                 try {
                     userLibrary = JSON.parse(e.target.result); localStorage.setItem('userLibrary_v3', JSON.stringify(userLibrary));
-                    rebuildPool(); renderSidebar(); resetToConsole(); alert("Imported!");
+                    rebuildPool(); renderSidebar(); resetToConsole(); updateModifySelect(); alert("Imported!");
                 } catch (err) { alert("Invalid file."); }
             };
             reader.readAsText(input.files[0]);
