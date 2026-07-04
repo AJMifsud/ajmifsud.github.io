@@ -29,6 +29,7 @@
             border-radius: 4px; color: white; box-sizing: border-box; outline: none; margin-bottom: 5px;
         }
 
+        #search-results-container { margin-bottom: 10px; }
         #history-container { overflow-y: auto; flex-grow: 1; margin-top: 10px; }
         .console-section { margin-bottom: 25px; }
         .console-header-box {
@@ -164,11 +165,12 @@
         <div id="stats-container" style="margin-bottom: 15px;"></div>
         
         <div style="position: relative; margin-bottom: 5px;">
-            <input type="text" id="game-search" placeholder="Search library to mark done..." autocomplete="off" style="padding-right: 30px; margin-bottom: 0;">
+            <input type="text" id="game-search" role="search" placeholder="Search library to mark done..." autocomplete="off" style="padding-right: 30px; margin-bottom: 0;">
             <span id="clear-search-btn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #64748b; font-weight: bold; display: none;">✕</span>
         </div>
         <p id="search-hint" style="font-size: 0.65rem; color: #64748b; margin: 0 0 10px 0; display:none;">Click a game to add to history ↑</p>
 
+        <div id="search-results-container"></div>
         <div id="history-container"></div>
         <button class="ui-btn btn-ghost" style="margin-top:15px; width:100%;" onclick="openManager()">Manage Library</button>
     </div>
@@ -245,10 +247,10 @@
                 <p style="font-size: 0.8rem; color: #94a3b8;">Enter your credentials to enable fetching game data (Titles and Images) automatically.</p>
                 
                 <label style="font-size: 0.7rem; text-transform: uppercase; display: block; margin-bottom: 5px;">RA Username</label>
-                <input type="text" id="ra-username" placeholder="Your Username" oninput="saveCredentials()">
+                <input type="text" id="ra-username" placeholder="Your Username" autocomplete="username" oninput="saveCredentials()">
                 
                 <label style="font-size: 0.7rem; text-transform: uppercase; display: block; margin-bottom: 5px;">Web API Key</label>
-                <input type="password" id="ra-api-key" placeholder="Your Web API Key" oninput="saveCredentials()">
+                <input type="password" id="ra-api-key" placeholder="Your Web API Key" autocomplete="current-password" oninput="saveCredentials()">
                 
                 <p style="font-size: 0.7rem; color: #64748b;">You can find your API key at retroachievements.org/controlpanel.php</p>
             </div>
@@ -423,6 +425,7 @@
         const searchInput = document.getElementById('game-search');
         const clearBtn = document.getElementById('clear-search-btn');
         const container = document.getElementById('history-container');
+        const searchResultsContainer = document.getElementById('search-results-container');
         
         searchInput.addEventListener('input', () => { 
             clearBtn.style.display = searchInput.value.length > 0 ? 'block' : 'none';
@@ -436,6 +439,11 @@
         });
         
         container.addEventListener('click', (e) => {
+            const clickedItem = e.target.closest('.search-result-item');
+            if (clickedItem) handleQuickComplete(clickedItem.getAttribute('data-con'), clickedItem.getAttribute('data-game'));
+        });
+
+        searchResultsContainer.addEventListener('click', (e) => {
             const clickedItem = e.target.closest('.search-result-item');
             if (clickedItem) handleQuickComplete(clickedItem.getAttribute('data-con'), clickedItem.getAttribute('data-game'));
         });
@@ -460,12 +468,14 @@
             const term = searchInput.value.toLowerCase();
             const hint = document.getElementById('search-hint');
             container.innerHTML = '';
+            searchResultsContainer.innerHTML = '';
+            
             if (term) {
                 hint.style.display = 'block';
                 const resultsHeader = document.createElement('p');
                 resultsHeader.style.cssText = "font-size:0.7rem; color:var(--primary); margin-bottom:10px;";
                 resultsHeader.innerText = "SEARCH RESULTS:";
-                container.appendChild(resultsHeader);
+                searchResultsContainer.appendChild(resultsHeader);
                 Object.keys(userLibrary).forEach(con => {
                     userLibrary[con].forEach(game => {
                         if (game.name && game.name.toLowerCase().includes(term) && !completedData[con]?.includes(game.name)) {
@@ -473,12 +483,12 @@
                             div.className = 'history-item search-result-item';
                             div.setAttribute('data-con', con); div.setAttribute('data-game', game.name);
                             div.innerHTML = `<span>[${con}] ${game.name}</span><span style="font-size:0.6rem; color:var(--accent);">ADD</span>`;
-                            container.appendChild(div);
+                            searchResultsContainer.appendChild(div);
                         }
                     });
                 });
                 const hr = document.createElement('hr'); hr.style.cssText = "border:0; border-top:1px solid var(--border); margin:15px 0;";
-                container.appendChild(hr);
+                searchResultsContainer.appendChild(hr);
             } else { hint.style.display = 'none'; }
 
             let hasAnyCompleted = false;
@@ -988,6 +998,10 @@
             reader.readAsText(input.files[0]);
         }
 
+        // Initialize API credentials directly from local storage upon page load
+        document.getElementById('ra-username').value = localStorage.getItem('ra_user') || '';
+        document.getElementById('ra-api-key').value = localStorage.getItem('ra_key') || '';
+        
         rebuildPool(); renderSidebar(); currentWheelItems = shuffleArray(Object.keys(gamePool)); drawWheel(currentWheelItems);
     </script>
 </body>
