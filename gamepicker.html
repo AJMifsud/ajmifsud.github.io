@@ -11,6 +11,12 @@
             --border: #334155; --panel: #1e293b;
         }
 
+        /* Global Scrollbar styling */
+        *::-webkit-scrollbar { width: 6px; }
+        *::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 4px; margin: 4px; }
+        *::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        *::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
         body {
             font-family: 'Inter', system-ui, sans-serif;
             background-color: #1e293b; color: var(--text);
@@ -32,7 +38,7 @@
 
         #search-results-container { margin-bottom: 10px; }
         #history-container { overflow-y: auto; flex-grow: 1; margin-top: 10px; }
-        .console-section { margin-bottom: 25px; }
+        .console-section { margin-bottom: 5px; }
         .console-header-box {
             display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
             border-bottom: 1px solid var(--border); padding-bottom: 8px;
@@ -43,9 +49,9 @@
 
         .history-list { list-style: none; padding: 0; margin: 0; }
         .history-item {
-            display: flex; justify-content: space-between; align-items: center;
+            display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;
             padding: 6px 10px; margin-bottom: 4px; background: #0f172a;
-            border-radius: 4px; font-size: 0.8rem; border-left: 3px solid var(--accent);
+            border-radius: 4px; font-size: 0.8rem; cursor: pointer;
         }
 
         .search-result-item { 
@@ -76,10 +82,19 @@
             object-fit: contain; z-index: 5; will-change: transform;
         }
 
+        @keyframes pointerTick {
+            0%   { transform: translateY(-50%) rotate(0deg); }
+            30%  { transform: translateY(-50%) rotate(-20deg); }
+            90%  { transform: translateY(-50%) rotate(5deg); }
+            100% { transform: translateY(-50%) rotate(0deg); }
+        }
+
         .pointer {
-            position: absolute; right: -35px; top: 50%; transform: translateY(-50%);
+            position: absolute; right: -25px; top: 50%; transform: translateY(-50%);
             width: 0; height: 0; border-top: 25px solid transparent; border-bottom: 25px solid transparent;
             border-right: 50px solid var(--danger); z-index: 20;
+            transform-origin: right center;
+            will-change: transform;
         }
 
         .controls { margin-top: 30px; display: flex; gap: 10px; }
@@ -89,6 +104,7 @@
         }
         .btn-primary { background: var(--primary); color: white; }
         .btn-success { background: var(--accent); color: white; }
+        .btn-warning { background: #eab308; color: black; }
         .btn-ghost { background: #334155; color: white; }
         .btn-danger { background: var(--danger); color: white; }
         
@@ -154,25 +170,39 @@
             min-height: 0;
         }
         #scanner-view.active-flex { display: flex; }
-
-        /* Scrollbar styling for Game Info Panel */
-        #game-info-panel::-webkit-scrollbar { width: 6px; }
-        #game-info-panel::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 4px; margin: 4px; }
-        #game-info-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-        #game-info-panel::-webkit-scrollbar-thumb:hover { background: var(--primary); }
     </style>
 </head>
 <body>
 
     <div id="bg-fade-layer" style="position:fixed; top:0; left:0; width:100%; height:100%; background-size:cover; background-position:center; z-index:-1; opacity:0; transition:opacity 0.8s ease; pointer-events:none;"></div>
+    <div id="image-viewer-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center; cursor:pointer;" onclick="this.style.display='none'">
+        <img id="image-viewer-img" style="max-width:90%; max-height:90%; object-fit:contain; border-radius:8px; box-shadow:0 0 20px rgba(0,0,0,0.8);">
+    </div>
 
     <div id="sidebar">
         <div class="sidebar-header">
-            <h2 style="font-size: 1.1rem;">History / Completed</h2>
+            <h2 style="font-size: 1.1rem;">Games Library</h2>
             <button class="ui-btn" style="background:none; color:var(--primary); padding:0; font-size: 0.7rem;" onclick="toggleEditMode()" id="editToggle">Edit</button>
         </div>
         
-        <div id="stats-container" style="margin-bottom: 15px;"></div>
+        <div id="stats-container" style="margin-bottom: 5px;"></div>
+        
+        <div id="extended-progress-container" style="display:none; margin-bottom:10px; background:#1e293b; border-radius:4px; height:24px; position:relative; border:1px solid var(--border); overflow:hidden;">
+            <div id="extended-progress-bar" style="background:var(--accent); width:0%; height:100%; transition:width 0.3s;"></div>
+            <div id="extended-progress-text" style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; justify-content:center; align-items:center; font-size:12px; color:white; font-weight:bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); z-index: 2;">Updating extended game information - 0%</div>
+        </div>
+        
+        <div style="margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+            <select id="library-sort-select" onchange="renderSidebar()" style="width: 100%; padding: 6px; font-size: 0.7rem; background: #1e293b; color: white; border: 1px solid var(--border); border-radius: 4px; margin-bottom: 0;">
+                <option value="console">Sort by Console</option>
+                <option value="time">Sort by Average Mastery Time</option>
+                <option value="hc_time">Sort by Average Time to Beat (Hardcore)</option>
+                <option value="percentage">Sort by Percentage Complete</option>
+                <option value="achievements">Sort by Number of Achievements</option>
+                <option value="points">Sort by Number of Points</option>
+                <option value="genre">Sort by Genre</option>
+            </select>
+        </div>
         
         <div style="position: relative; margin-bottom: 5px;">
             <input type="text" id="game-search" role="search" placeholder="Search library to mark done..." autocomplete="off" style="padding-right: 30px; margin-bottom: 0;">
@@ -182,7 +212,10 @@
 
         <div id="search-results-container"></div>
         <div id="history-container"></div>
-        <button class="ui-btn btn-ghost" style="margin-top:15px; width:100%; flex-shrink: 0;" onclick="openManager()">Manage Library</button>
+        <div style="display:flex; gap:10px; margin-top:15px; width:100%; flex-shrink: 0;">
+            <button class="ui-btn btn-ghost" style="flex:1; padding: 12px 10px;" onclick="openManager()">Manage Library</button>
+            <button class="ui-btn btn-primary" style="flex:1; padding: 12px 10px;" onclick="forceUpdateAllExtended()">Update All Games</button>
+        </div>
     </div>
 
     <div class="main-content">
@@ -193,7 +226,7 @@
 
         <div style="display:flex; justify-content:center; align-items:center; width:100%; gap: 30px; flex-grow:1; overflow:hidden;">
             <div class="wheel-container" style="flex-shrink:0;">
-                <div class="pointer"></div>
+                <div class="pointer" id="wheel-pointer"></div>
                 <canvas id="wheelCanvas" width="1400" height="1400"></canvas>
                 <div id="icon-overlay"></div>
             </div>
@@ -210,7 +243,8 @@
             <button class="ui-btn btn-ghost" onclick="resetToConsole()">Change Console</button>
         </div>
         <div class="controls hidden" id="ctrl-result" style="flex-shrink:0;">
-            <button class="ui-btn btn-success" onclick="completeGame()">Mark as Done</button>
+            <button class="ui-btn btn-success" onclick="completeGame('completed')">Mark Completed</button>
+            <button class="ui-btn btn-warning" onclick="completeGame('mastered')">Mark Mastered</button>
             <button class="ui-btn btn-primary" onclick="spinForGame()">Reroll Game</button>
             <button class="ui-btn btn-ghost" onclick="resetToConsole()">New Spin</button>
         </div>
@@ -259,21 +293,25 @@
             </div>
 
             <div id="mgmt-settings" class="mgmt-section">
-                <div style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 15px;" onclick="document.getElementById('ra-api-collapsible').classList.toggle('hidden')">
+                <div style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 15px;" onclick="toggleRASettings()">
                     <h3 style="margin:0;">RetroAchievements API Settings</h3>
-                    <span style="font-size: 0.8rem; color: #94a3b8;">▼ Expand / Collapse</span>
+                    <span id="ra-settings-arrow" style="font-size: 0.8rem; color: #94a3b8; transition: transform 0.3s ease;">▼ Expand / Collapse</span>
                 </div>
                 
-                <div id="ra-api-collapsible" class="hidden" style="margin-bottom: 15px;">
-                    <p style="font-size: 0.8rem; color: #94a3b8;">Enter your credentials to enable fetching game data (Titles and Images) automatically.</p>
-                    
-                    <label style="font-size: 0.7rem; text-transform: uppercase; display: block; margin-bottom: 5px;">RA Username</label>
-                    <input type="text" id="ra-username" placeholder="Your Username" autocomplete="username" oninput="saveCredentials()">
-                    
-                    <label style="font-size: 0.7rem; text-transform: uppercase; display: block; margin-bottom: 5px;">Web API Key</label>
-                    <input type="password" id="ra-api-key" placeholder="Your Web API Key" autocomplete="current-password" oninput="saveCredentials()">
-                    
-                    <p style="font-size: 0.7rem; color: #64748b; margin-bottom: 0;">You can find your API key at retroachievements.org/controlpanel.php</p>
+                <div id="ra-api-wrapper" style="display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.3s ease; margin-bottom: 15px;">
+                    <div style="overflow: hidden;">
+                        <div id="ra-api-collapsible" style="padding-top: 5px;">
+                            <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 0;">Enter your credentials to enable fetching game data (Titles and Images) automatically.</p>
+                            
+                            <label style="font-size: 0.7rem; text-transform: uppercase; display: block; margin-bottom: 5px;">RA Username</label>
+                            <input type="text" id="ra-username" placeholder="Your Username" autocomplete="username" oninput="saveCredentials()">
+                            
+                            <label style="font-size: 0.7rem; text-transform: uppercase; display: block; margin-bottom: 5px;">Web API Key</label>
+                            <input type="password" id="ra-api-key" placeholder="Your Web API Key" autocomplete="current-password" oninput="saveCredentials()">
+                            
+                            <p style="font-size: 0.7rem; color: #64748b; margin-bottom: 0;">You can find your API key at retroachievements.org/controlpanel.php</p>
+                        </div>
+                    </div>
                 </div>
                 
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -300,6 +338,13 @@
     </div>
 
     <script>
+        window.openImageViewer = function(src) {
+            const overlay = document.getElementById('image-viewer-overlay');
+            const img = document.getElementById('image-viewer-img');
+            img.src = src;
+            overlay.style.display = 'flex';
+        };
+
         const CONSOLE_FULL_NAMES = {
             "MD": "Sega Mega Drive", "N64": "Nintendo 64", "SNES": "Super Nintendo",
             "GB": "Nintendo Game Boy", "GBA": "Nintendo Game Boy Advance", "GBC": "Nintendo Game Boy Color",
@@ -319,7 +364,7 @@
             "INTV": "Intellivision", "VC4000": "Interton VC 4000", "MO2": "Magnavox Odyssey 2",
             "DUCK": "Mega Duck", "MSX": "MSX", "EXE": "Standalone",
             "UZE": "Uzebox", "VECT": "Vectrex", "WASM4": "WASM-4",
-            "WSV": "Watara Supervision", "WS": "WonderSwan"
+            "WSV": "Watara Supervision", "WS": "WonderSwan", "WiiU": "Nintendo Wii U"
         };
 
         const CONSOLE_IMAGES = {
@@ -350,14 +395,14 @@
             "MSX": "https://static.retroachievements.org/assets/images/system/msx.png", "EXE": "https://static.retroachievements.org/assets/images/system/exe.png",
             "UZE": "https://static.retroachievements.org/assets/images/system/uze.png", "VECT": "https://static.retroachievements.org/assets/images/system/vect.png",
             "WASM4": "https://static.retroachievements.org/assets/images/system/wasm4.png", "WSV": "https://static.retroachievements.org/assets/images/system/wsv.png",
-            "WS": "https://static.retroachievements.org/assets/images/system/ws.png"
+            "WS": "https://static.retroachievements.org/assets/images/system/ws.png", "WiiU": "https://static.retroachievements.org/assets/images/system/wiiu.png"
         };
 
         const CONSOLE_COLORS = {
             "GB": "#9ca3af", "NES": "#d1d5db", "SNES": "#94a3b8", "PS1": "#cbd5e1",
             "GBC": "#9333ea", "GC": "#6b21a8", "GBA": "#2563eb",
             "MD": "#1f2937", "N64": "#374151", "PS2": "#1e3a8a",
-            "PSP": "#475569", "Wii": "#e2e8f0", "NDS": "#64748b", "VB": "#dc2626"
+            "PSP": "#475569", "Wii": "#e2e8f0", "NDS": "#64748b", "VB": "#dc2626", "WiiU": "#009bd6"
         };
 
         const RA_CONSOLE_IDS = {
@@ -370,7 +415,7 @@
             "PC88": 47, "PCFX": 49, "A7800": 51, "WS": 53, "NGCD": 56, "CHF": 57,
             "WSV": 63, "DUCK": 69, "ARD": 71, "WASM4": 72, "A2001": 73,
             "VC4000": 74, "ELEK": 75, "PCE": 8, "JCD": 77, "DSi": 78, "UZE": 80,
-            "FDS": 7
+            "FDS": 7, "WiiU": 20
         };
 
         const WHEEL_COLORS = ['#4f46e5', '#06b6d4', '#8b5cf6', '#ec4899', '#10b981', '#f59e0b', '#ef4444'];
@@ -401,6 +446,137 @@
             if (h > 0) return `${h}h ${m}m`;
             return `${m}m`;
         }
+        
+        window.generateGameInfoHtml = function(data, progression, raId, excludeScreenshots = false) {
+            let html = '';
+            const rawBox = data.imageBoxArt || data.ImageBoxArt;
+            
+            html += `<div style="display:flex; gap:15px; margin-bottom:15px; justify-content:center; align-items:center; flex-shrink:0;">`;
+            if (rawBox) {
+                const boxSrc = `https://media.retroachievements.org${rawBox.startsWith('/') ? rawBox : '/Images/'+rawBox}`;
+                html += `<img src="${boxSrc}" style="width:120px; border-radius:8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); object-fit:contain; cursor:pointer;" onclick="openImageViewer('${boxSrc}')">`;
+            }
+            const rawIcon = data.imageIcon || data.ImageIcon;
+            if (rawIcon) {
+                const iconSrc = `https://media.retroachievements.org${rawIcon.startsWith('/') ? rawIcon : '/Images/'+rawIcon}`;
+                html += `<img src="${iconSrc}" style="width:64px; height:64px; border-radius:8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); object-fit:cover; cursor:pointer;" onclick="openImageViewer('${iconSrc}')">`;
+            }
+            html += `</div>`;
+            
+            html += `<div style="text-align:center; margin-bottom:15px; flex-shrink:0;">`;
+            html += `<h3 style="margin:0; color:var(--primary); font-size:1.1rem; cursor:pointer; text-decoration:underline;" onclick="window.open('https://retroachievements.org/game/${raId}', '_blank')">${data.title || data.Title || 'Unknown Title'}</h3>`;
+            if(data.developer || data.Developer || data.publisher || data.Publisher) {
+                html += `<p style="margin:5px 0 0 0; font-size:0.7rem; color:#94a3b8;">${data.developer || data.Developer || 'Unknown'} • ${data.released || data.Released || 'Unknown'}</p>`;
+            }
+            html += `</div>`;
+            
+            html += `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px; flex-shrink:0;">`;
+            
+            let calculatedPoints = 0;
+            let achCount = 0;
+            const achievements = data.achievements || data.Achievements;
+            if (achievements) {
+                const achList = Array.isArray(achievements) ? achievements : Object.values(achievements);
+                achCount = achList.length;
+                achList.forEach(ach => {
+                    calculatedPoints += parseInt(ach.points || ach.Points || 0);
+                });
+            }
+            
+            const numAch = achCount > 0 ? achCount : (data.numAchievements || data.NumAchievements || "?");
+            const totalPts = calculatedPoints > 0 ? calculatedPoints : (data.points || data.Points || "?");
+            
+            const genre = data.genre || data.Genre;
+            const timeBeat = formatTime(progression.medianTimeToBeat);
+            const timeBeatHC = formatTime(progression.medianTimeToBeatHardcore);
+            const timeComp = formatTime(progression.medianTimeToComplete);
+            const timeMaster = formatTime(progression.medianTimeToMaster);
+            
+            html += `
+                <div style="background:#0f172a; padding:10px; border-radius:6px; border:1px solid var(--border); text-align:center;">
+                    <div style="font-size:1.2rem; font-weight:bold; color:var(--accent);">${numAch}</div>
+                    <div style="font-size:0.6rem; color:#94a3b8; text-transform:uppercase; margin-top:3px;">Achievements</div>
+                </div>
+                <div style="background:#0f172a; padding:10px; border-radius:6px; border:1px solid var(--border); text-align:center;">
+                    <div style="font-size:1.2rem; font-weight:bold; color:var(--primary);">${totalPts}</div>
+                    <div style="font-size:0.6rem; color:#94a3b8; text-transform:uppercase; margin-top:3px;">Total Points</div>
+                </div>
+            </div>`;
+            
+            html += `<div style="background:#0f172a; padding:12px; border-radius:6px; border:1px solid var(--border); font-size:0.75rem; margin-bottom: 15px; flex-shrink:0;">`;
+            html += `<div style="display:flex; justify-content:space-between; margin-bottom:6px;"><span style="color:#94a3b8;">Time to Beat (Casual):</span> <strong>${timeBeat}</strong></div>`;
+            html += `<div style="display:flex; justify-content:space-between; margin-bottom:6px;"><span style="color:#94a3b8;">Time to Beat (Hardcore):</span> <strong>${timeBeatHC}</strong></div>`;
+            html += `<div style="display:flex; justify-content:space-between; margin-bottom:6px;"><span style="color:#94a3b8;">Time to Complete (Casual):</span> <strong>${timeComp}</strong></div>`;
+            html += `<div style="display:flex; justify-content:space-between; margin-bottom:6px;"><span style="color:#94a3b8;">Time to Master (Hardcore):</span> <strong>${timeMaster}</strong></div>`;
+            if (genre) { html += `<div style="display:flex; justify-content:space-between; margin-bottom:6px;"><span style="color:#94a3b8;">Genre:</span> <strong style="text-align:right;">${genre}</strong></div>`; }
+            const players = data.numDistinctPlayersCasual || data.NumDistinctPlayersCasual;
+            if (players) { html += `<div style="display:flex; justify-content:space-between; margin-bottom:0;"><span style="color:#94a3b8;">Total Players:</span> <strong>${players}</strong></div>`; }
+            html += `</div>`;
+            
+            if (!excludeScreenshots) {
+                html += `<div style="display:flex; flex-direction:column; gap:10px; flex-shrink:0;">`;
+                const imgTitle = data.imageTitle || data.ImageTitle;
+                if (imgTitle) {
+                    const titleSrc = `https://media.retroachievements.org${imgTitle.startsWith('/') ? imgTitle : '/Images/'+imgTitle}`;
+                    html += `<img src="${titleSrc}" style="width:100%; border-radius:6px; border:1px solid var(--border); cursor:pointer;" onclick="openImageViewer('${titleSrc}')">`;
+                }
+                const imgIngame = data.imageIngame || data.ImageIngame;
+                if (imgIngame) {
+                    const ingameSrc = `https://media.retroachievements.org${imgIngame.startsWith('/') ? imgIngame : '/Images/'+imgIngame}`;
+                    html += `<img src="${ingameSrc}" style="width:100%; border-radius:6px; border:1px solid var(--border); cursor:pointer;" onclick="openImageViewer('${imgIngame}')">`;
+                }
+                html += `</div>`;
+            }
+            return html;
+        }
+
+        async function fetchExtendedDataForGame(raApi, authorization, gameId) {
+            try {
+                const data = await raApi.getGameExtended(authorization, { gameId: parseInt(gameId) });
+                
+                let progression = {
+                    medianTimeToBeat: 0,
+                    medianTimeToBeatHardcore: 0,
+                    medianTimeToComplete: 0,
+                    medianTimeToMaster: 0
+                };
+                
+                try { 
+                    const prog = await raApi.getGameProgression(authorization, { gameId: parseInt(gameId) });
+                    if(prog) progression = prog;
+                } catch(e) {
+                    console.warn("getGameProgression skipped or unavailable for this game id:", gameId);
+                }
+
+                let calculatedPoints = 0;
+                if (data.achievements || data.Achievements) {
+                    const achs = data.achievements || data.Achievements;
+                    const achList = Array.isArray(achs) ? achs : Object.values(achs);
+                    achList.forEach(ach => calculatedPoints += parseInt(ach.points || ach.Points || 0));
+                }
+                
+                return {
+                    maxAch: data.numAchievements || data.NumAchievements || 0,
+                    pts: calculatedPoints || data.points || data.Points || 0,
+                    genre: data.genre || data.Genre || "Unknown",
+                    timeToMaster: parseInt(progression.medianTimeToMaster) || 0,
+                    timeToBeatHardcore: parseInt(progression.medianTimeToBeatHardcore) || 0,
+                    timeToBeat: parseInt(progression.medianTimeToBeat) || 0,
+                    timeToComplete: parseInt(progression.medianTimeToComplete) || 0,
+                    developer: data.developer || data.Developer || "Unknown",
+                    publisher: data.publisher || data.Publisher || "Unknown",
+                    released: data.released || data.Released || "Unknown",
+                    players: data.numDistinctPlayersCasual || data.NumDistinctPlayersCasual || 0,
+                    imageTitle: cleanImg(data.imageTitle || data.ImageTitle),
+                    imageIngame: cleanImg(data.imageIngame || data.ImageIngame),
+                    imageBoxArt: cleanImg(data.imageBoxArt || data.ImageBoxArt),
+                    imageIcon: cleanImg(data.imageIcon || data.ImageIcon)
+                };
+            } catch(e) {
+                console.error("Failed fetching extended data for gameId:", gameId, e);
+                return null;
+            }
+        }
 
         let rawLibrary = JSON.parse(localStorage.getItem('userLibrary_v3')) || {};
         let userLibrary = {};
@@ -408,7 +584,7 @@
 
         Object.keys(rawLibrary).forEach(con => {
             userLibrary[con] = rawLibrary[con].map(g => {
-                let obj = typeof g === 'string' ? { name: g, raId: "", imgId: "" } : { ...g };
+                let obj = typeof g === 'string' ? { name: g, raId: "", imgId: "", maxAch: 0 } : { ...g };
                 if (!obj.id) {
                     obj.id = Math.random().toString(36).substr(2, 9);
                     libraryModified = true;
@@ -422,6 +598,10 @@
         let rawCompleted = JSON.parse(localStorage.getItem('completedData_v3')) || {};
         let completedData = {};
         let completedModified = false;
+        
+        let rawMastered = JSON.parse(localStorage.getItem('masteredData_v3')) || {};
+        let masteredData = {};
+        let masteredModified = false;
         
         Object.keys(rawCompleted).forEach(con => {
             completedData[con] = rawCompleted[con].map(item => {
@@ -437,13 +617,115 @@
             });
         });
         if (completedModified) localStorage.setItem('completedData_v3', JSON.stringify(completedData));
+        
+        Object.keys(rawMastered).forEach(con => {
+            masteredData[con] = rawMastered[con].map(item => {
+                let existsById = userLibrary[con]?.some(g => g.id === item);
+                if (!existsById) {
+                    let libGame = userLibrary[con]?.find(g => g.name === item);
+                    if (libGame) {
+                        masteredModified = true;
+                        return libGame.id;
+                    }
+                }
+                return item;
+            });
+        });
+        if (masteredModified) localStorage.setItem('masteredData_v3', JSON.stringify(masteredData));
 
         let gamePool = {}, currentWheelItems = [], selectedConsole = null, selectedGame = null, rotation = 0, isSpinning = false, isEditing = false;
-        let collapsedConsoles = {};
-        let raCompletedGamesCache = [];
+        let collapsedGroups = {};
+        let raCompletedGamesCache = JSON.parse(localStorage.getItem('ra_api_completed')) || [];
         window.wtpGamesCache = [];
         window.wtpActiveTab = null;
         
+        let isFetchingExtended = false;
+        window.processExtendedFetchQueue = async function() {
+            if (isFetchingExtended) return;
+            isFetchingExtended = true;
+            
+            const user = localStorage.getItem('ra_user');
+            const key = localStorage.getItem('ra_key');
+            if (!user || !key) { isFetchingExtended = false; return; }
+            
+            let raApi, authorization;
+            try {
+                raApi = await import("https://esm.sh/@retroachievements/api");
+                authorization = raApi.buildAuthorization({ username: user, webApiKey: key });
+            } catch(e) { isFetchingExtended = false; return; }
+
+            let gamesToProcess = [];
+            for (const con of Object.keys(userLibrary)) {
+                for (let i = 0; i < userLibrary[con].length; i++) {
+                    const g = userLibrary[con][i];
+                    if (g.raId && !g.extendedFetched) {
+                        gamesToProcess.push(g);
+                    }
+                }
+            }
+
+            const totalToFetch = gamesToProcess.length;
+            let fetchedCount = 0;
+
+            if (totalToFetch > 0) {
+                const pContainer = document.getElementById('extended-progress-container');
+                const pBar = document.getElementById('extended-progress-bar');
+                const pText = document.getElementById('extended-progress-text');
+                if(pContainer) pContainer.style.display = 'block';
+                
+                for (let i = 0; i < totalToFetch; i++) {
+                    const g = gamesToProcess[i];
+                    try {
+                        const ext = await fetchExtendedDataForGame(raApi, authorization, g.raId);
+                        if (ext) {
+                            g.maxAch = ext.maxAch;
+                            g.pts = ext.pts;
+                            g.genre = ext.genre;
+                            g.timeToMaster = ext.timeToMaster;
+                            g.timeToBeatHardcore = ext.timeToBeatHardcore;
+                            g.timeToBeat = ext.timeToBeat;
+                            g.timeToComplete = ext.timeToComplete;
+                            g.developer = ext.developer;
+                            g.publisher = ext.publisher;
+                            g.released = ext.released;
+                            g.players = ext.players;
+                            g.imageTitle = ext.imageTitle;
+                            g.imageIngame = ext.imageIngame;
+                            g.imageBoxArt = ext.imageBoxArt;
+                            g.extendedFetched = true;
+                        }
+                    } catch(e) {
+                        console.error("Queue Failed fetching extended data for", g.name);
+                    }
+                    
+                    fetchedCount++;
+                    let pct = Math.floor((fetchedCount / totalToFetch) * 100);
+                    if(pBar) pBar.style.width = pct + '%';
+                    if(pText) pText.innerText = `Updating extended game information - ${pct}%`;
+                    
+                    if (i % 5 === 0 || i === totalToFetch - 1) {
+                        localStorage.setItem('userLibrary_v3', JSON.stringify(userLibrary));
+                    }
+                    
+                    await new Promise(r => setTimeout(r, 200)); 
+                }
+                
+                if(pContainer) pContainer.style.display = 'none';
+                renderSidebar(); 
+            }
+            isFetchingExtended = false;
+        }
+        
+        window.forceUpdateAllExtended = function() {
+            Object.keys(userLibrary).forEach(con => {
+                userLibrary[con].forEach(g => {
+                    if(g.raId) g.extendedFetched = false;
+                });
+            });
+            localStorage.setItem('userLibrary_v3', JSON.stringify(userLibrary));
+            window.processExtendedFetchQueue();
+        }
+
         const canvas = document.getElementById('wheelCanvas'), ctx = canvas.getContext('2d'), overlay = document.getElementById('icon-overlay');
 
         function rebuildPool() {
@@ -452,13 +734,21 @@
                 const validGames = userLibrary[con].filter(g => g.name && g.name.trim() !== "");
                 if (validGames.length > 0) {
                     gamePool[con] = JSON.parse(JSON.stringify(validGames));
+                    
                     if (completedData[con]) {
                         completedData[con].forEach(completedId => {
                             const idx = gamePool[con].findIndex(g => g.id === completedId || g.name === completedId);
                             if (idx > -1) gamePool[con].splice(idx, 1);
                         });
-                        if (gamePool[con].length === 0) delete gamePool[con];
                     }
+                    if (masteredData[con]) {
+                        masteredData[con].forEach(masteredId => {
+                            const idx = gamePool[con].findIndex(g => g.id === masteredId || g.name === masteredId);
+                            if (idx > -1) gamePool[con].splice(idx, 1);
+                        });
+                    }
+                    
+                    if (gamePool[con].length === 0) delete gamePool[con];
                 }
             });
         }
@@ -470,21 +760,6 @@
                 [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
             }
             return shuffled;
-        }
-
-        function wrapText(context, text, x, y, maxWidth, lineHeight) {
-            const words = text.split(' '); let line = '', lines = [];
-            for (let n = 0; n < words.length; n++) {
-                let testLine = line + words[n] + ' ';
-                if (context.measureText(testLine).width > maxWidth && n > 0) {
-                    lines.push(line); line = words[n] + ' ';
-                } else { line = testLine; }
-            }
-            lines.push(line);
-            let currentY = y - ((lines.length * lineHeight) / 2) + (lineHeight / 2);
-            for (let i = 0; i < lines.length; i++) {
-                context.fillText(lines[i].trim(), x, currentY); currentY += lineHeight;
-            }
         }
 
         const searchInput = document.getElementById('game-search');
@@ -505,30 +780,125 @@
         
         container.addEventListener('click', (e) => {
             const clickedItem = e.target.closest('.search-result-item');
-            if (clickedItem) handleQuickComplete(clickedItem.getAttribute('data-con'), clickedItem.getAttribute('data-gameid'));
+            if (clickedItem) handleQuickComplete(clickedItem.getAttribute('data-con'), clickedItem.getAttribute('data-gameid'), 'completed');
         });
 
         searchResultsContainer.addEventListener('click', (e) => {
             const clickedItem = e.target.closest('.search-result-item');
-            if (clickedItem) handleQuickComplete(clickedItem.getAttribute('data-con'), clickedItem.getAttribute('data-gameid'));
+            if (clickedItem) handleQuickComplete(clickedItem.getAttribute('data-con'), clickedItem.getAttribute('data-gameid'), 'completed');
         });
 
-        function toggleConsoleCollapse(con) {
-            collapsedConsoles[con] = !collapsedConsoles[con];
-            renderSidebar();
+        window.toggleGroupCollapse = function(groupId) {
+            collapsedGroups[groupId] = !collapsedGroups[groupId];
+            const isCollapsed = collapsedGroups[groupId];
+            const section = document.getElementById(`console-section-${groupId}`);
+            if (section) {
+                const wrapper = section.querySelector('.history-list-wrapper');
+                const arrow = section.querySelector('.collapse-arrow');
+                const headerBg = section.querySelector('.console-header-bg');
+                if (wrapper) wrapper.style.gridTemplateRows = isCollapsed ? '0fr' : '1fr';
+                if (arrow) arrow.style.transform = `rotate(${isCollapsed ? '0deg' : '180deg'})`;
+                if (headerBg) {
+                    headerBg.style.background = isCollapsed ? 'transparent' : 'rgba(255,255,255,0.05)';
+                    headerBg.onmouseout = function() { this.style.background = isCollapsed ? 'transparent' : 'rgba(255,255,255,0.05)'; };
+                }
+            }
+        }
+        
+        window.toggleRASettings = function() {
+            const wrapper = document.getElementById('ra-api-wrapper');
+            const arrow = document.getElementById('ra-settings-arrow');
+            if (wrapper.style.gridTemplateRows === '1fr') {
+                wrapper.style.gridTemplateRows = '0fr';
+                arrow.style.transform = 'rotate(0deg)';
+            } else {
+                wrapper.style.gridTemplateRows = '1fr';
+                arrow.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        window.activeSidebarInfo = null;
+        window.toggleSidebarGameInfo = async function(gameId, raId, element) {
+            const infoDiv = document.getElementById(`sidebar-info-${gameId}`);
+            const wrapper = document.getElementById(`sidebar-info-wrapper-${gameId}`);
+            if (!infoDiv || !wrapper) return;
+
+            if (wrapper.style.gridTemplateRows === '1fr') {
+                wrapper.style.gridTemplateRows = '0fr';
+                infoDiv.style.opacity = '0';
+                window.activeSidebarInfo = null;
+                return;
+            }
+
+            if (window.activeSidebarInfo && window.activeSidebarInfo !== infoDiv) {
+                const oldWrapper = window.activeSidebarInfo.closest('.sidebar-info-wrapper');
+                if (oldWrapper) {
+                    oldWrapper.style.gridTemplateRows = '0fr';
+                }
+                window.activeSidebarInfo.style.opacity = '0';
+            }
+
+            window.activeSidebarInfo = infoDiv;
+            wrapper.style.gridTemplateRows = '1fr';
+            infoDiv.style.opacity = '1';
+
+            if (infoDiv.innerHTML.trim() === '' || infoDiv.innerHTML.includes('Loading info...')) {
+                let foundGame = null;
+                for (const c of Object.keys(userLibrary)) {
+                    foundGame = userLibrary[c].find(x => x.id === gameId);
+                    if (foundGame) break;
+                }
+
+                if (!foundGame || !foundGame.extendedFetched) {
+                    infoDiv.innerHTML = '<p style="color:var(--accent); font-size:0.7rem; text-align:center; padding: 10px 0;">Extended info not fetched yet. Click "Update All Games" or wait for background process.</p>';
+                    return;
+                }
+
+                let data = {
+                    title: foundGame.name,
+                    imageBoxArt: foundGame.imageBoxArt ? `${foundGame.imageBoxArt}.png` : (foundGame.imgId ? `${foundGame.imgId}.png` : null),
+                    imageIcon: foundGame.imgId ? `${foundGame.imgId}.png` : null,
+                    developer: foundGame.developer || "Unknown",
+                    released: foundGame.released || "Unknown",
+                    numAchievements: foundGame.maxAch || 0,
+                    points: foundGame.pts || 0,
+                    genre: foundGame.genre || "Unknown",
+                    numDistinctPlayersCasual: foundGame.players || 0,
+                    imageTitle: foundGame.imageTitle ? `${foundGame.imageTitle}.png` : null,
+                    imageIngame: foundGame.imageIngame ? `${foundGame.imageIngame}.png` : null
+                };
+                let progression = {
+                    medianTimeToBeat: foundGame.timeToBeat || 0,
+                    medianTimeToBeatHardcore: foundGame.timeToBeatHardcore || 0,
+                    medianTimeToComplete: foundGame.timeToComplete || 0,
+                    medianTimeToMaster: foundGame.timeToMaster || 0
+                };
+
+                infoDiv.innerHTML = generateGameInfoHtml(data, progression, raId, true);
+            }
         }
 
         function renderSidebar() {
+            let currentlyOpenId = window.activeSidebarInfo ? window.activeSidebarInfo.id.replace('sidebar-info-', '') : null;
+            let currentlyOpenHtml = window.activeSidebarInfo ? window.activeSidebarInfo.innerHTML : "";
+            
             let totalGames = 0;
             let totalCompleted = 0;
+            
             Object.keys(userLibrary).forEach(con => {
-                totalGames += userLibrary[con].filter(g => g.name && g.name.trim() !== "").length;
-            });
-            Object.keys(completedData).forEach(con => {
-                totalCompleted += completedData[con].length;
+                const games = userLibrary[con].filter(g => g.name && g.name.trim() !== "");
+                totalGames += games.length;
+                
+                games.forEach(g => {
+                    const isCompleted = completedData[con] && completedData[con].includes(g.id);
+                    const isMastered = masteredData[con] && masteredData[con].includes(g.id);
+                    if (isCompleted || isMastered) {
+                        totalCompleted++;
+                    }
+                });
             });
 
-            document.getElementById('stats-container').innerHTML = `<div style="font-size: 0.8rem; margin-bottom: 8px; color: var(--text);">Total Completed: <strong>${totalCompleted} / ${totalGames}</strong></div>`;
+            document.getElementById('stats-container').innerHTML = `<div style="font-size: 0.8rem; margin-bottom: 8px; color: var(--text);">Total Game Awards: <strong>${totalCompleted} / ${totalGames}</strong></div>`;
 
             const term = searchInput.value.toLowerCase();
             const hint = document.getElementById('search-hint');
@@ -543,7 +913,10 @@
                 searchResultsContainer.appendChild(resultsHeader);
                 Object.keys(userLibrary).forEach(con => {
                     userLibrary[con].forEach(game => {
-                        if (game.name && game.name.toLowerCase().includes(term) && !completedData[con]?.includes(game.id)) {
+                        const isCompleted = completedData[con] && completedData[con].includes(game.id);
+                        const isMastered = masteredData[con] && masteredData[con].includes(game.id);
+
+                        if (game.name && game.name.toLowerCase().includes(term) && !isCompleted && !isMastered) {
                             const div = document.createElement('div');
                             div.className = 'history-item search-result-item';
                             div.setAttribute('data-con', con); div.setAttribute('data-gameid', game.id);
@@ -556,76 +929,387 @@
                 searchResultsContainer.appendChild(hr);
             } else { hint.style.display = 'none'; }
 
-            let hasAnyCompleted = false;
+            const sortElement = document.getElementById('library-sort-select');
+            const sortMode = sortElement ? sortElement.value : 'console';
+            let hasAnyGames = false;
 
-            Object.keys(completedData).sort().forEach(con => {
-                const comp = completedData[con].length;
-                if (comp === 0) return;
-                hasAnyCompleted = true;
+            if (sortMode === 'console') {
+                Object.keys(userLibrary).sort().forEach(con => {
+                    let games = userLibrary[con].filter(g => g.name && g.name.trim() !== "");
+                    if (games.length === 0) return;
+                    hasAnyGames = true;
+                    
+                    games.sort((a, b) => a.name.localeCompare(b.name));
 
-                if (collapsedConsoles[con] === undefined) collapsedConsoles[con] = true;
-                const isCollapsed = collapsedConsoles[con];
+                    if (collapsedGroups[con] === undefined) collapsedGroups[con] = true;
+                    const isCollapsed = collapsedGroups[con];
 
-                const tot = userLibrary[con] ? userLibrary[con].filter(g => g.name && g.name.trim() !== "").length : comp; 
-                const pct = Math.min(100, Math.round((comp / Math.max(1, tot)) * 100));
-                const color = CONSOLE_COLORS[con] || 'var(--primary)';
-                const icon = CONSOLE_IMAGES[con] || '';
-                const displayTitle = CONSOLE_FULL_NAMES[con] || con;
-
-                const section = document.createElement('div'); 
-                section.className = 'console-section';
-                section.id = `console-group-${con}`;
-                
-                let listHtml = `
-                <div onclick="toggleConsoleCollapse('${con}')" style="cursor:pointer; user-select:none; transition: background 0.2s; padding: 6px; border-radius: 4px;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
-                    <div class="console-header-box" style="margin-bottom: 6px; border-bottom: none; padding-bottom: 0;">
-                        ${icon ? `<img src="${icon}" class="console-icon">` : `<span style="font-size:10px; width:32px; display:inline-block; text-align:center;">${con}</span>`}
-                        <span class="console-title" style="flex-grow:1;">${displayTitle}</span>
-                        <span style="font-size:0.6rem; color:#94a3b8; transition: transform 0.2s; transform: rotate(${isCollapsed ? '0deg' : '180deg'}); display: inline-block;">▼</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 8px; padding-left: 44px; margin-bottom: 4px;">
-                        <div style="flex-grow: 1; background: #1e293b; height: 8px; border-radius: 4px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);">
-                            <div style="background: ${color}; width: ${pct}%; height: 100%; border-radius: 4px; box-shadow: 0 0 5px ${color};"></div>
-                        </div>
-                        <span style="font-size: 0.7rem; color: #94a3b8; width: 35px; text-align: right;">${comp}/${tot}</span>
-                    </div>
-                </div>`;
-                
-                if (!isCollapsed) {
-                    listHtml += `<ul class="history-list" style="margin-top: 8px;">`;
-                    completedData[con].forEach(completedId => { 
-                        const libGame = userLibrary[con]?.find(game => game.id === completedId || game.name === completedId);
-                        const gName = libGame ? libGame.name : completedId;
-                        let imgHtml = '';
-                        if (libGame && libGame.imgId) {
-                            imgHtml = `<img src="https://media.retroachievements.org/Images/${libGame.imgId}.png" style="width:24px; height:24px; object-fit:cover; margin-right:8px; border-radius:4px; flex-shrink:0;">`;
+                    let comp = 0;
+                    games.forEach(g => {
+                        const isCompleted = completedData[con] && completedData[con].includes(g.id);
+                        const isMastered = masteredData[con] && masteredData[con].includes(g.id);
+                        if (isCompleted || isMastered) {
+                            comp++;
                         }
-                        listHtml += `<li class="history-item"><div style="display:flex; align-items:center;">${imgHtml}<span class="game-title-text">${gName}</span></div><button class="delete-btn" onclick="removeHistoryEntry('${con}', '${completedId}')">✕</button></li>`; 
                     });
-                    listHtml += `</ul>`;
-                }
-                section.innerHTML = listHtml; 
-                container.appendChild(section);
-            });
 
-            if (!hasAnyCompleted && !term) {
-                document.getElementById('stats-container').innerHTML += `<div style="font-size: 0.7rem; color: #64748b; font-style: italic;">No completed games yet.</div>`;
+                    const tot = games.length;
+                    const pct = Math.min(100, Math.round((comp / Math.max(1, tot)) * 100));
+                    const color = CONSOLE_COLORS[con] || 'var(--primary)';
+                    const icon = CONSOLE_IMAGES[con] || '';
+                    const displayTitle = CONSOLE_FULL_NAMES[con] || con;
+
+                    const section = document.createElement('div'); 
+                    section.className = 'console-section';
+                    section.id = `console-section-${con}`;
+                    
+                    let listHtml = `
+                    <div class="console-header-bg" onclick="toggleGroupCollapse('${con}')" style="cursor:pointer; user-select:none; transition: background 0.2s; padding: 6px; border-radius: 4px; box-shadow: -2px -2px 10px var(--bg) inset, 2px 2px 10px var(--border) inset; background: ${isCollapsed ? 'transparent' : 'rgba(255,255,255,0.05)'};" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='${isCollapsed ? 'transparent' : 'rgba(255,255,255,0.05)'}'">
+                        <div class="console-header-box" style="margin-bottom: 6px; border-bottom: none; padding-bottom: 0;">
+                            ${icon ? `<img src="${icon}" class="console-icon">` : `<span style="font-size:10px; width:32px; display:inline-block; text-align:center;">${con}</span>`}
+                            <span class="console-title" style="flex-grow:1;">${displayTitle}</span>
+                            <span class="collapse-arrow" style="font-size:0.6rem; color:#94a3b8; transition: transform 0.3s ease; transform: rotate(${isCollapsed ? '0deg' : '180deg'}); display: inline-block;">▼</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; padding-left: 44px; margin-bottom: 4px;">
+                            <div style="flex-grow: 1; background: #1e293b; height: 8px; border-radius: 4px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);">
+                                <div style="background: ${color}; width: ${pct}%; height: 100%; border-radius: 4px; box-shadow: 0 0 5px ${color};"></div>
+                            </div>
+                            <span style="font-size: 0.7rem; color: #94a3b8; width: 35px; text-align: right;">${comp}/${tot}</span>
+                        </div>
+                    </div>`;
+                    
+                    listHtml += `<div class="history-list-wrapper" style="display: grid; grid-template-rows: ${isCollapsed ? '0fr' : '1fr'}; transition: grid-template-rows 0.3s ease;">
+                                    <div style="overflow: hidden;">
+                                        <ul class="history-list" style="padding: 4px 4px 0px; border-style: solid; border-width: 0px 1px 1px 1px; border-color: var(--border); border-radius: 0px 0px 5px 5px;">`;
+                    games.forEach(game => { 
+                        const isCompleted = completedData[con] && completedData[con].includes(game.id);
+                        const isMastered = masteredData[con] && masteredData[con].includes(game.id);
+                        const raData = raCompletedGamesCache.find(ra => String(ra.gameId || ra.GameID || ra.id) === String(game.raId));
+
+                        let numAchTotal = 0;
+                        let numAchHC = 0;
+                        let numPoss = 0;
+
+                        if (raData) {
+                            numPoss = parseInt(raData.progData?.numPossibleAchievements || raData.maxPossible) || 0;
+                            numAchTotal = parseInt(raData.progData?.numAchieved || raData.numAwarded) || 0;
+                            numAchHC = parseInt(raData.progData?.numAchievedHardcore || raData.numAwardedHardcore) || 0;
+                        }
+
+                        let numAchSoftcore = Math.max(0, numAchTotal - numAchHC);
+                        let trueMax = numPoss > 0 ? numPoss : (game.maxAch || '?');
+                        let progressPoss = numPoss > 0 ? numPoss : (game.maxAch || 1);
+                        
+                        let yellowPct = progressPoss > 0 ? (numAchHC / progressPoss) * 100 : 0;
+                        let bluePct = progressPoss > 0 ? (numAchSoftcore / progressPoss) * 100 : 0;
+                        if (isMastered && progressPoss > 0) {
+                            yellowPct = 100; bluePct = 0;
+                        }
+
+                        let imgOutline = '';
+                        if (isMastered) imgOutline = 'border: 2px solid #eab308;';
+                        else if (isCompleted) imgOutline = 'border: 2px solid #3b82f6;';
+                        else imgOutline = 'border: 2px solid transparent;';
+
+                        let imgHtml = '';
+                        if (game.imgId) {
+                            imgHtml = `<img src="https://media.retroachievements.org/Images/${game.imgId}.png" style="width:24px; height:24px; object-fit:cover; margin-right:8px; border-radius:4px; flex-shrink:0; box-sizing:border-box; ${imgOutline}">`;
+                        } else {
+                            imgHtml = `<div style="width:24px; height:24px; margin-right:8px; border-radius:4px; flex-shrink:0; box-sizing:border-box; ${imgOutline}; display:inline-block;"></div>`;
+                        }
+
+                        let rightText = '';
+                        if (isMastered) rightText = '👑';
+                        else if (isCompleted) rightText = '🎖';
+                        else rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${numAchTotal} / ${trueMax}</span>`;
+
+                        listHtml += `<li class="history-item" style="cursor: pointer; flex-wrap: wrap; background-color: #0f172a; background-image: linear-gradient(to right, #eab308 0%, #eab308 ${yellowPct}%, #3b82f6 ${yellowPct}%, #3b82f6 ${yellowPct + bluePct}%, transparent ${yellowPct + bluePct}%); background-size: 100% 3px; background-position: bottom left; background-repeat: no-repeat;" onclick="toggleSidebarGameInfo('${game.id}', '${game.raId}', this)">
+                            <div style="display:flex; width:100%; justify-content:space-between; align-items:center;">
+                                <div style="display:flex; align-items:center; flex-shrink:1; min-width:0;">${imgHtml}<span class="game-title-text" style="color:var(--text); z-index:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${game.name}</span></div>
+                                <div style="display:flex; align-items:center; gap: 8px; z-index:1; flex-shrink:0;">
+                                    ${rightText}
+                                    <button class="delete-btn" onclick="event.stopPropagation(); removeHistoryEntry('${con}', '${game.id}')">✕</button>
+                                </div>
+                            </div>
+                            <div id="sidebar-info-wrapper-${game.id}" class="sidebar-info-wrapper" style="display: grid; grid-template-rows: ${currentlyOpenId === game.id ? '1fr' : '0fr'}; transition: grid-template-rows 0.3s ease; width: 100%;">
+                                <div style="overflow: hidden;">
+                                    <div id="sidebar-info-${game.id}" class="sidebar-inline-info" style="width:100%; display:flex; flex-direction:column; margin-top:10px; cursor:default; opacity: ${currentlyOpenId === game.id ? '1' : '0'}; transition: opacity 0.3s ease;" onclick="event.stopPropagation()">
+                                        ${currentlyOpenId === game.id ? currentlyOpenHtml : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        </li>`; 
+                    });
+                    listHtml += `</ul></div></div>`;
+                    
+                    section.innerHTML = listHtml; 
+                    container.appendChild(section);
+                });
+            } else {
+                let allGames = [];
+                Object.keys(userLibrary).forEach(con => {
+                    userLibrary[con].forEach(g => {
+                        if (g.name && g.name.trim() !== "") {
+                            let raData = raCompletedGamesCache.find(ra => String(ra.gameId || ra.GameID || ra.id) === String(g.raId));
+                            let pts = g.pts || 0;
+                            let genre = g.genre || 'Unknown';
+                            let time = g.timeToMaster || 0;
+                            let hcTime = g.timeToBeatHardcore || 0;
+                            let numAch = g.maxAch || 0;
+                            
+                            let numAchTotal = 0;
+                            let numAchHC = 0;
+
+                            if (raData) {
+                                numAch = numAch || parseInt(raData.maxPossible) || 0;
+                                numAchTotal = parseInt(raData.progData?.numAchieved || raData.numAwarded) || 0;
+                                numAchHC = parseInt(raData.progData?.numAchievedHardcore || raData.numAwardedHardcore) || 0;
+                            }
+
+                            const isCompleted = completedData[con] && completedData[con].includes(g.id);
+                            const isMastered = masteredData[con] && masteredData[con].includes(g.id);
+
+                            if (isMastered) numAchHC = numAch;
+                            if (isCompleted || isMastered) numAchTotal = numAch;
+                            
+                            allGames.push({ ...g, con: con, pts: pts, genre: genre, time: time, hcTime: hcTime, numAch: numAch, numAchTotal: numAchTotal, numAchHC: numAchHC, raData: raData, isCompleted: isCompleted, isMastered: isMastered });
+                        }
+                    });
+                });
+
+                function getTimeGroupName(timeInSecs) {
+                    if (!timeInSecs || timeInSecs === 0) return "Unknown";
+                    let hours = timeInSecs / 3600;
+                    if (hours < 1) return "Under 1 Hour";
+                    if (hours <= 2) return "1 - 2 Hours";
+                    if (hours <= 4) return "2 - 4 Hours";
+                    if (hours <= 8) return "4 - 8 Hours";
+                    if (hours <= 16) return "8 - 16 Hours";
+                    if (hours <= 24) return "16 - 24 Hours";
+                    if (hours <= 48) return "24 - 48 Hours";
+                    return "48+ Hours";
+                }
+
+                let groups = {};
+                allGames.forEach(g => {
+                    let groupName = "Unknown";
+                    if (sortMode === 'genre') {
+                        groupName = g.genre || "Unknown";
+                    } else if (sortMode === 'achievements') {
+                        if (g.numAch === 0) groupName = "No Achievements";
+                        else if (g.numAch <= 25) groupName = "1 - 25 Achievements";
+                        else if (g.numAch <= 50) groupName = "26 - 50 Achievements";
+                        else if (g.numAch <= 100) groupName = "51 - 100 Achievements";
+                        else groupName = "100+ Achievements";
+                    } else if (sortMode === 'points') {
+                        if (g.pts === 0) groupName = "No Achievements";
+                        else if (g.pts <= 99) groupName = "1 - 99 Points";
+                        else if (g.pts <= 249) groupName = "100 - 249 Points";
+                        else if (g.pts <= 499) groupName = "250 - 499 Points";
+                        else if (g.pts <= 749) groupName = "500 - 749 Points";
+                        else if (g.pts <= 999) groupName = "750 - 999 Points";
+                        else groupName = "1000+ Points";
+                    } else if (sortMode === 'time') {
+                        groupName = getTimeGroupName(g.time);
+                    } else if (sortMode === 'hc_time') {
+                        groupName = getTimeGroupName(g.hcTime);
+                    } else if (sortMode === 'percentage') {
+                        let pct = g.numAch > 0 ? Math.floor((g.numAchTotal / g.numAch) * 100) : 0;
+                        if (g.numAch === 0) groupName = "No Achievements";
+                        else if (pct === 0) groupName = "Not Started";
+                        else if (pct < 10) groupName = "1 - 9%";
+                        else if (pct < 20) groupName = "10 - 19%";
+                        else if (pct < 30) groupName = "20 - 29%";
+                        else if (pct < 40) groupName = "30 - 39%";
+                        else if (pct < 50) groupName = "40 - 49%";
+                        else if (pct < 60) groupName = "50 - 59%";
+                        else if (pct < 70) groupName = "60 - 69%";
+                        else if (pct < 80) groupName = "70 - 79%";
+                        else if (pct < 90) groupName = "80 - 89%";
+                        else if (pct < 100) groupName = "90 - 99%";
+                        else groupName = "100%";
+                    }
+                    if (!groups[groupName]) groups[groupName] = [];
+                    groups[groupName].push(g);
+                });
+
+                const timeOrder = ["Under 1 Hour", "1 - 2 Hours", "2 - 4 Hours", "4 - 8 Hours", "8 - 16 Hours", "16 - 24 Hours", "24 - 48 Hours", "48+ Hours", "Unknown"];
+                const pctOrder = ["Not Started", "1 - 9%", "10 - 19%", "20 - 29%", "30 - 39%", "40 - 49%", "50 - 59%", "60 - 69%", "70 - 79%", "80 - 89%", "90 - 99%", "100%", "No Achievements"];
+                const achOrder = ["1 - 25 Achievements", "26 - 50 Achievements", "51 - 100 Achievements", "100+ Achievements", "No Achievements"];
+                const ptsOrder = ["1 - 99 Points", "100 - 249 Points", "250 - 499 Points", "500 - 749 Points", "750 - 999 Points", "1000+ Points", "No Achievements"];
+
+                let groupKeys = Object.keys(groups).sort((a,b) => {
+                    if (a === "No Achievements") return 1;
+                    if (b === "No Achievements") return -1;
+                    if (a === "Unknown") return 1;
+                    if (b === "Unknown") return -1;
+                    
+                    if (sortMode === 'time' || sortMode === 'hc_time') return timeOrder.indexOf(a) - timeOrder.indexOf(b);
+                    if (sortMode === 'percentage') return pctOrder.indexOf(a) - pctOrder.indexOf(b);
+                    if (sortMode === 'achievements') return achOrder.indexOf(a) - achOrder.indexOf(b);
+                    if (sortMode === 'points') return ptsOrder.indexOf(a) - ptsOrder.indexOf(b);
+                    
+                    if (sortMode !== 'genre') {
+                        let numA = parseInt(a.replace(/[^0-9]/g, '')) || 0;
+                        let numB = parseInt(b.replace(/[^0-9]/g, '')) || 0;
+                        return numA - numB;
+                    }
+                    return a.localeCompare(b);
+                });
+
+                groupKeys.forEach(gName => {
+                    let games = groups[gName];
+                    if (games.length === 0) return;
+                    hasAnyGames = true;
+                    
+                    if (sortMode === 'time') {
+                        games.sort((a, b) => (a.time || 0) - (b.time || 0) || a.name.localeCompare(b.name));
+                    } else if (sortMode === 'hc_time') {
+                        games.sort((a, b) => (a.hcTime || 0) - (b.hcTime || 0) || a.name.localeCompare(b.name));
+                    } else if (sortMode === 'percentage') {
+                        games.sort((a, b) => {
+                            let pctA = a.numAch > 0 ? (a.numAchTotal / a.numAch) : 0;
+                            let pctB = b.numAch > 0 ? (b.numAchTotal / b.numAch) : 0;
+                            return pctA - pctB || a.name.localeCompare(b.name);
+                        });
+                    } else if (sortMode === 'achievements') {
+                        games.sort((a, b) => (a.numAch || 0) - (b.numAch || 0) || a.name.localeCompare(b.name));
+                    } else if (sortMode === 'points') {
+                        games.sort((a, b) => (a.pts || 0) - (b.pts || 0) || a.name.localeCompare(b.name));
+                    } else {
+                        games.sort((a, b) => a.name.localeCompare(b.name));
+                    }
+                    
+                    const safeGroupId = gName.replace(/[^a-zA-Z0-9]/g, '_');
+                    if (collapsedGroups[safeGroupId] === undefined) collapsedGroups[safeGroupId] = true;
+                    const isCollapsed = collapsedGroups[safeGroupId];
+
+                    const tot = games.length;
+
+                    const section = document.createElement('div');
+                    section.className = 'console-section';
+                    section.id = `console-section-${safeGroupId}`;
+
+                    let listHtml = `
+                    <div class="console-header-bg" onclick="toggleGroupCollapse('${safeGroupId}')" style="cursor:pointer; user-select:none; transition: background 0.2s; padding: 6px; border-radius: 4px; box-shadow: -2px -2px 10px var(--bg) inset, 2px 2px 10px var(--border) inset; background: ${isCollapsed ? 'transparent' : 'rgba(255,255,255,0.05)'};" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='${isCollapsed ? 'transparent' : 'rgba(255,255,255,0.05)'}'">
+                        <div class="console-header-box" style="margin-bottom: 0; border-bottom: none; padding-bottom: 0; display:flex; align-items:center;">
+                            <span class="console-title" style="flex-grow:1;">${gName}</span>
+                            <span style="font-size:0.7rem; color:#94a3b8; margin-right:8px;">${tot}</span>
+                            <span class="collapse-arrow" style="font-size:0.6rem; color:#94a3b8; transition: transform 0.3s ease; transform: rotate(${isCollapsed ? '0deg' : '180deg'}); display: inline-block;">▼</span>
+                        </div>
+                    </div>`;
+                    
+                    listHtml += `<div class="history-list-wrapper" style="display: grid; grid-template-rows: ${isCollapsed ? '0fr' : '1fr'}; transition: grid-template-rows 0.3s ease;">
+                                    <div style="overflow: hidden;">
+                                        <ul class="history-list" style="padding: 4px 4px 0px; border-style: solid; border-width: 0px 1px 1px 1px; border-color: var(--border); border-radius: 0px 0px 5px 5px;">`;
+                    games.forEach(game => {
+                        const isCompleted = game.isCompleted;
+                        const isMastered = game.isMastered;
+
+                        let numAchTotal = game.numAchTotal;
+                        let numAchHC = game.numAchHC;
+                        let numPoss = game.numAch;
+
+                        let numAchSoftcore = Math.max(0, numAchTotal - numAchHC);
+                        let trueMax = numPoss > 0 ? numPoss : (game.maxAch || '?');
+                        let progressPoss = numPoss > 0 ? numPoss : (game.maxAch || 1);
+                        
+                        let yellowPct = progressPoss > 0 ? (numAchHC / progressPoss) * 100 : 0;
+                        let bluePct = progressPoss > 0 ? (numAchSoftcore / progressPoss) * 100 : 0;
+                        if (isMastered && progressPoss > 0) { yellowPct = 100; bluePct = 0; }
+
+                        let imgOutline = '';
+                        if (isMastered) imgOutline = 'border: 2px solid #eab308;';
+                        else if (isCompleted) imgOutline = 'border: 2px solid #3b82f6;';
+                        else imgOutline = 'border: 2px solid transparent;';
+
+                        let imgHtml = '';
+                        if (game.imgId) {
+                            imgHtml = `<img src="https://media.retroachievements.org/Images/${game.imgId}.png" style="width:24px; height:24px; object-fit:cover; margin-right:8px; border-radius:4px; flex-shrink:0; box-sizing:border-box; ${imgOutline}">`;
+                        } else {
+                            imgHtml = `<div style="width:24px; height:24px; margin-right:8px; border-radius:4px; flex-shrink:0; box-sizing:border-box; ${imgOutline}; display:inline-block;"></div>`;
+                        }
+
+                        let rightText = '';
+                        if (sortMode === 'time') {
+                            rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${formatTime(game.time)}</span>`;
+                        } else if (sortMode === 'hc_time') {
+                            rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${formatTime(game.hcTime)}</span>`;
+                        } else if (sortMode === 'percentage') {
+                            let pct = game.numAch > 0 ? (game.numAchTotal / game.numAch) * 100 : 0;
+                            rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${pct.toFixed(1)}%</span>`;
+                        } else if (sortMode === 'points') {
+                            rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${game.pts} Pts</span>`;
+                        } else if (sortMode === 'genre') {
+                            rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${game.genre}</span>`;
+                        } else {
+                            if (isMastered) rightText = '👑';
+                            else if (isCompleted) rightText = '🎖';
+                            else rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${numAchTotal} / ${trueMax}</span>`;
+                        }
+
+                        listHtml += `<li class="history-item" style="cursor: pointer; flex-wrap: wrap; background-color: #0f172a; background-image: linear-gradient(to right, #eab308 0%, #eab308 ${yellowPct}%, #3b82f6 ${yellowPct}%, #3b82f6 ${yellowPct + bluePct}%, transparent ${yellowPct + bluePct}%); background-size: 100% 3px; background-position: bottom left; background-repeat: no-repeat;" onclick="toggleSidebarGameInfo('${game.id}', '${game.raId}', this)">
+                            <div style="display:flex; width:100%; justify-content:space-between; align-items:center;">
+                                <div style="display:flex; align-items:center; flex-shrink:1; min-width:0;">${imgHtml}<span class="game-title-text" style="color:var(--text); z-index:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${game.name}</span> <span style="font-size:0.6rem; color:#64748b; margin-left: 6px;">[${game.con}]</span></div>
+                                <div style="display:flex; align-items:center; gap: 8px; z-index:1; flex-shrink:0;">
+                                    ${rightText}
+                                    <button class="delete-btn" onclick="event.stopPropagation(); removeHistoryEntry('${game.con}', '${game.id}')">✕</button>
+                                </div>
+                            </div>
+                            <div id="sidebar-info-wrapper-${game.id}" class="sidebar-info-wrapper" style="display: grid; grid-template-rows: ${currentlyOpenId === game.id ? '1fr' : '0fr'}; transition: grid-template-rows 0.3s ease; width: 100%;">
+                                <div style="overflow: hidden;">
+                                    <div id="sidebar-info-${game.id}" class="sidebar-inline-info" style="width:100%; display:flex; flex-direction:column; margin-top:10px; cursor:default; opacity: ${currentlyOpenId === game.id ? '1' : '0'}; transition: opacity 0.3s ease;" onclick="event.stopPropagation()">
+                                        ${currentlyOpenId === game.id ? currentlyOpenHtml : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        </li>`; 
+                    });
+                    listHtml += `</ul></div></div>`;
+                    
+                    section.innerHTML = listHtml;
+                    container.appendChild(section);
+                });
             }
+
+            if (!hasAnyGames && !term) {
+                document.getElementById('stats-container').innerHTML += `<div style="font-size: 0.7rem; color: #64748b; font-style: italic;">No games in library.</div>`;
+            }
+            
+            setTimeout(() => {
+                if (currentlyOpenId) window.activeSidebarInfo = document.getElementById(`sidebar-info-${currentlyOpenId}`);
+            }, 0);
         }
 
-        function handleQuickComplete(con, gameId) {
+        function handleQuickComplete(con, gameId, status = 'completed') {
             if (!completedData[con]) completedData[con] = [];
-            if (!completedData[con].includes(gameId)) {
+            if (!masteredData[con]) masteredData[con] = [];
+            
+            completedData[con] = completedData[con].filter(id => id !== gameId);
+            masteredData[con] = masteredData[con].filter(id => id !== gameId);
+
+            if (status === 'mastered') {
+                masteredData[con].push(gameId);
+            } else {
                 completedData[con].push(gameId);
-                localStorage.setItem('completedData_v3', JSON.stringify(completedData));
-                rebuildPool(); renderSidebar(); resetToConsole();
             }
+            
+            localStorage.setItem('completedData_v3', JSON.stringify(completedData));
+            localStorage.setItem('masteredData_v3', JSON.stringify(masteredData));
+            rebuildPool(); renderSidebar(); resetToConsole();
         }
 
         function removeHistoryEntry(con, id) {
-            completedData[con] = completedData[con].filter(x => x !== id);
-            if (completedData[con].length === 0) delete completedData[con];
-            localStorage.setItem('completedData_v3', JSON.stringify(completedData));
+            if (completedData[con]) {
+                completedData[con] = completedData[con].filter(x => x !== id);
+                if (completedData[con].length === 0) delete completedData[con];
+                localStorage.setItem('completedData_v3', JSON.stringify(completedData));
+            }
+            if (masteredData[con]) {
+                masteredData[con] = masteredData[con].filter(x => x !== id);
+                if (masteredData[con].length === 0) delete masteredData[con];
+                localStorage.setItem('masteredData_v3', JSON.stringify(masteredData));
+            }
             renderSidebar(); rebuildPool();
         }
 
@@ -642,22 +1326,32 @@
                 const label = (typeof item === 'string') ? item : item.name;
                 const angle = rotation + i * sliceAngle;
                 
-                ctx.beginPath(); ctx.moveTo(centerX, centerY); ctx.arc(centerX, centerY, radius, angle, angle + sliceAngle);
-                ctx.closePath();
-                
                 ctx.save();
+                ctx.beginPath(); 
+                ctx.moveTo(centerX, centerY); 
+                ctx.arc(centerX, centerY, radius, angle, angle + sliceAngle);
+                ctx.closePath();
+                ctx.clip();
+                
                 ctx.fillStyle = (selectedConsole === null) ? (CONSOLE_COLORS[label] || WHEEL_COLORS[i % WHEEL_COLORS.length]) : WHEEL_COLORS[i % WHEEL_COLORS.length];
                 ctx.fill();
-                
-                ctx.restore();
                 ctx.stroke();
 
-                ctx.save();
-                ctx.translate(centerX, centerY); ctx.rotate(angle + sliceAngle / 2); ctx.textAlign = "right"; 
+                ctx.translate(centerX, centerY); 
+                ctx.rotate(angle + sliceAngle / 2); 
+                ctx.textAlign = "right"; 
                 ctx.fillStyle = (ctx.fillStyle === '#e2e8f0' || ctx.fillStyle === '#cbd5e1' || ctx.fillStyle === '#d1d5db') ? "#1e293b" : "white";
                 
                 if (selectedConsole === null) {
-                    ctx.font = "bold 32px Inter"; ctx.fillText(label, radius - 300, 12); 
+                    ctx.font = "bold 32px Inter"; 
+                    if (isSpinning) {
+                        ctx.shadowColor = "transparent"; 
+                        ctx.shadowBlur = 0;
+                    } else {
+                        ctx.shadowColor = "rgba(0,0,0,0.8)"; 
+                        ctx.shadowBlur = 4;
+                    }
+                    ctx.fillText(label, radius - 300, 12); 
                     if (CONSOLE_IMAGES[label]) {
                         let img = overlay.querySelector(`.wheel-icon[data-id="${label}"]`);
                         if (!img) {
@@ -668,9 +1362,37 @@
                         img.style.transform = `translate(-50%, -50%) translate(${Math.cos(rad)*dist}px, ${Math.sin(rad)*dist}px) rotate(${rad}rad)`;
                     }
                 } else { 
-                    ctx.font = "bold 32px Inter"; 
-                    ctx.shadowColor = "rgba(0,0,0,0.8)"; ctx.shadowBlur = 4;
-                    wrapText(ctx, label, radius - 50, 12, 450, 40); 
+                    if (isSpinning) {
+                        ctx.shadowColor = "transparent"; 
+                        ctx.shadowBlur = 0;
+                    } else {
+                        ctx.shadowColor = "rgba(0,0,0,0.8)"; 
+                        ctx.shadowBlur = 4;
+                    }
+
+                    let fontSize = 32;
+                    ctx.font = `bold ${fontSize}px Inter`;
+                    let maxTextWidth = radius - 150;
+                    
+                    let words = label.split(' ');
+                    let lines = [label];
+                    
+                    if (ctx.measureText(label).width > maxTextWidth && words.length > 1) {
+                        const mid = Math.ceil(words.length / 2);
+                        lines = [words.slice(0, mid).join(' '), words.slice(mid).join(' ')];
+                    }
+                    
+                    while ((ctx.measureText(lines[0]).width > maxTextWidth || (lines[1] && ctx.measureText(lines[1]).width > maxTextWidth)) && fontSize > 14) {
+                        fontSize -= 2;
+                        ctx.font = `bold ${fontSize}px Inter`;
+                    }
+                    
+                    if (lines.length > 1) {
+                        ctx.fillText(lines[0], radius - 50, -fontSize / 2 + 4);
+                        ctx.fillText(lines[1], radius - 50, fontSize / 2 + 8);
+                    } else {
+                        ctx.fillText(lines[0], radius - 50, 12);
+                    }
                 }
                 ctx.restore();
             });
@@ -709,8 +1431,18 @@
                 const p = Math.min((now - startTime) / duration, 1), ease = 1 - Math.pow(1 - p, 4);
                 rotation = start + (totalRotation * ease); drawWheel(items);
                 const currentIdx = Math.floor(((Math.PI * 2) - (rotation % (Math.PI * 2))) % (Math.PI * 2) / sliceAngle);
-                if (currentIdx !== lastIdx) { playTick(); lastIdx = currentIdx; }
-                if (p < 1) requestAnimationFrame(frame); else { isSpinning = false; cb(items[currentIdx]); }
+                if (currentIdx !== lastIdx) { 
+                    playTick(); 
+                    lastIdx = currentIdx; 
+                    
+                    const pointer = document.getElementById('wheel-pointer');
+                    if (pointer) {
+                        pointer.style.animation = 'none';
+                        void pointer.offsetWidth; 
+                        pointer.style.animation = 'pointerTick 0.2s ease-out';
+                    }
+                }
+                if (p < 1) requestAnimationFrame(frame); else { isSpinning = false; drawWheel(items); cb(items[currentIdx]); }
             }
             requestAnimationFrame(frame);
         }
@@ -722,6 +1454,11 @@
             document.getElementById('bg-fade-layer').style.opacity = 0;
 
             animateSpin(currentWheelItems, (res) => { 
+                if (masteredData[selectedConsole] && masteredData[selectedConsole].includes(res.id)) {
+                    console.warn("Failsafe activated: Prevented mastered game from appearing.");
+                    return spinForGame(); 
+                }
+                
                 selectedGame = res; 
                 document.getElementById('status-label').innerText = `Selected console - ${CONSOLE_FULL_NAMES[selectedConsole] || selectedConsole}`;
                 document.getElementById('status-main').innerText = res.name; setUI('result'); 
@@ -743,93 +1480,61 @@
                 const raApi = await import("https://esm.sh/@retroachievements/api");
                 const authorization = raApi.buildAuthorization({ username: user, webApiKey: key });
                 
-                const gameBasics = await raApi.getGame(authorization, { gameId: parseInt(raId) });
                 const data = await raApi.getGameExtended(authorization, { gameId: parseInt(raId) });
-                const progression = await raApi.getGameProgression(authorization, { gameId: parseInt(raId) });
+                
+                let progression = {
+                    medianTimeToBeat: 0,
+                    medianTimeToBeatHardcore: 0,
+                    medianTimeToComplete: 0,
+                    medianTimeToMaster: 0
+                };
+                
+                try { 
+                    const prog = await raApi.getGameProgression(authorization, { gameId: parseInt(raId) });
+                    if(prog) progression = prog;
+                } catch(e) {
+                    console.warn("Progression call failed or unavailable", e);
+                }
 
                 if (data && (data.id || data.ID)) {
                     const bgFade = document.getElementById('bg-fade-layer');
-                    const rawBox = gameBasics.imageBoxArt || gameBasics.ImageBoxArt || data.imageBoxArt || data.ImageBoxArt;
+                    const rawBox = data.imageBoxArt || data.ImageBoxArt;
                     if (rawBox) {
                         const boxArtUrl = `https://media.retroachievements.org${rawBox.startsWith('/') ? rawBox : '/Images/'+rawBox}`;
                         bgFade.style.backgroundImage = `url('${boxArtUrl}')`;
                         bgFade.style.opacity = 1;
                     }
 
-                    let html = `<div style="display:flex; gap:15px; margin-bottom:15px; justify-content:center; align-items:center; flex-shrink:0;">`;
-                    if (rawBox) {
-                        const boxSrc = `https://media.retroachievements.org${rawBox.startsWith('/') ? rawBox : '/Images/'+rawBox}`;
-                        html += `<img src="${boxSrc}" style="width:120px; border-radius:8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); object-fit:contain;">`;
-                    }
-                    const rawIcon = data.imageIcon || data.ImageIcon;
-                    if (rawIcon) {
-                        const iconSrc = `https://media.retroachievements.org${rawIcon.startsWith('/') ? rawIcon : '/Images/'+rawIcon}`;
-                        html += `<img src="${iconSrc}" style="width:64px; height:64px; border-radius:8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); object-fit:cover;">`;
-                    }
-                    html += `</div>`;
-
-                    html += `<div style="text-align:center; margin-bottom:15px; flex-shrink:0;">`;
-                    html += `<h3 style="margin:0; color:var(--primary); font-size:1.1rem;">${data.title || data.Title || 'Unknown Title'}</h3>`;
-                    if(data.developer || data.Developer || data.publisher || data.Publisher) {
-                        html += `<p style="margin:5px 0 0 0; font-size:0.7rem; color:#94a3b8;">${data.developer || data.Developer || 'Unknown'} • ${data.released || data.Released || 'Unknown'}</p>`;
-                    }
-                    html += `</div>`;
-
-                    html += `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px; flex-shrink:0;">`;
-                    
-                    let calculatedPoints = 0;
-                    let achCount = 0;
-                    const achievements = data.achievements || data.Achievements;
-                    if (achievements) {
-                        const achList = Array.isArray(achievements) ? achievements : Object.values(achievements);
-                        achCount = achList.length;
-                        achList.forEach(ach => {
-                            calculatedPoints += parseInt(ach.points || ach.Points || 0);
-                        });
+                    if (selectedConsole && selectedGame) {
+                        let libGame = userLibrary[selectedConsole].find(g => g.id === selectedGame.id);
+                        if (libGame) {
+                            libGame.maxAch = data.numAchievements || data.NumAchievements || libGame.maxAch || 0;
+                            let calculatedPts = 0;
+                            if (data.achievements || data.Achievements) {
+                                const achs = data.achievements || data.Achievements;
+                                (Array.isArray(achs) ? achs : Object.values(achs)).forEach(ach => calculatedPts += parseInt(ach.points || ach.Points || 0));
+                            }
+                            libGame.pts = calculatedPts || libGame.pts || 0;
+                            libGame.genre = data.genre || data.Genre || libGame.genre || "Unknown";
+                            libGame.timeToMaster = parseInt(progression.medianTimeToMaster) || libGame.timeToMaster || 0;
+                            libGame.timeToBeatHardcore = parseInt(progression.medianTimeToBeatHardcore) || libGame.timeToBeatHardcore || 0;
+                            libGame.timeToBeat = parseInt(progression.medianTimeToBeat) || libGame.timeToBeat || 0;
+                            libGame.timeToComplete = parseInt(progression.medianTimeToComplete) || libGame.timeToComplete || 0;
+                            libGame.developer = data.developer || data.Developer || libGame.developer || "Unknown";
+                            libGame.publisher = data.publisher || data.Publisher || libGame.publisher || "Unknown";
+                            libGame.released = data.released || data.Released || libGame.released || "Unknown";
+                            libGame.players = data.numDistinctPlayersCasual || data.NumDistinctPlayersCasual || libGame.players || 0;
+                            libGame.imageTitle = cleanImg(data.imageTitle || data.ImageTitle) || libGame.imageTitle;
+                            libGame.imageIngame = cleanImg(data.imageIngame || data.ImageIngame) || libGame.imageIngame;
+                            libGame.imageBoxArt = cleanImg(data.imageBoxArt || data.ImageBoxArt) || libGame.imageBoxArt;
+                            libGame.extendedFetched = true;
+                            
+                            localStorage.setItem('userLibrary_v3', JSON.stringify(userLibrary));
+                            renderSidebar(); 
+                        }
                     }
 
-                    const numAch = achCount > 0 ? achCount : (data.numAchievements || data.NumAchievements || "?");
-                    const totalPts = calculatedPoints > 0 ? calculatedPoints : (data.points || data.Points || "?");
-                    
-                    const timeBeat = formatTime(progression.medianTimeToBeat);
-                    const timeBeatHC = formatTime(progression.medianTimeToBeatHardcore);
-                    const timeComp = formatTime(progression.medianTimeToComplete);
-                    const timeMaster = formatTime(progression.medianTimeToMaster);
-
-                    html += `
-                        <div style="background:#0f172a; padding:10px; border-radius:6px; border:1px solid var(--border); text-align:center;">
-                            <div style="font-size:1.2rem; font-weight:bold; color:var(--accent);">${numAch}</div>
-                            <div style="font-size:0.6rem; color:#94a3b8; text-transform:uppercase; margin-top:3px;">Achievements</div>
-                        </div>
-                        <div style="background:#0f172a; padding:10px; border-radius:6px; border:1px solid var(--border); text-align:center;">
-                            <div style="font-size:1.2rem; font-weight:bold; color:var(--primary);">${totalPts}</div>
-                            <div style="font-size:0.6rem; color:#94a3b8; text-transform:uppercase; margin-top:3px;">Total Points</div>
-                        </div>
-                    </div>`;
-                    
-                    html += `<div style="background:#0f172a; padding:12px; border-radius:6px; border:1px solid var(--border); font-size:0.75rem; margin-bottom: 15px; flex-shrink:0;">`;
-                    html += `<div style="display:flex; justify-content:space-between; margin-bottom:6px;"><span style="color:#94a3b8;">Time to Beat (Casual):</span> <strong>${timeBeat}</strong></div>`;
-                    html += `<div style="display:flex; justify-content:space-between; margin-bottom:6px;"><span style="color:#94a3b8;">Time to Beat (Hardcore):</span> <strong>${timeBeatHC}</strong></div>`;
-                    html += `<div style="display:flex; justify-content:space-between; margin-bottom:6px;"><span style="color:#94a3b8;">Time to Complete (Casual):</span> <strong>${timeComp}</strong></div>`;
-                    html += `<div style="display:flex; justify-content:space-between; margin-bottom:6px;"><span style="color:#94a3b8;">Time to Master (Hardcore):</span> <strong>${timeMaster}</strong></div>`;
-                    const genre = data.genre || data.Genre;
-                    if (genre) { html += `<div style="display:flex; justify-content:space-between; margin-bottom:6px;"><span style="color:#94a3b8;">Genre:</span> <strong style="text-align:right;">${genre}</strong></div>`; }
-                    const players = data.numDistinctPlayersCasual || data.NumDistinctPlayersCasual;
-                    if (players) { html += `<div style="display:flex; justify-content:space-between; margin-bottom:0;"><span style="color:#94a3b8;">Total Players:</span> <strong>${players}</strong></div>`; }
-                    html += `</div>`;
-
-                    html += `<div style="display:flex; flex-direction:column; gap:10px; flex-shrink:0;">`;
-                    const imgTitle = data.imageTitle || data.ImageTitle;
-                    if (imgTitle) {
-                        html += `<img src="https://media.retroachievements.org${imgTitle.startsWith('/') ? imgTitle : '/Images/'+imgTitle}" style="width:100%; border-radius:6px; border:1px solid var(--border);">`;
-                    }
-                    const imgIngame = data.imageIngame || data.ImageIngame;
-                    if (imgIngame) {
-                        html += `<img src="https://media.retroachievements.org${imgIngame.startsWith('/') ? imgIngame : '/Images/'+imgIngame}" style="width:100%; border-radius:6px; border:1px solid var(--border);">`;
-                    }
-                    html += `</div>`;
-                    
-                    panel.innerHTML = html;
+                    panel.innerHTML = generateGameInfoHtml(data, progression, raId, false);
                 } else {
                     panel.innerHTML = '<p style="color:var(--danger); font-size:0.8rem; text-align:center; margin-top:20px;">Could not load game info.</p>';
                 }
@@ -839,7 +1544,8 @@
             }
         }
 
-        function completeGame() { handleQuickComplete(selectedConsole, selectedGame.id); }
+        function completeGame(status = 'completed') { handleQuickComplete(selectedConsole, selectedGame.id, status); }
+        
         function resetToConsole() { 
             selectedConsole = null; selectedGame = null; rotation = 0; rebuildPool(); 
             document.getElementById('game-info-panel').style.display = 'none';
@@ -861,8 +1567,8 @@
             const s = document.getElementById('modify-console-select');
             const activeConsoles = Object.keys(userLibrary).filter(con => userLibrary[con] && userLibrary[con].length > 0);
             s.innerHTML = activeConsoles.length === 0 ? `<option value="">No consoles in library</option>` : '';
-            activeConsoles.sort((a,b) => CONSOLE_FULL_NAMES[a].localeCompare(CONSOLE_FULL_NAMES[b])).forEach(con => { 
-                s.innerHTML += `<option value="${con}">${CONSOLE_FULL_NAMES[con]}</option>`; 
+            activeConsoles.sort((a,b) => (CONSOLE_FULL_NAMES[a] || a).localeCompare(CONSOLE_FULL_NAMES[b] || b)).forEach(con => { 
+                s.innerHTML += `<option value="${con}">${CONSOLE_FULL_NAMES[con] || con}</option>`; 
             });
             if (selectedCon && activeConsoles.includes(selectedCon)) {
                 s.value = selectedCon;
@@ -983,14 +1689,15 @@
             if (!wtpContainer) return;
 
             if (list && list.length > 0) {
-                let grouped = {};
+                let grouped = { "All Games": [] };
                 list.forEach(g => {
                     const conName = g.ConsoleName || g.consoleName || 'Unknown Console';
                     if(!grouped[conName]) grouped[conName] = [];
                     grouped[conName].push(g);
+                    grouped["All Games"].push(g);
                 });
 
-                const consoles = Object.keys(grouped).sort();
+                const consoles = Object.keys(grouped).sort((a,b) => a === "All Games" ? -1 : (b === "All Games" ? 1 : a.localeCompare(b)));
                 if (!activeConsole || !grouped[activeConsole]) {
                     activeConsole = consoles[0];
                 }
@@ -1012,7 +1719,7 @@
                     const title = g.Title || g.title;
                     const imgSrc = icon ? `<img src="https://media.retroachievements.org${icon.startsWith('/') ? icon : '/Images/'+icon}" style="width:20px; height:20px; vertical-align:middle; margin-right:5px; border-radius:3px; object-fit:cover;">` : '';
                     html += `<li style="font-size:0.75rem; padding:6px 0; border-bottom:1px solid var(--border); color:var(--text);">
-                        ${imgSrc}${title}
+                        ${imgSrc}${title} <span style="font-size:0.65rem; color:#64748b;">[${g.ConsoleName || g.consoleName}]</span>
                     </li>`;
                 });
                 html += `</ul>`;
@@ -1026,7 +1733,7 @@
         async function fetchUserWantToPlay(user, key, raApi, authorization) {
             const wtpContainer = document.getElementById('ra-want-to-play');
             try {
-                const data = await raApi.getUserWantToPlayList(authorization, { username: user });
+                const data = await raApi.getUserWantToPlayList(authorization, { username: user, count: 500 });
                 const list = data.Results || data.results || (Array.isArray(data) ? data : []);
                 
                 localStorage.setItem('ra_api_wtp', JSON.stringify(list));
@@ -1053,26 +1760,47 @@
                 for (const [conName, cId] of Object.entries(RA_CONSOLE_IDS)) {
                     if (cId === conId) { targetCon = conName; break; }
                 }
+                
+                if (!targetCon) {
+                    for (const [conName, fullName] of Object.entries(CONSOLE_FULL_NAMES)) {
+                        if (fullName === (g.ConsoleName || g.consoleName)) { targetCon = conName; break; }
+                    }
+                }
+                
+                if (!targetCon) targetCon = g.ConsoleName || g.consoleName || "Unknown";
 
                 if (targetCon) {
                     if (!userLibrary[targetCon]) userLibrary[targetCon] = [];
                     const raIdStr = String(id);
-                    let match = userLibrary[targetCon].find(libGame => libGame.raId === raIdStr || normalizeString(libGame.name) === normalizeString(title));
+                    let match = userLibrary[targetCon].find(libGame => libGame.raId === raIdStr);
                     
                     if (!match) {
-                        userLibrary[targetCon].push({
+                        const normRa = normalizeString(title);
+                        match = userLibrary[targetCon].find(libGame => normalizeString(libGame.name) === normRa);
+                    }
+                    
+                    if (!match) {
+                        match = {
                             id: Math.random().toString(36).substr(2, 9),
                             name: title,
                             raId: raIdStr,
-                            imgId: cleanImg(icon)
-                        });
+                            imgId: cleanImg(icon),
+                            maxAch: g.numAchievements || g.NumAchievements || 0 
+                        };
+                        userLibrary[targetCon].push(match);
                         importCount++;
+                    } else if (!match.raId) {
+                        match.raId = raIdStr;
                     }
+                    
+                    if (!completedData[targetCon]) completedData[targetCon] = [];
+                    if (!masteredData[targetCon]) masteredData[targetCon] = [];
                 }
             });
 
             if (importCount > 0) {
                 cleanupLibrary();
+                updateModifySelect();
                 renderSidebar();
                 renderModifyList();
                 alert(`Successfully imported ${importCount} game(s) from your Want to Play list!`);
@@ -1096,6 +1824,7 @@
                         const chunk = gameIds.slice(i, i + chunkSize);
                         const progChunk = await raApi.getUserProgress(authorization, { username: user, gameIds: chunk });
                         Object.assign(progressMap, progChunk);
+                        await new Promise(r => setTimeout(r, 200)); 
                     }
 
                     raCompletedGamesCache = baseList.map(g => {
@@ -1190,7 +1919,7 @@
                         <option value="mastered">Sync Mastered Only</option>
                         <option value="completed">Sync Completed Only</option>
                     </select>
-                    <button class="ui-btn btn-success" style="flex:1; padding:6px; font-size:0.7rem;" onclick="syncRACompletedGames()">Sync to Library</button>
+                    <button class="ui-btn btn-success" style="flex:1; padding:6px; font-size:0.7rem;" onclick="syncRACompletedGames()">Sync Progress</button>
                 </div>
 
                 <div class="mgmt-list-scroll" style="max-height:450px; padding-right:5px; border:none; background:transparent;">
@@ -1235,8 +1964,24 @@
             compContainer.innerHTML = html;
         }
 
-        function syncRACompletedGames() {
-            if (!raCompletedGamesCache || raCompletedGamesCache.length === 0) return alert("No games to sync.");
+        async function syncRACompletedGames() {
+            const user = localStorage.getItem('ra_user');
+            const key = localStorage.getItem('ra_key');
+            
+            const btn = document.querySelector('button[onclick="syncRACompletedGames()"]');
+            const origText = btn.innerText;
+            btn.innerText = "Syncing API...";
+            
+            if (user && key) {
+                try {
+                    const raApi = await import("https://esm.sh/@retroachievements/api");
+                    const authorization = raApi.buildAuthorization({ username: user, webApiKey: key });
+                    await fetchUserCompleted(user, key, raApi, authorization); 
+                } catch (e) { console.error("Failed to update progress during sync", e); }
+            }
+            btn.innerText = origText;
+
+            if (!raCompletedGamesCache || raCompletedGamesCache.length === 0) return alert("No games found to sync. Ensure you fetched API stats first.");
             
             const option = document.getElementById('sync-option-select').value;
             let syncCount = 0;
@@ -1273,7 +2018,8 @@
                         id: Math.random().toString(36).substr(2, 9), 
                         name: title, 
                         raId: raIdStr, 
-                        imgId: cleanImg(icon) 
+                        imgId: cleanImg(icon),
+                        maxAch: raGame.numAchievements || raGame.NumAchievements || raGame.maxPossible || 0
                     };
                     userLibrary[targetCon].push(match);
                     newlyAddedCount++;
@@ -1282,19 +2028,31 @@
                 }
 
                 if (!completedData[targetCon]) completedData[targetCon] = [];
-                if (!completedData[targetCon].includes(match.id)) {
+                if (!masteredData[targetCon]) masteredData[targetCon] = [];
+                
+                let wasSynced = false;
+
+                if (cat === "mastered" && !masteredData[targetCon].includes(match.id)) {
+                    masteredData[targetCon].push(match.id);
+                    completedData[targetCon] = completedData[targetCon].filter(id => id !== match.id);
+                    wasSynced = true;
+                } else if (cat === "completed" && !completedData[targetCon].includes(match.id) && !masteredData[targetCon].includes(match.id)) {
                     completedData[targetCon].push(match.id);
-                    syncCount++;
+                    wasSynced = true;
                 }
+                
+                if (wasSynced) syncCount++;
             });
             
+            localStorage.setItem('completedData_v3', JSON.stringify(completedData));
+            localStorage.setItem('masteredData_v3', JSON.stringify(masteredData));
+            cleanupLibrary();
+            updateModifySelect();
+            renderSidebar();
+            renderModifyList();
+            
             if (syncCount > 0 || newlyAddedCount > 0) {
-                cleanupLibrary();
-                renderSidebar();
-                renderModifyList();
                 alert(`Successfully synced! Added ${syncCount} completed/mastered game(s) to history. (${newlyAddedCount} new games auto-added to Library)`);
-            } else {
-                alert("No new matching games found to sync. Games may already exist in your history.");
             }
         }
 
@@ -1342,8 +2100,9 @@
 
         function normalizeString(str) {
             if (!str) return "";
-            let fixedStr = str.replace(/^(.*?),\s*the(?:\s*-\s*|\s+)(.*)$/i, 'The $1 $2');
+            let fixedStr = String(str).replace(/^(.*?),\s*the(?:\s*-\s*|\s+)(.*)$/i, 'The $1 $2');
             fixedStr = fixedStr.replace(/^(.*?),\s*the$/i, 'The $1');
+            fixedStr = fixedStr.replace(/^(disney's\s+|disney-pixar\s+|disney\s+)/i, '');
             return fixedStr.normalize("NFD").replace(/[\u0300-\u036f]/g, "") 
                       .replace(/[-:]/g, " ") 
                       .replace(/[^\w\s]/gi, "") 
@@ -1353,53 +2112,61 @@
 
         function findGameInList(gameTitle, apiGames) {
             const normSearch = normalizeString(gameTitle);
-            let exact = apiGames.find(g => normalizeString(g.title || g.Title) === normSearch);
+            
+            let searchOverride = normSearch;
+            if (normSearch.includes("pitfall pitfall harrys jungle adventure")) searchOverride = "pitfall";
+            if (normSearch.includes("crash bandicoot warped")) searchOverride = "crash bandicoot 3 warped";
+            if (normSearch.includes("ctr crash team racing")) searchOverride = "crash team racing";
+            
+            let exact = apiGames.find(g => normalizeString(g.title || g.Title) === searchOverride);
             if (exact) return exact;
-            
-            let includes = apiGames.filter(g => normalizeString(g.title || g.Title).includes(normSearch));
-            if (includes.length === 1) return includes[0];
-            
-            const words = gameTitle.split(/\s+/);
-            if (words.length > 0) {
-                const firstWord = words[0].replace(/[^a-zA-Z0-9]/g, '');
-                if (firstWord) {
-                    let fwMatches = apiGames.filter(g => normalizeString(g.title || g.Title).includes(normalizeString(firstWord)));
-                    if (fwMatches.length === 1) return fwMatches[0];
+
+            let substringMatches = apiGames.filter(g => {
+                let t = normalizeString(g.title || g.Title);
+                if (t === searchOverride) return true;
+                if (searchOverride.length >= 4 && t.includes(searchOverride)) return true;
+                if (t.length >= 4 && searchOverride.includes(t)) return true;
+                return false;
+            });
+
+            if (substringMatches.length === 1) return substringMatches[0];
+            if (substringMatches.length > 1) return substringMatches;
+
+            const baseSearch = normalizeString(gameTitle.split('-')[0]);
+            let baseExact = apiGames.find(g => normalizeString(g.title || g.Title) === baseSearch);
+            if (baseExact) return baseExact;
+
+            function getScore(s1, s2) {
+                const w1 = s1.split(' ').filter(x=>x);
+                const w2 = s2.split(' ').filter(x=>x);
+                let matches = 0;
+                w1.forEach(w => { if (w2.includes(w)) matches++; });
+                return matches / Math.max(w1.length, w2.length);
+            }
+
+            let bestMatch = null;
+            let highestScore = 0.5;
+            let multipleBest = [];
+
+            apiGames.forEach(g => {
+                const gTitleNorm = normalizeString(g.title || g.Title);
+                let score = getScore(searchOverride, gTitleNorm);
+                
+                const gBase = normalizeString((g.title || g.Title).split('-')[0]);
+                if (baseSearch === gBase) score += 0.3;
+
+                if (score > highestScore) {
+                    highestScore = score;
+                    bestMatch = g;
+                    multipleBest = [g];
+                } else if (score === highestScore && score > 0.5) {
+                    multipleBest.push(g);
                 }
-            }
-            
-            const regex = /\b[A-Z][a-zA-Z0-9]*\b/g;
-            let capWords = [];
-            let match;
-            while ((match = regex.exec(gameTitle)) !== null) {
-                capWords.push(match[0]);
-            }
-            
-            if (capWords.length >= 3) {
-                const subStr = capWords.slice(-3).join(" ");
-                let m = apiGames.filter(g => normalizeString(g.title || g.Title).includes(normalizeString(subStr)));
-                if (m.length === 1) return m[0];
-            }
-            if (capWords.length >= 2) {
-                const subStr = capWords.slice(-2).join(" ");
-                let m = apiGames.filter(g => normalizeString(g.title || g.Title).includes(normalizeString(subStr)));
-                if (m.length === 1) return m[0];
-            }
-            if (capWords.length >= 1) {
-                const subStr = capWords.slice(-1).join(" ");
-                let m = apiGames.filter(g => normalizeString(g.title || g.Title).includes(normalizeString(subStr)));
-                if (m.length === 1) return m[0];
-            }
-            
-            if (includes.length > 1) return includes;
-            
-            if (words.length > 0) {
-                const firstWord = words[0].replace(/[^a-zA-Z0-9]/g, '');
-                if (firstWord) {
-                    let fwMatches = apiGames.filter(g => normalizeString(g.title || g.Title).includes(normalizeString(firstWord)));
-                    if (fwMatches.length > 1) return fwMatches;
-                }
-            }
+            });
+
+            if (multipleBest.length === 1) return bestMatch;
+            if (multipleBest.length > 1) return multipleBest;
+
             return null;
         }
 
@@ -1413,9 +2180,10 @@
             const raConsoleId = RA_CONSOLE_IDS[con];
             if (!raConsoleId) return alert("Console mapping not found for " + con);
 
+            let raApi, authorization;
             try {
-                const raApi = await import("https://esm.sh/@retroachievements/api");
-                const authorization = raApi.buildAuthorization({ username: user, webApiKey: key });
+                raApi = await import("https://esm.sh/@retroachievements/api");
+                authorization = raApi.buildAuthorization({ username: user, webApiKey: key });
                 const data = await raApi.getGameList(authorization, { consoleId: raConsoleId });
 
                 if (Array.isArray(data)) {
@@ -1427,10 +2195,34 @@
 
                     if (selectedGame) {
                         userLibrary[con][idx].name = selectedGame.title || selectedGame.Title;
-                        userLibrary[con][idx].raId = (selectedGame.id || selectedGame.ID).toString();
+                        const gameId = (selectedGame.id || selectedGame.ID).toString();
+                        userLibrary[con][idx].raId = gameId;
                         userLibrary[con][idx].imgId = cleanImg(selectedGame.imageIcon || selectedGame.ImageIcon);
+                        
+                        const ext = await fetchExtendedDataForGame(raApi, authorization, gameId);
+                        if (ext) {
+                            userLibrary[con][idx].maxAch = ext.maxAch || selectedGame.numAchievements || selectedGame.NumAchievements || 0;
+                            userLibrary[con][idx].pts = ext.pts;
+                            userLibrary[con][idx].genre = ext.genre;
+                            userLibrary[con][idx].timeToMaster = ext.timeToMaster;
+                            userLibrary[con][idx].timeToBeatHardcore = ext.timeToBeatHardcore;
+                            userLibrary[con][idx].timeToBeat = ext.timeToBeat;
+                            userLibrary[con][idx].timeToComplete = ext.timeToComplete;
+                            userLibrary[con][idx].developer = ext.developer;
+                            userLibrary[con][idx].publisher = ext.publisher;
+                            userLibrary[con][idx].released = ext.released;
+                            userLibrary[con][idx].players = ext.players;
+                            userLibrary[con][idx].imageTitle = ext.imageTitle;
+                            userLibrary[con][idx].imageIngame = ext.imageIngame;
+                            userLibrary[con][idx].imageBoxArt = ext.imageBoxArt;
+                            userLibrary[con][idx].extendedFetched = true;
+                        } else {
+                            userLibrary[con][idx].maxAch = selectedGame.numAchievements || selectedGame.NumAchievements || 0;
+                        }
+
                         cleanupLibrary();
                         renderModifyList();
+                        renderSidebar();
                     } else {
                         alert("Game not found in RA database for this console. Try a different title.");
                     }
@@ -1453,6 +2245,17 @@
             btn.innerText = "Fetching...";
             btn.disabled = true;
 
+            let raApi, authorization;
+            try {
+                raApi = await import("https://esm.sh/@retroachievements/api");
+                authorization = raApi.buildAuthorization({ username: user, webApiKey: key });
+            } catch(e) {
+                alert("Failed to import API module.");
+                btn.innerText = "Fetch All";
+                btn.disabled = false;
+                return;
+            }
+
             for (const con of Object.keys(userLibrary)) {
                 if (!userLibrary[con] || userLibrary[con].length === 0) continue;
                 const raConsoleId = RA_CONSOLE_IDS[con];
@@ -1466,9 +2269,8 @@
                 if (!needsFetch) continue;
 
                 try {
-                    const raApi = await import("https://esm.sh/@retroachievements/api");
-                    const authorization = raApi.buildAuthorization({ username: user, webApiKey: key });
                     const data = await raApi.getGameList(authorization, { consoleId: raConsoleId });
+                    let consoleAllMatched = true;
 
                     if (Array.isArray(data)) {
                         for (let idx = 0; idx < userLibrary[con].length; idx++) {
@@ -1478,15 +2280,26 @@
 
                                 if (Array.isArray(selectedGame) || !selectedGame) {
                                     failedGames.push(`[${con}] ${game.name}`);
+                                    consoleAllMatched = false;
                                 } else {
                                     game.name = selectedGame.title || selectedGame.Title;
-                                    game.raId = (selectedGame.id || selectedGame.ID).toString();
+                                    const gameId = (selectedGame.id || selectedGame.ID).toString();
+                                    game.raId = gameId;
                                     game.imgId = cleanImg(selectedGame.imageIcon || selectedGame.ImageIcon);
+                                    game.maxAch = selectedGame.numAchievements || selectedGame.NumAchievements || 0;
+                                    game.extendedFetched = false;
                                 }
                             }
                         }
                     } else {
                         userLibrary[con].forEach(g => { if (!g.raId) failedGames.push(`[${con}] ${g.name}`); });
+                        consoleAllMatched = false;
+                    }
+                    
+                    if (!consoleAllMatched) {
+                        await new Promise(r => setTimeout(r, 800));
+                    } else {
+                        await new Promise(r => setTimeout(r, 50)); 
                     }
                 } catch (err) {
                     console.error(err);
@@ -1540,7 +2353,7 @@
             const con = addSelect.value;
             if (!con) return alert("Please select a console from the dropdown to add a new game.");
             if (!userLibrary[con]) userLibrary[con] = [];
-            userLibrary[con].push({ id: Math.random().toString(36).substr(2, 9), name: "", raId: "", imgId: "" }); 
+            userLibrary[con].push({ id: Math.random().toString(36).substr(2, 9), name: "", raId: "", imgId: "", maxAch: 0 }); 
             updateModifySelect(con);
             renderModifyList();
         }
@@ -1588,6 +2401,11 @@
                 if (completedData[con].length === 0) delete completedData[con];
                 localStorage.setItem('completedData_v3', JSON.stringify(completedData));
             }
+            if (masteredData[con]) {
+                masteredData[con] = masteredData[con].filter(id => id !== deletedGame.id);
+                if (masteredData[con].length === 0) delete masteredData[con];
+                localStorage.setItem('masteredData_v3', JSON.stringify(masteredData));
+            }
             localStorage.setItem('userLibrary_v3', JSON.stringify(userLibrary)); 
             renderModifyList();
             rebuildPool();
@@ -1620,8 +2438,18 @@
             scanTree = await buildFolderTree(rootHandle, rootHandle.name); renderScanTree();
         }
 
-        async function buildFolderTree(handle, name, parentPath = "") {
-            let node = { id: Math.random().toString(36), name: name, children: [], games: [], selectedConsole: null, checked: true };
+        async function buildFolderTree(handle, name, parentPath = "", inheritedSystem = null) {
+            let currentSystem = inheritedSystem;
+            let folderLower = name.toLowerCase();
+            
+            if (folderLower === 'a26') currentSystem = 'A2600';
+            else if (folderLower === 'n64') currentSystem = 'N64';
+            else if (folderLower === 'arc' || folderLower === 'arcade') currentSystem = 'ARC';
+            else if (folderLower === 'cpc') currentSystem = 'CPC';
+            else if (folderLower === 'ps2') currentSystem = 'PS2';
+            else if (folderLower === 'ps1' || folderLower === 'psx') currentSystem = 'PS1';
+            
+            let node = { id: Math.random().toString(36), name: name, children: [], games: [], selectedConsole: currentSystem, checked: true };
             const currentPath = parentPath ? `${parentPath}/${name}` : name;
             const seenInThisFolder = new Set();
             
@@ -1629,7 +2457,7 @@
 
             for await (const entry of handle.values()) {
                 if (entry.kind === 'directory') {
-                    const child = await buildFolderTree(entry, entry.name, currentPath);
+                    const child = await buildFolderTree(entry, entry.name, currentPath, currentSystem);
                     if (child.games.length > 0 || child.children.length > 0) {
                         node.children.push(child);
                         hasFiles = true;
@@ -1657,7 +2485,9 @@
                         }
                     }
                     
+                    if (!system && currentSystem) system = currentSystem;
                     if (!node.selectedConsole && system) node.selectedConsole = system;
+                    
                     node.games.push({ name: clean, checked: true });
                     hasFiles = true;
                 }
@@ -1723,7 +2553,7 @@
                     if (!userLibrary[n.selectedConsole]) userLibrary[n.selectedConsole] = [];
                     n.games.forEach(g => { 
                         if (g.checked && !userLibrary[n.selectedConsole].some(ex => ex.name === g.name)) {
-                            userLibrary[n.selectedConsole].push({ id: Math.random().toString(36).substr(2, 9), name: g.name, raId: "", imgId: "" });
+                            userLibrary[n.selectedConsole].push({ id: Math.random().toString(36).substr(2, 9), name: g.name, raId: "", imgId: "", maxAch: 0 });
                         }
                     });
                 }
@@ -1756,11 +2586,35 @@
             reader.readAsText(input.files[0]);
         }
 
-        // Initialize API credentials directly from local storage upon page load
-        document.getElementById('ra-username').value = localStorage.getItem('ra_user') || '';
-        document.getElementById('ra-api-key').value = localStorage.getItem('ra_key') || '';
+        async function bootApp() {
+            document.getElementById('ra-username').value = localStorage.getItem('ra_user') || '';
+            document.getElementById('ra-api-key').value = localStorage.getItem('ra_key') || '';
+
+            rebuildPool();
+            renderSidebar(); 
+            currentWheelItems = shuffleArray(Object.keys(gamePool)); 
+            drawWheel(currentWheelItems);
+
+            const user = localStorage.getItem('ra_user');
+            const key = localStorage.getItem('ra_key');
+            
+            if (user && key) {
+                try {
+                    const raApi = await import("https://esm.sh/@retroachievements/api");
+                    const authorization = raApi.buildAuthorization({ username: user, webApiKey: key });
+                    
+                    await fetchUserWantToPlay(user, key, raApi, authorization);
+                    await fetchUserCompleted(user, key, raApi, authorization);
+                    
+                    renderSidebar();
+                    
+                } catch(e) {
+                    console.error("Boot sequence API error:", e);
+                }
+            }
+        }
         
-        rebuildPool(); renderSidebar(); currentWheelItems = shuffleArray(Object.keys(gamePool)); drawWheel(currentWheelItems);
+        bootApp(); 
     </script>
 </body>
 </html>
