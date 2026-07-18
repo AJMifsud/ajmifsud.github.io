@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Retro Game Picker Pro</title>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary: #4f46e5; --bg: #0f172a; --sidebar: #1e293b;
@@ -70,7 +71,30 @@
         }
 
         .wheel-container { position: relative; width: 600px; height: 600px; }
-        canvas { width: 100%; height: 100%; border-radius: 50%; box-shadow: 0 0 50px rgba(0,0,0,0.8); cursor: pointer; background-color: rgba(255,255,255,0.85); }
+        /* Specifically target the wheel to keep it round */
+		#wheelCanvas { 
+			width: 100%; 
+			height: 100%; 
+			border-radius: 50%; 
+			box-shadow: 0 0 50px rgba(0,0,0,0.8); 
+			cursor: pointer; 
+			background-color: rgba(255,255,255,0.85); 
+		}
+
+		/* Rank History Chart Styling */
+		.chart-scroll-wrapper {
+			width: 100%;
+			overflow-x: auto;
+			overflow-y: hidden;
+			/* Scrollbar formatting automatically inherits your global *::-webkit-scrollbar rules */
+		}
+
+		#rankChartCanvas {
+			background-color: var(--bg); /* Dark background matching the page */
+			border-radius: 5%;         /* 5% border radius per your request */
+			min-width: 800px;          /* Forces the scrollbar to appear only when data exceeds this width */
+			height: 300px;
+		}
         
         #icon-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -295,7 +319,7 @@
             <div id="mgmt-settings" class="mgmt-section">
                 <div style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 15px;" onclick="toggleRASettings()">
                     <h3 style="margin:0;">RetroAchievements API Settings</h3>
-                    <span id="ra-settings-arrow" style="font-size: 0.8rem; color: #94a3b8; transition: transform 0.3s ease;">▼ Expand / Collapse</span>
+                    <span id="ra-settings-arrow" style="font-size: 0.8rem; color: #94a3b8; transition: transform 0.3s ease;">▼</span>
                 </div>
                 
                 <div id="ra-api-wrapper" style="display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.3s ease; margin-bottom: 15px;">
@@ -343,6 +367,22 @@
             const img = document.getElementById('image-viewer-img');
             img.src = src;
             overlay.style.display = 'flex';
+        };
+
+        window.safeApiCall = async function(apiFunc, auth, params) {
+            let retries = 4;
+            let backoff = 1000;
+            while(retries > 0) {
+                try {
+                    return await apiFunc(auth, params);
+                } catch(e) {
+                    if(retries === 1) throw e;
+                    console.warn(`API Rate Limit hit, retrying in ${backoff}ms...`);
+                    await new Promise(r => setTimeout(r, backoff));
+                    backoff += 1000;
+                    retries--;
+                }
+            }
         };
 
         const CONSOLE_FULL_NAMES = {
@@ -447,7 +487,7 @@
             return `${m}m`;
         }
         
-        window.generateGameInfoHtml = function(data, progression, raId, excludeScreenshots = false) {
+		window.generateGameInfoHtml = function(data, progression, raId, excludeScreenshots = false) {
             let html = '';
             const rawBox = data.imageBoxArt || data.ImageBoxArt;
             
@@ -513,6 +553,56 @@
             if (players) { html += `<div style="display:flex; justify-content:space-between; margin-bottom:0;"><span style="color:#94a3b8;">Total Players:</span> <strong>${players}</strong></div>`; }
             html += `</div>`;
             
+			// --- MODIFIED YOUTUBE BUTTON SECTION ---
+            let rawTitle = data.title || data.Title || 'Unknown Title';
+            let cleanConName = "";
+            
+            // 1. Determine console by the library manager grouping
+            if (typeof userLibrary !== 'undefined' && userLibrary) {
+                for (const libCon of Object.keys(userLibrary)) {
+                    if (userLibrary[libCon].some(g => (raId && g.raId == raId) || (g.name && g.name === rawTitle))) {
+                        cleanConName = typeof CONSOLE_FULL_NAMES !== 'undefined' && CONSOLE_FULL_NAMES[libCon] ? CONSOLE_FULL_NAMES[libCon] : libCon;
+                        break;
+                    }
+                }
+            }
+            
+            // 2. Fallback to API data or globally selected console
+            if (!cleanConName) {
+                let apiConId = data.consoleId || data.ConsoleId || data.ConsoleID;
+                if (apiConId) {
+                    if (typeof CONSOLE_FULL_NAMES !== 'undefined' && CONSOLE_FULL_NAMES[apiConId]) {
+                        cleanConName = CONSOLE_FULL_NAMES[apiConId];
+                    } else if (typeof RA_CONSOLE_IDS !== 'undefined') {
+                        // Reverse lookup RA_CONSOLE_IDS to find the string key for numerical IDs
+                        const conKey = Object.keys(RA_CONSOLE_IDS).find(k => RA_CONSOLE_IDS[k] == apiConId);
+                        if (conKey) {
+                            cleanConName = typeof CONSOLE_FULL_NAMES !== 'undefined' && CONSOLE_FULL_NAMES[conKey] ? CONSOLE_FULL_NAMES[conKey] : conKey;
+                        }
+                    }
+                }
+                
+                if (!cleanConName && typeof selectedConsole !== 'undefined' && selectedConsole) {
+                    cleanConName = typeof CONSOLE_FULL_NAMES !== 'undefined' && CONSOLE_FULL_NAMES[selectedConsole] ? CONSOLE_FULL_NAMES[selectedConsole] : selectedConsole;
+                }
+                
+                if (!cleanConName) {
+                    cleanConName = data.consoleName || data.ConsoleName || "";
+                }
+            }
+
+            // Clean up double spacing but leave special characters and full names untouched
+            const queryText = `${rawTitle} ${cleanConName}`.trim().replace(/\s+/g, ' ');
+
+            // URL-encode query securely
+            const ytQuery = encodeURIComponent(queryText).replace(/%20/g, '+');
+            const ytUrl = `https://www.youtube.com/results?search_query=${ytQuery}`;
+
+            html += `<a href="${ytUrl}" target="_blank" style="display:flex; align-items:center; justify-content:center; background:var(--danger); color:white; padding:10px; border-radius:6px; text-decoration:none; font-weight:bold; font-size:0.8rem; margin-bottom:15px; flex-shrink:0;">
+                Search on <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block; margin-left:5px; margin-right:1px; color:#fff; flex-shrink:0;"><path d="M23.498 6.163c-.272-1.022-1.074-1.826-2.099-2.097C19.516 3.5 12 3.5 12 3.5s-7.516 0-9.4 1.166c-1.025.271-1.827 1.075-2.099 2.097C0 8.06 0 12 0 12s0 3.94.501 5.837c.272 1.022 1.074 1.826 2.1 2.097 1.883.502 9.399.502 9.399.502s7.516 0 9.4-.502c1.025-.271 1.827-1.075 2.099-2.097C24 15.34 24 11.4 24 11.4s0-3.94-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg> YouTube
+            </a>`;
+            // ----------------------------------------
+
             if (!excludeScreenshots) {
                 html += `<div style="display:flex; flex-direction:column; gap:10px; flex-shrink:0;">`;
                 const imgTitle = data.imageTitle || data.ImageTitle;
@@ -523,16 +613,18 @@
                 const imgIngame = data.imageIngame || data.ImageIngame;
                 if (imgIngame) {
                     const ingameSrc = `https://media.retroachievements.org${imgIngame.startsWith('/') ? imgIngame : '/Images/'+imgIngame}`;
-                    html += `<img src="${ingameSrc}" style="width:100%; border-radius:6px; border:1px solid var(--border); cursor:pointer;" onclick="openImageViewer('${imgIngame}')">`;
+                    html += `<img src="${ingameSrc}" style="width:100%; border-radius:6px; border:1px solid var(--border); cursor:pointer;" onclick="openImageViewer('${ingameSrc}')">`;
                 }
                 html += `</div>`;
             }
+            
             return html;
-        }
+        };
 
         async function fetchExtendedDataForGame(raApi, authorization, gameId) {
             try {
-                const data = await raApi.getGameExtended(authorization, { gameId: parseInt(gameId) });
+                const data = await window.safeApiCall(raApi.getGameExtended, authorization, { gameId: parseInt(gameId) });
+                if (!data) return null;
                 
                 let progression = {
                     medianTimeToBeat: 0,
@@ -542,10 +634,12 @@
                 };
                 
                 try { 
-                    const prog = await raApi.getGameProgression(authorization, { gameId: parseInt(gameId) });
-                    if(prog) progression = prog;
+                    if (typeof raApi.getGameProgression === 'function') {
+                        const prog = await window.safeApiCall(raApi.getGameProgression, authorization, { gameId: parseInt(gameId) });
+                        if(prog) progression = prog;
+                    }
                 } catch(e) {
-                    console.warn("getGameProgression skipped or unavailable for this game id:", gameId);
+                    console.warn("getGameProgression unavailable for this game id:", gameId);
                 }
 
                 let calculatedPoints = 0;
@@ -639,6 +733,103 @@
         window.wtpGamesCache = [];
         window.wtpActiveTab = null;
         
+		window.updateHistoryItemDOM = function(game, conName) {
+            const li = document.getElementById(`history-item-${game.id}`);
+            if (!li) return;
+
+            const sortElement = document.getElementById('library-sort-select');
+            const sortMode = sortElement ? sortElement.value : 'console';
+
+            const isCompleted = completedData[conName] && completedData[conName].includes(game.id);
+            const isMastered = masteredData[conName] && masteredData[conName].includes(game.id);
+            const raData = raCompletedGamesCache.find(ra => String(ra.gameId || ra.GameID || ra.id) === String(game.raId));
+
+            let numAchTotal = 0;
+            let numAchHC = 0;
+            let numPoss = game.maxAch || 0;
+
+            if (raData) {
+                numPoss = parseInt(raData.progData?.numPossibleAchievements || raData.maxPossible) || numPoss;
+                numAchTotal = parseInt(raData.progData?.numAchieved || raData.numAwarded) || 0;
+                numAchHC = parseInt(raData.progData?.numAchievedHardcore || raData.numAwardedHardcore) || 0;
+            }
+
+            if (isMastered) numAchHC = numPoss;
+            if (isCompleted || isMastered) numAchTotal = numPoss;
+
+            let numAchSoftcore = Math.max(0, numAchTotal - numAchHC);
+            let trueMax = numPoss > 0 ? numPoss : (game.maxAch || '?');
+            let progressPoss = numPoss > 0 ? numPoss : (game.maxAch || 1);
+            
+            let yellowPct = progressPoss > 0 ? (numAchHC / progressPoss) * 100 : 0;
+            let bluePct = progressPoss > 0 ? (numAchSoftcore / progressPoss) * 100 : 0;
+            if (isMastered && progressPoss > 0) { yellowPct = 100; bluePct = 0; }
+
+            li.style.backgroundImage = `linear-gradient(to right, #eab308 0%, #eab308 ${yellowPct}%, #3b82f6 ${yellowPct}%, #3b82f6 ${yellowPct + bluePct}%, transparent ${yellowPct + bluePct}%)`;
+
+            let imgOutline = '';
+            if (isMastered) imgOutline = 'border: 2px solid #eab308;';
+            else if (isCompleted) imgOutline = 'border: 2px solid #3b82f6;';
+            else imgOutline = 'border: 2px solid transparent;';
+
+            const imgContainer = document.getElementById(`history-item-img-${game.id}`);
+            if (imgContainer) {
+                if (game.imgId) {
+                    imgContainer.innerHTML = `<img src="https://media.retroachievements.org/Images/${game.imgId}.png" style="width:24px; height:24px; object-fit:cover; margin-right:8px; border-radius:4px; flex-shrink:0; box-sizing:border-box; ${imgOutline}">`;
+                } else {
+                    imgContainer.innerHTML = `<div style="width:24px; height:24px; margin-right:8px; border-radius:4px; flex-shrink:0; box-sizing:border-box; ${imgOutline}; display:inline-block;"></div>`;
+                }
+            }
+
+            let rightText = '';
+            if (sortMode === 'time') {
+                rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${formatTime(game.timeToMaster)}</span>`;
+            } else if (sortMode === 'hc_time') {
+                rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${formatTime(game.timeToBeatHardcore)}</span>`;
+            } else if (sortMode === 'percentage') {
+                let pct = game.maxAch > 0 ? (numAchTotal / game.maxAch) * 100 : 0;
+                rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${pct.toFixed(1)}%</span>`;
+            } else if (sortMode === 'points') {
+                rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${game.pts} Pts</span>`;
+            } else if (sortMode === 'genre') {
+                rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${game.genre}</span>`;
+            } else {
+                if (isMastered) rightText = '👑';
+                else if (isCompleted) rightText = '🎖';
+                else rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${numAchTotal} / ${trueMax}</span>`;
+            }
+
+            const rightContainer = document.getElementById(`history-item-right-text-${game.id}`);
+            if (rightContainer) {
+                rightContainer.innerHTML = rightText;
+            }
+
+            if (window.activeSidebarInfo && window.activeSidebarInfo.id === `sidebar-info-${game.id}`) {
+                let progression = {
+                    medianTimeToBeat: game.timeToBeat || 0,
+                    medianTimeToBeatHardcore: game.timeToBeatHardcore || 0,
+                    medianTimeToComplete: game.timeToComplete || 0,
+                    medianTimeToMaster: game.timeToMaster || 0
+                };
+                let data = {
+                    title: game.name,
+                    // Track game's internal console ID through to HTML builder
+                    consoleId: game.consoleId || game.consoleID || game.conId || game.conID || game.console_id || '',
+                    imageBoxArt: game.imageBoxArt ? `${game.imageBoxArt}.png` : (game.imgId ? `${game.imgId}.png` : null),
+                    imageIcon: game.imgId ? `${game.imgId}.png` : null,
+                    developer: game.developer || "Unknown",
+                    released: game.released || "Unknown",
+                    numAchievements: game.maxAch || 0,
+                    points: game.pts || 0,
+                    genre: game.genre || "Unknown",
+                    numDistinctPlayersCasual: game.players || 0,
+                    imageTitle: game.imageTitle ? `${game.imageTitle}.png` : null,
+                    imageIngame: game.imageIngame ? `${game.imageIngame}.png` : null
+                };
+                window.activeSidebarInfo.innerHTML = generateGameInfoHtml(data, progression, game.raId, true);
+            }
+        };
+
         let isFetchingExtended = false;
         window.processExtendedFetchQueue = async function() {
             if (isFetchingExtended) return;
@@ -659,7 +850,7 @@
                 for (let i = 0; i < userLibrary[con].length; i++) {
                     const g = userLibrary[con][i];
                     if (g.raId && !g.extendedFetched) {
-                        gamesToProcess.push(g);
+                        gamesToProcess.push({ game: g, con: con });
                     }
                 }
             }
@@ -674,7 +865,7 @@
                 if(pContainer) pContainer.style.display = 'block';
                 
                 for (let i = 0; i < totalToFetch; i++) {
-                    const g = gamesToProcess[i];
+                    const { game: g, con: conName } = gamesToProcess[i];
                     try {
                         const ext = await fetchExtendedDataForGame(raApi, authorization, g.raId);
                         if (ext) {
@@ -693,6 +884,8 @@
                             g.imageIngame = ext.imageIngame;
                             g.imageBoxArt = ext.imageBoxArt;
                             g.extendedFetched = true;
+                            
+                            window.updateHistoryItemDOM(g, conName);
                         }
                     } catch(e) {
                         console.error("Queue Failed fetching extended data for", g.name);
@@ -707,11 +900,10 @@
                         localStorage.setItem('userLibrary_v3', JSON.stringify(userLibrary));
                     }
                     
-                    await new Promise(r => setTimeout(r, 200)); 
+                    await new Promise(r => setTimeout(r, 150)); 
                 }
                 
                 if(pContainer) pContainer.style.display = 'none';
-                renderSidebar(); 
             }
             isFetchingExtended = false;
         }
@@ -1023,11 +1215,14 @@
                         else if (isCompleted) rightText = '🎖';
                         else rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${numAchTotal} / ${trueMax}</span>`;
 
-                        listHtml += `<li class="history-item" style="cursor: pointer; flex-wrap: wrap; background-color: #0f172a; background-image: linear-gradient(to right, #eab308 0%, #eab308 ${yellowPct}%, #3b82f6 ${yellowPct}%, #3b82f6 ${yellowPct + bluePct}%, transparent ${yellowPct + bluePct}%); background-size: 100% 3px; background-position: bottom left; background-repeat: no-repeat;" onclick="toggleSidebarGameInfo('${game.id}', '${game.raId}', this)">
+                        listHtml += `<li id="history-item-${game.id}" class="history-item" style="cursor: pointer; flex-wrap: wrap; background-color: #0f172a; background-image: linear-gradient(to right, #eab308 0%, #eab308 ${yellowPct}%, #3b82f6 ${yellowPct}%, #3b82f6 ${yellowPct + bluePct}%, transparent ${yellowPct + bluePct}%); background-size: 100% 3px; background-position: bottom left; background-repeat: no-repeat;" onclick="toggleSidebarGameInfo('${game.id}', '${game.raId}', this)">
                             <div style="display:flex; width:100%; justify-content:space-between; align-items:center;">
-                                <div style="display:flex; align-items:center; flex-shrink:1; min-width:0;">${imgHtml}<span class="game-title-text" style="color:var(--text); z-index:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${game.name}</span></div>
+                                <div style="display:flex; align-items:center; flex-shrink:1; min-width:0;">
+                                    <span id="history-item-img-${game.id}" style="display:flex;">${imgHtml}</span>
+                                    <span class="game-title-text" style="color:var(--text); z-index:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${game.name}</span>
+                                </div>
                                 <div style="display:flex; align-items:center; gap: 8px; z-index:1; flex-shrink:0;">
-                                    ${rightText}
+                                    <span id="history-item-right-text-${game.id}">${rightText}</span>
                                     <button class="delete-btn" onclick="event.stopPropagation(); removeHistoryEntry('${con}', '${game.id}')">✕</button>
                                 </div>
                             </div>
@@ -1248,11 +1443,15 @@
                             else rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${numAchTotal} / ${trueMax}</span>`;
                         }
 
-                        listHtml += `<li class="history-item" style="cursor: pointer; flex-wrap: wrap; background-color: #0f172a; background-image: linear-gradient(to right, #eab308 0%, #eab308 ${yellowPct}%, #3b82f6 ${yellowPct}%, #3b82f6 ${yellowPct + bluePct}%, transparent ${yellowPct + bluePct}%); background-size: 100% 3px; background-position: bottom left; background-repeat: no-repeat;" onclick="toggleSidebarGameInfo('${game.id}', '${game.raId}', this)">
+                        listHtml += `<li id="history-item-${game.id}" class="history-item" style="cursor: pointer; flex-wrap: wrap; background-color: #0f172a; background-image: linear-gradient(to right, #eab308 0%, #eab308 ${yellowPct}%, #3b82f6 ${yellowPct}%, #3b82f6 ${yellowPct + bluePct}%, transparent ${yellowPct + bluePct}%); background-size: 100% 3px; background-position: bottom left; background-repeat: no-repeat;" onclick="toggleSidebarGameInfo('${game.id}', '${game.raId}', this)">
                             <div style="display:flex; width:100%; justify-content:space-between; align-items:center;">
-                                <div style="display:flex; align-items:center; flex-shrink:1; min-width:0;">${imgHtml}<span class="game-title-text" style="color:var(--text); z-index:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${game.name}</span> <span style="font-size:0.6rem; color:#64748b; margin-left: 6px;">[${game.con}]</span></div>
+                                <div style="display:flex; align-items:center; flex-shrink:1; min-width:0;">
+                                    <span id="history-item-img-${game.id}" style="display:flex;">${imgHtml}</span>
+                                    <span class="game-title-text" style="color:var(--text); z-index:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${game.name}</span> 
+                                    <span style="font-size:0.6rem; color:#64748b; margin-left: 6px;">[${game.con}]</span>
+                                </div>
                                 <div style="display:flex; align-items:center; gap: 8px; z-index:1; flex-shrink:0;">
-                                    ${rightText}
+                                    <span id="history-item-right-text-${game.id}">${rightText}</span>
                                     <button class="delete-btn" onclick="event.stopPropagation(); removeHistoryEntry('${game.con}', '${game.id}')">✕</button>
                                 </div>
                             </div>
@@ -1480,7 +1679,7 @@
                 const raApi = await import("https://esm.sh/@retroachievements/api");
                 const authorization = raApi.buildAuthorization({ username: user, webApiKey: key });
                 
-                const data = await raApi.getGameExtended(authorization, { gameId: parseInt(raId) });
+                const data = await window.safeApiCall(raApi.getGameExtended, authorization, { gameId: parseInt(raId) });
                 
                 let progression = {
                     medianTimeToBeat: 0,
@@ -1490,8 +1689,10 @@
                 };
                 
                 try { 
-                    const prog = await raApi.getGameProgression(authorization, { gameId: parseInt(raId) });
-                    if(prog) progression = prog;
+                    if (typeof raApi.getGameProgression === 'function') {
+                        const prog = await window.safeApiCall(raApi.getGameProgression, authorization, { gameId: parseInt(raId) });
+                        if(prog) progression = prog;
+                    }
                 } catch(e) {
                     console.warn("Progression call failed or unavailable", e);
                 }
@@ -1530,7 +1731,7 @@
                             libGame.extendedFetched = true;
                             
                             localStorage.setItem('userLibrary_v3', JSON.stringify(userLibrary));
-                            renderSidebar(); 
+                            window.updateHistoryItemDOM(libGame, selectedConsole);
                         }
                     }
 
@@ -1622,7 +1823,7 @@
             }
         }
 
-        async function fetchUserStats(forceRefresh = false) {
+		async function fetchUserStats(forceRefresh = false) {
             const user = localStorage.getItem('ra_user');
             const key = localStorage.getItem('ra_key');
             const container = document.getElementById('ra-user-stats');
@@ -1636,11 +1837,30 @@
 
             try {
                 const raApi = await import("https://esm.sh/@retroachievements/api");
-                const authorization = raApi.buildAuthorization({ username: user, webApiKey: key });
+                const { buildAuthorization, getUserSummary } = raApi;
+                
+                const authorization = buildAuthorization({ username: user, webApiKey: key });
 
-                const data = await raApi.getUserSummary(authorization, { username: user });
-                localStorage.setItem('ra_api_summary', JSON.stringify(data));
-                renderSummary(data, user);
+                // Appending the dynamic 't' timestamp forces a bypass of both browser and CDN/server caches
+                const data = await window.safeApiCall(getUserSummary, authorization, { 
+                    username: user,
+                    recentGamesCount: 5,
+                    recentAchievementsCount: 10,
+                    t: Date.now() 
+                });
+                
+                if (data) {
+                    const keysToRemove = [
+                        'user', 'richPresenceMsgDate', 'lastGameId', 'contribCount', 
+                        'contribYield', 'permissions', 'untracked', 'id', 
+                        'userWallActive', 'recentlyPlayedCount', 'ulid', 'totalRanked',
+                        'awarded', 'lastGame'
+                    ];
+                    keysToRemove.forEach(k => delete data[k]);
+
+                    localStorage.setItem('ra_api_summary', JSON.stringify(data));
+                    renderSummary(data, user);
+                }
 
                 await fetchUserWantToPlay(user, key, raApi, authorization);
                 await fetchUserCompleted(user, key, raApi, authorization);
@@ -1651,38 +1871,294 @@
             }
         }
 
-        function renderSummary(data, user) {
-            const container = document.getElementById('ra-user-stats');
-            
-            let statsHtml = `<div style="display: flex; gap: 15px; align-items: center; margin-bottom: 15px; background: #1e293b; padding: 10px; border-radius: 8px; border: 1px solid var(--border);">`;
-            if (data.userPic) statsHtml += `<img src="https://media.retroachievements.org${data.userPic}" style="width: 64px; height: 64px; border-radius: 50%; border: 2px solid var(--primary); flex-shrink: 0;">`;
-            statsHtml += `<div><h2 style="margin: 0; color: var(--primary);">${user}</h2><p style="margin: 4px 0 0 0; color: #94a3b8; font-size: 0.75rem;">${data.status || 'Active'}</p></div></div>`;
-            
-            statsHtml += `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">`;
-            const renderSummaryKeys = ['totalPoints', 'totalTruePoints', 'rank', 'motto'];
-            renderSummaryKeys.forEach(k => {
-                if (data[k]) {
-                    const formattedKey = k.replace(/([A-Z])/g, ' $1').trim();
-                    statsHtml += `
-                    <div style="background: #1e293b; padding: 10px; border-radius: 6px; border: 1px solid var(--border);">
-                        <div style="font-size: 0.65rem; color: #94a3b8; text-transform: uppercase;">${formattedKey}</div>
-                        <div style="font-size: 0.9rem; font-weight: bold; color: var(--text); word-break: break-word;">${data[k]}</div>
-                    </div>`;
-                }
-            });
-            statsHtml += `</div>`;
+		function renderSummary(data, user) {
+			const container = document.getElementById('ra-user-stats');
+			let gamesToLookup = []; // Stores games that need their total possible achievements/points fetched
+			
+			let statsHtml = `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #1e293b; padding: 10px; border-radius: 8px; border: 1px solid var(--border);">`;
+			
+			// Left side of Header
+			statsHtml += `<div style="display: flex; gap: 15px; align-items: center;">`;
+			if (data.userPic) statsHtml += `<img src="https://media.retroachievements.org${data.userPic}" style="width: 64px; height: 64px; border-radius: 50%; border: 2px solid var(--primary); flex-shrink: 0;">`;
+			statsHtml += `<div><h2 style="margin: 0; color: var(--primary);">${user}</h2>`;
+			
+			if (data.motto) {
+				statsHtml += `<p style="margin: 4px 0 0 0; color: #94a3b8; font-size: 0.75rem; font-style: italic;">"${data.motto}"</p>`;
+			}
+			
+			const memSince = data.memberSince || data.MemberSince;
+			if (memSince) {
+				statsHtml += `<p style="margin: 4px 0 0 0; color: #94a3b8; font-size: 0.75rem;"><strong>Member Since:</strong> ${memSince}</p>`;
+			}
+			statsHtml += `</div></div>`;
+			
+			// Right side of Header (Points and Rank)
+			statsHtml += `<div style="text-align: right; color: #94a3b8; font-size: 0.8rem;">`;
+			
+			const tPoints = data.totalPoints !== undefined ? data.totalPoints : 0;
+			const tTruePoints = data.totalTruePoints !== undefined ? data.totalTruePoints : 0;
+			statsHtml += `<div style="margin-bottom: 4px; color: var(--text);"><strong>Points (Hardcore):</strong> ${tPoints} (<span title="RetroPoints: Points adjusted by achievement rarity. RetroPoints may fluctuate as rarity changes." style="cursor:help; border-bottom:1px dotted #94a3b8;">${tTruePoints}</span>)</div>`;
+			
+			const tSoftcore = parseInt(data.totalSoftcorePoints || 0, 10);
+			if (tSoftcore > 0) {
+				statsHtml += `<div style="margin-bottom: 4px; color: var(--text);"><strong>Points (Casual):</strong> ${tSoftcore}</div>`;
+			}
+			
+			if (data.rank) {
+				statsHtml += `<div><strong>Rank:</strong> ${data.rank}</div>`;
+			}
+			statsHtml += `</div></div>`;
+			
+			statsHtml += `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">`;
+			
+			const standardStartKeys = ['richPresenceMsg'];
+			
+			// 'rank' is strictly added to excludedKeys here so it doesn't render a second time in the grid
+			const excludedKeys = ['totalPoints', 'totalTruePoints', 'totalSoftcorePoints', 'rank', ...standardStartKeys, 'userPic', 'status', 'memberSince', 'MemberSince', 'motto'];
+			
+			const dynamicKeys = Object.keys(data).filter(k => !excludedKeys.includes(k));
+			const renderSummaryKeys = [...standardStartKeys, ...dynamicKeys];
 
-            statsHtml += `<h4 style="color:var(--primary); margin-top:20px; border-bottom:1px solid var(--border); padding-bottom:5px;">User Awards</h4>`;
-            statsHtml += `<div id="ra-user-awards"><p style="font-size:0.75rem; color:#94a3b8;">Loading...</p></div>`;
-            
-            statsHtml += `<h4 style="color:var(--primary); margin-top:20px; border-bottom:1px solid var(--border); padding-bottom:5px;">Want to Play</h4>`;
-            statsHtml += `<div id="ra-want-to-play" class="mgmt-list-scroll" style="max-height: 250px; padding-right: 5px; border:none; background:transparent;"><p style="font-size:0.75rem; color:#94a3b8;">Loading...</p></div>`;
-            
-            statsHtml += `<h4 style="color:var(--primary); margin-top:20px; border-bottom:1px solid var(--border); padding-bottom:5px;">Completed / Mastered Games</h4>`;
-            statsHtml += `<div id="ra-completed"><p style="font-size:0.75rem; color:#94a3b8;">Loading...</p></div>`;
-            
-            container.innerHTML = statsHtml;
-        }
+			renderSummaryKeys.forEach(k => {
+				if (data[k] !== undefined && data[k] !== null && data[k] !== '') {
+					const formattedKey = k.replace(/([A-Z])/g, ' $1').trim();
+					let displayValue = data[k];
+
+					if (k === 'lastActivity') {
+						if (!displayValue || displayValue.id === 0 || !displayValue.activitytype) return; 
+						displayValue = `<strong>Type:</strong> ${displayValue.activitytype} <br><strong style="margin-top:4px; display:inline-block;">Updated:</strong> ${displayValue.lastupdate || 'N/A'}`;
+					} 
+					else if (k === 'recentAchievements') {
+						let allAchievements = [];
+						for (let gameId in displayValue) {
+							let achievements = displayValue[gameId];
+							for (let achId in achievements) {
+								allAchievements.push(achievements[achId]);
+							}
+						}
+						
+						allAchievements.sort((a, b) => new Date(b.dateAwarded) - new Date(a.dateAwarded));
+
+						let raHtml = `<div class="mgmt-list-scroll" style="max-height: 200px; overflow-y: auto; padding-right: 5px;">`;
+						for (let ach of allAchievements) {
+							raHtml += `
+							<div style="display: flex; gap: 10px; margin-bottom: 8px; align-items: center; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 4px;">
+								<img src="https://media.retroachievements.org/Badge/${ach.badgeName}.png" style="width: 48px; height: 48px; border-radius: 4px;" alt="badge">
+								<div>
+									<div style="font-size: 0.8rem; font-weight: bold; color: var(--primary);">${ach.title} <span style="color: var(--accent);">(${ach.points}pts)</span></div>
+									<div style="font-size: 0.7rem; color: #94a3b8; margin: 2px 0;">${ach.description}</div>
+									<div style="font-size: 0.65rem; color: #64748b;">${ach.gameTitle} • ${ach.dateAwarded}</div>
+								</div>
+							</div>`;
+						}
+						raHtml += `</div>`;
+						displayValue = raHtml;
+					} 
+					else if (k === 'recentlyPlayed' || k === 'recentGames') {
+						if (Array.isArray(displayValue)) {
+							let rpHtml = `<div class="mgmt-list-scroll" style="max-height: 200px; overflow-y: auto; padding-right: 5px;">`;
+							
+							const completedCache = JSON.parse(localStorage.getItem('ra_api_completed')) || [];
+
+							displayValue.forEach(game => {
+								const title = typeof game === 'object' && game !== null ? (game.title || game.Title || game.gameTitle || game.GameTitle || 'Unknown Game') : game;
+								const iconPath = typeof game === 'object' && game !== null ? (game.imageIcon || game.ImageIcon) : null;
+								const gameId = typeof game === 'object' && game !== null ? (game.id || game.gameId || game.GameID) : null;
+
+								let numAchieved = 0; let numPossible = 0; let scoreAchieved = 0; let possibleScore = 0;
+
+								const cachedGame = completedCache.find(g => String(g.gameId || g.GameID || g.id) === String(gameId));
+								const isMastered = cachedGame && cachedGame.calculatedCategory === 'mastered';
+								const isCompleted = cachedGame && cachedGame.calculatedCategory === 'completed';
+
+								if (cachedGame && cachedGame.progData) {
+									numAchieved = parseInt(cachedGame.progData.numAchieved || cachedGame.progData.NumAchieved) || 0;
+									numPossible = parseInt(cachedGame.progData.numPossibleAchievements || cachedGame.progData.NumPossibleAchievements) || parseInt(cachedGame.maxPossible) || 0;
+									scoreAchieved = parseInt(cachedGame.progData.scoreAchieved || cachedGame.progData.ScoreAchieved) || 0;
+									possibleScore = parseInt(cachedGame.progData.possibleScore || cachedGame.progData.PossibleScore) || 0;
+								} else {
+									numAchieved = typeof game === 'object' && game !== null ? parseInt(game.numAchieved || game.NumAchieved || 0) : 0;
+									numPossible = typeof game === 'object' && game !== null ? parseInt(game.numPossibleAchievements || game.NumPossibleAchievements || 0) : 0;
+									scoreAchieved = typeof game === 'object' && game !== null ? parseInt(game.scoreAchieved || game.ScoreAchieved || 0) : 0;
+									possibleScore = typeof game === 'object' && game !== null ? parseInt(game.possibleScore || game.PossibleScore || 0) : 0;
+								}
+								
+								// Cross-reference the userLibrary where fetchExtendedDataForGame stores maxAch and pts
+								if (!numPossible || !possibleScore) {
+									for (const con in userLibrary) {
+										const libGame = userLibrary[con].find(g => String(g.raId) === String(gameId));
+										if (libGame && (libGame.maxAch || libGame.pts)) {
+											numPossible = libGame.maxAch || 0;
+											possibleScore = libGame.pts || 0;
+											break;
+										}
+									}
+								}
+
+								// Flag to attempt async data recovery if totals are missing for any game
+								let needsLookup = false;
+								if (!numPossible || !possibleScore) {
+									needsLookup = true;
+									if (gameId) gamesToLookup.push({ gameId, numAchieved, scoreAchieved });
+								}
+
+								let imgOutline = '';
+								if (isMastered) imgOutline = 'border: 2px solid #eab308;';
+								else if (isCompleted) imgOutline = 'border: 2px solid #3b82f6;';
+								else imgOutline = 'border: 2px solid transparent;';
+
+								const iconHtml = iconPath 
+									? `<img src="https://media.retroachievements.org${iconPath}" style="width: 48px; height: 48px; border-radius: 4px; flex-shrink: 0; box-sizing: border-box; ${imgOutline}" alt="game icon">` 
+									: `<div style="width: 48px; height: 48px; border-radius: 4px; flex-shrink: 0; box-sizing: border-box; background: #334155; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; ${imgOutline}">🎮</div>`;
+
+								rpHtml += `
+								<div style="display: flex; gap: 10px; margin-bottom: 8px; align-items: center; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 4px;">
+									${iconHtml}
+									<div>
+										<div style="font-size: 0.8rem; font-weight: bold; color: var(--primary);">${title}</div>
+										<div style="font-size: 0.7rem; color: #94a3b8; margin: 2px 0;">Achievements: <span id="rp-ach-${gameId}" style="color:var(--text); font-weight: bold;">${numAchieved} / ${needsLookup ? '...' : numPossible}</span></div>
+										<div style="font-size: 0.65rem; color: #64748b;">Points: <span id="rp-pts-${gameId}" style="color:var(--text); font-weight: bold;">${scoreAchieved} / ${needsLookup ? '...' : possibleScore}</span></div>
+									</div>
+								</div>`;
+							});
+							rpHtml += `</div>`;
+							displayValue = rpHtml;
+						}
+					} 
+					else if (typeof displayValue === 'object') {
+						if (Array.isArray(displayValue)) {
+							displayValue = displayValue.map(item => {
+								if (typeof item === 'object' && item !== null) {
+									return item.title || item.Title || item.gameTitle || item.GameTitle || JSON.stringify(item);
+								}
+								return item;
+							}).join(', ');
+						} else {
+							displayValue = JSON.stringify(displayValue);
+						}
+					}
+
+					let gridColStyle = (k === 'richPresenceMsg') ? 'grid-column: 1 / -1;' : '';
+					let rpHeaderHtml = `<div style="font-size: 0.65rem; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px;">${formattedKey}</div>`;
+
+					// Replace Rich Presence header with the most recently played game's details
+					if (k === 'richPresenceMsg') {
+						const recentGamesSrc = data.recentlyPlayed || data.recentGames || [];
+						const mostRecentGame = Array.isArray(recentGamesSrc) && recentGamesSrc.length > 0 ? recentGamesSrc[0] : null;
+						
+						if (mostRecentGame) {
+							const gameIcon = mostRecentGame.imageIcon || mostRecentGame.ImageIcon;
+							const gameTitle = mostRecentGame.title || mostRecentGame.Title || mostRecentGame.gameTitle || mostRecentGame.GameTitle || 'Unknown Game';
+							const consoleName = mostRecentGame.consoleName || mostRecentGame.ConsoleName || '';
+							const consoleId = mostRecentGame.consoleID || mostRecentGame.ConsoleID || mostRecentGame.consoleId;
+							
+							// Cross-reference user's constants to find correct console image URL
+							let consoleKey = null;
+							if (consoleId) {
+								consoleKey = Object.keys(RA_CONSOLE_IDS).find(key => RA_CONSOLE_IDS[key] == consoleId);
+							}
+							if (!consoleKey && consoleName) {
+								consoleKey = Object.keys(CONSOLE_FULL_NAMES).find(key => CONSOLE_FULL_NAMES[key] === consoleName);
+							}
+
+							const customConsoleImgUrl = consoleKey ? CONSOLE_IMAGES[consoleKey] : null;
+							
+							const consoleIconHtml = customConsoleImgUrl 
+								? `<img src="${customConsoleImgUrl}" style="height:14px; width:auto; object-fit:contain; margin-right:6px;" alt="${consoleName} icon">` 
+								: (consoleId ? `<img src="https://media.retroachievements.org/Images/Console/${consoleId}.png" style="width:16px; height:16px; margin-right:4px;" onerror="this.style.display='none'">` : ``);
+
+							rpHeaderHtml = `
+							<div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--border);">
+								${gameIcon ? `<img src="https://media.retroachievements.org${gameIcon}" style="width: 48px; height: 48px; border-radius: 4px; flex-shrink: 0;" alt="Game Icon">` : `<div style="width: 48px; height: 48px; background: #334155; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">🎮</div>`}
+								<div style="min-width: 0;">
+									<div style="font-weight: bold; color: var(--primary); font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${gameTitle}</div>
+									${consoleName ? `<div style="display: flex; align-items: center; font-size: 0.75rem; color: #94a3b8; margin-top: 2px;">${consoleIconHtml}${consoleName}</div>` : ''}
+								</div>
+							</div>`;
+						}
+					}
+
+					statsHtml += `
+					<div style="background: #1e293b; padding: 10px; border-radius: 6px; border: 1px solid var(--border); ${gridColStyle}">
+						${rpHeaderHtml}
+						<div style="font-size: 0.9rem; font-weight: normal; color: var(--text); word-break: break-word;">${displayValue}</div>
+					</div>`;
+				}
+			});
+			statsHtml += `</div>`;
+
+			statsHtml += `<h4 style="color:var(--primary); margin-top:20px; border-bottom:1px solid var(--border); padding-bottom:5px;">User Awards</h4>`;
+			statsHtml += `<div id="ra-user-awards"><p style="font-size:0.75rem; color:#94a3b8;">Loading...</p></div>`;
+			
+			statsHtml += `<h4 style="color:var(--primary); margin-top:20px; border-bottom:1px solid var(--border); padding-bottom:5px;">Want to Play</h4>`;
+			statsHtml += `<div id="ra-want-to-play" class="mgmt-list-scroll" style="max-height: 250px; padding-right: 5px; border:none; background:transparent;"><p style="font-size:0.75rem; color:#94a3b8;">Loading...</p></div>`;
+			
+			statsHtml += `<h4 style="color:var(--primary); margin-top:20px; border-bottom:1px solid var(--border); padding-bottom:5px;">Completed / Mastered Games</h4>`;
+			statsHtml += `<div id="ra-completed"><p style="font-size:0.75rem; color:#94a3b8;">Loading...</p></div>`;
+			
+			container.innerHTML = statsHtml;
+
+			if (data.rank && typeof window.updateAndRenderRankChart === 'function') {
+				const cleanRankNumber = parseInt(String(data.rank).replace(/,/g, ''), 10);
+				if (!isNaN(cleanRankNumber)) {
+					window.updateAndRenderRankChart(container, cleanRankNumber);
+				}
+			}
+
+			// ASYNC DATA RECOVERY: Fetch missing game limits via internal storage or API fallback
+			if (gamesToLookup.length > 0) {
+				gamesToLookup.forEach(async (g) => {
+					let maxAch = 0;
+					let maxPts = 0;
+					let found = false;
+
+					// 1. Check local storage fallback keys
+					const cacheKeys = [`ra_game_data_${g.gameId}`, `ra_game_${g.gameId}`, `game_${g.gameId}`, `ra_api_game_${g.gameId}`];
+					for (let key of cacheKeys) {
+						try {
+							const stored = localStorage.getItem(key);
+							if (stored) {
+								const parsed = JSON.parse(stored);
+								if (parsed.numPossibleAchievements || parsed.NumAchievements || parsed.numAchievements) {
+									maxAch = parseInt(parsed.numPossibleAchievements || parsed.NumAchievements || parsed.numAchievements || 0);
+									maxPts = parseInt(parsed.possibleScore || parsed.Points || parsed.points || 0);
+									found = true;
+									break;
+								}
+							}
+						} catch (e) {}
+					}
+
+					// 2. Lookup using fetchExtendedDataForGame for games not in the local library
+					if (!found) {
+						try {
+							const raUser = localStorage.getItem('ra_user');
+							const raKey = localStorage.getItem('ra_key');
+							if (raUser && raKey) {
+								const raApi = await import("https://esm.sh/@retroachievements/api");
+								const authorization = raApi.buildAuthorization({ username: raUser, webApiKey: raKey });
+								
+								const extData = await fetchExtendedDataForGame(raApi, authorization, g.gameId);
+								if (extData) {
+									maxAch = extData.maxAch || 0;
+									maxPts = extData.pts || 0;
+									found = true;
+								}
+							}
+						} catch (e) {
+							console.warn("Could not fetch extended info for game:", g.gameId);
+						}
+					}
+					
+					// 3. Inject recovered data back into DOM
+					const achEl = document.getElementById(`rp-ach-${g.gameId}`);
+					const ptsEl = document.getElementById(`rp-pts-${g.gameId}`);
+					
+					if (achEl) achEl.innerHTML = `${g.numAchieved} / ${maxAch}`;
+					if (ptsEl) ptsEl.innerHTML = `${g.scoreAchieved} / ${maxPts}`;
+				});
+			}
+		}
 
         window.renderWantToPlayList = function(list, activeConsole = null) {
             const wtpContainer = document.getElementById('ra-want-to-play');
@@ -1733,13 +2209,13 @@
         async function fetchUserWantToPlay(user, key, raApi, authorization) {
             const wtpContainer = document.getElementById('ra-want-to-play');
             try {
-                const data = await raApi.getUserWantToPlayList(authorization, { username: user, count: 500 });
-                const list = data.Results || data.results || (Array.isArray(data) ? data : []);
-                
-                localStorage.setItem('ra_api_wtp', JSON.stringify(list));
-                window.wtpGamesCache = list;
-                
-                window.renderWantToPlayList(list);
+                const data = await window.safeApiCall(raApi.getUserWantToPlayList, authorization, { username: user, count: 500 });
+                if (data) {
+                    const list = data.Results || data.results || (Array.isArray(data) ? data : []);
+                    localStorage.setItem('ra_api_wtp', JSON.stringify(list));
+                    window.wtpGamesCache = list;
+                    window.renderWantToPlayList(list);
+                }
             } catch (err) {
                 console.error("WTP Fetch error:", err);
                 if(wtpContainer) wtpContainer.innerHTML = `<p style="font-size:0.75rem; color:var(--danger);">Error loading list. Check console.</p>`;
@@ -1812,7 +2288,9 @@
         async function fetchUserCompleted(user, key, raApi, authorization) {
             const compContainer = document.getElementById('ra-completed');
             try {
-                const completion = await raApi.getUserCompletionProgress(authorization, { username: user });
+                const completion = await window.safeApiCall(raApi.getUserCompletionProgress, authorization, { username: user });
+                if (!completion) return;
+                
                 const baseList = Array.isArray(completion) ? completion : (completion.results || Object.values(completion));
 
                 if (baseList && baseList.length > 0) {
@@ -1822,8 +2300,8 @@
                     const chunkSize = 20; 
                     for (let i = 0; i < gameIds.length; i += chunkSize) {
                         const chunk = gameIds.slice(i, i + chunkSize);
-                        const progChunk = await raApi.getUserProgress(authorization, { username: user, gameIds: chunk });
-                        Object.assign(progressMap, progChunk);
+                        const progChunk = await window.safeApiCall(raApi.getUserProgress, authorization, { username: user, gameIds: chunk });
+                        if (progChunk) Object.assign(progressMap, progChunk);
                         await new Promise(r => setTimeout(r, 200)); 
                     }
 
@@ -2184,7 +2662,7 @@
             try {
                 raApi = await import("https://esm.sh/@retroachievements/api");
                 authorization = raApi.buildAuthorization({ username: user, webApiKey: key });
-                const data = await raApi.getGameList(authorization, { consoleId: raConsoleId });
+                const data = await window.safeApiCall(raApi.getGameList, authorization, { consoleId: raConsoleId });
 
                 if (Array.isArray(data)) {
                     let selectedGame = findGameInList(gameTitle, data);
@@ -2269,7 +2747,7 @@
                 if (!needsFetch) continue;
 
                 try {
-                    const data = await raApi.getGameList(authorization, { consoleId: raConsoleId });
+                    const data = await window.safeApiCall(raApi.getGameList, authorization, { consoleId: raConsoleId });
                     let consoleAllMatched = true;
 
                     if (Array.isArray(data)) {
@@ -2615,6 +3093,268 @@
         }
         
         bootApp(); 
+		let rankChartInstance = null;
+
+		// Renders the chart and manages the conditional local storage
+		window.updateAndRenderRankChart = function(containerElement, currentRank) {
+			let history = JSON.parse(localStorage.getItem('ra_rank_history')) || [];
+			const now = Date.now();
+			const oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
+			
+			let shouldPlot = false;
+
+			if (history.length === 0) {
+				shouldPlot = true;
+			} else {
+				const lastEntry = history[history.length - 1];
+				
+				// Plot if the rank has changed OR if 1 hour has elapsed since the last plotted point
+				if (currentRank !== lastEntry.rank || (now - lastEntry.time) >= oneHour) {
+					shouldPlot = true;
+				}
+			}
+
+			// Save full data so historical records are not purged
+			if (shouldPlot) {
+				history.push({ time: now, rank: currentRank });
+				localStorage.setItem('ra_rank_history', JSON.stringify(history));
+			}
+
+			if (history.length < 1) return;
+
+			// Filter the displayed dataset strictly for the scrolling window (up to 1 week)
+			const maxHistorySpan = 168 * oneHour;
+			const weekAgo = now - maxHistorySpan;
+			const displayHistory = history.filter(entry => entry.time >= weekAgo);
+
+			let canvas = document.getElementById('rank-history-chart');
+			let scrollContainer = document.getElementById('rank-history-scrollbar');
+			let scrollContent = document.getElementById('rank-history-scroll-content');
+			
+			if (!canvas) {
+				const wrapper = document.createElement('div');
+				wrapper.style.width = '100%';
+				wrapper.style.margin = '20px 0';
+
+				const titleEl = document.createElement('h4');
+				titleEl.textContent = 'Rank History';
+				titleEl.style.color = 'var(--primary)';
+				titleEl.style.marginTop = '20px';
+				titleEl.style.borderBottom = '1px solid var(--border)';
+				titleEl.style.paddingBottom = '5px';
+				wrapper.appendChild(titleEl);
+				
+				const canvasWrapper = document.createElement('div');
+				canvasWrapper.style.width = '100%';
+				canvasWrapper.style.height = '200px';
+				canvasWrapper.style.position = 'relative'; // Anchor for canvas
+				
+				canvas = document.createElement('canvas');
+				canvas.id = 'rank-history-chart';
+				
+				canvasWrapper.appendChild(canvas);
+				wrapper.appendChild(canvasWrapper);
+				
+				// Custom independent scrollbar underneath the chart
+				scrollContainer = document.createElement('div');
+				scrollContainer.id = 'rank-history-scrollbar';
+				scrollContainer.style.width = '100%';
+				scrollContainer.style.overflowX = 'auto';
+				scrollContainer.style.marginTop = '10px';
+				
+				scrollContent = document.createElement('div');
+				scrollContent.id = 'rank-history-scroll-content';
+				scrollContent.style.height = '1px'; // Invisible but provides accurate scrolling width
+				
+				scrollContainer.appendChild(scrollContent);
+				wrapper.appendChild(scrollContainer);
+				
+				const awardsH4 = Array.from(containerElement.querySelectorAll('h4')).find(el => el.textContent.includes('User Awards'));
+				if (awardsH4) {
+					containerElement.insertBefore(wrapper, awardsH4);
+				} else {
+					containerElement.appendChild(wrapper);
+				}
+
+				// Enable horizontal scrolling directly on the chart canvas via mouse wheel/trackpad
+				canvas.addEventListener('wheel', (e) => {
+					if (Math.abs(e.deltaX) > 0) {
+						e.preventDefault();
+						scrollContainer.scrollLeft += e.deltaX;
+					}
+				}, { passive: false });
+			}
+
+			const ctx = canvas.getContext('2d');
+			
+			const dataPoints = displayHistory.map(entry => ({
+				x: entry.time,
+				y: entry.rank
+			}));
+
+			// Math for the 24-hour viewport window
+			const viewWindow = 24 * oneHour; 
+			let dataMin = displayHistory.length > 0 ? displayHistory[0].time : now - viewWindow;
+			let totalSpan = now - dataMin;
+			
+			// Ensure the scroll domain accounts for at least 24 hours
+			if (totalSpan < viewWindow) {
+				dataMin = now - viewWindow;
+				totalSpan = viewWindow;
+			}
+
+			// Scale the invisible scroll track to match the ratio of total data vs the 24-hour window
+			const ratio = totalSpan / viewWindow;
+			scrollContent.style.width = `${ratio * 100}%`;
+
+			if (typeof rankChartInstance !== 'undefined' && rankChartInstance) {
+				rankChartInstance.destroy();
+			}
+
+			// Start with the view anchored to the far right (most recent 24 hours)
+			const currentViewMax = now;
+			const currentViewMin = currentViewMax - viewWindow;
+
+			rankChartInstance = new Chart(ctx, {
+				type: 'line',
+				data: {
+					datasets: [{
+						label: 'User Rank',
+						data: dataPoints,
+						borderColor: '#eab308',
+						backgroundColor: 'rgba(16, 185, 129, 0.1)',
+						borderWidth: 2,
+						pointBackgroundColor: '#ffffff',
+						pointRadius: 4,
+						fill: false,
+						tension: 0
+					}]
+				},
+				options: {
+					responsive: true,
+					maintainAspectRatio: false,
+					scales: {
+						x: { 
+							type: 'linear', 
+							min: currentViewMin,
+							max: currentViewMax,
+							ticks: { 
+								stepSize: oneHour, // Forces exactly 1-hour intervals
+								color: '#94a3b8',
+								callback: function(value) {
+									const d = new Date(value);
+									let hours = d.getHours();
+									const minutes = d.getMinutes().toString().padStart(2, '0');
+									const ampm = hours >= 12 ? 'PM' : 'AM';
+									hours = hours % 12;
+									hours = hours ? hours : 12; 
+									
+									const timeStr = `${hours}:${minutes} ${ampm}`;
+									const dateStr = `${d.getMonth() + 1}/${d.getDate()}`;
+									
+									return [timeStr, dateStr];
+								}
+							}, 
+							grid: { color: '#334155' } 
+						},
+						y: { 
+							reverse: true, 
+							ticks: { color: '#94a3b8', stepSize: 1 }, 
+							grid: { color: '#334155' } 
+						}
+					},
+					plugins: { 
+						tooltip: {
+							callbacks: {
+								title: function(context) {
+									const value = context[0].raw.x;
+									const d = new Date(value);
+									let hours = d.getHours();
+									const minutes = d.getMinutes().toString().padStart(2, '0');
+									const ampm = hours >= 12 ? 'PM' : 'AM';
+									hours = hours % 12;
+									hours = hours ? hours : 12;
+									return `${hours}:${minutes} ${ampm} - ${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+								}
+							}
+						},
+						legend: { display: false } // Legend Key successfully removed
+					}
+				}
+			});
+
+			// Sync the external scrollbar position to dynamically pan the chart window
+			scrollContainer.onscroll = function() {
+				const maxScrollLeft = scrollContainer.scrollWidth - scrollContainer.clientWidth;
+				let scrollPercent = maxScrollLeft === 0 ? 1 : scrollContainer.scrollLeft / maxScrollLeft;
+				
+				const newMin = dataMin + scrollPercent * (totalSpan - viewWindow);
+				const newMax = newMin + viewWindow;
+				
+				if (rankChartInstance) {
+					rankChartInstance.options.scales.x.min = newMin;
+					rankChartInstance.options.scales.x.max = newMax;
+					rankChartInstance.update('none'); // Update gracefully without animation resetting
+				}
+			};
+
+			// On initial load, snap scrollbar strictly to the right side (most recent data)
+			setTimeout(() => {
+				scrollContainer.scrollLeft = scrollContainer.scrollWidth;
+			}, 0);
+		};
+		// Inline Web Worker ensures the checking interval runs accurately every 1 minute in background tabs
+		const workerBlob = new Blob([
+			`setInterval(() => { postMessage('tick'); }, 60000);`
+		], { type: 'text/javascript' });
+
+		const backgroundTimerWorker = new Worker(URL.createObjectURL(workerBlob));
+
+		backgroundTimerWorker.onmessage = function() {
+			if (typeof checkAndRefreshRankChartSilently === 'function') {
+				checkAndRefreshRankChartSilently();
+			}
+		};
+
+		// Silently fetches current rank and updates the chart without clearing or reloading the main UI
+		async function checkAndRefreshRankChartSilently() {
+			const user = localStorage.getItem('ra_user');
+			const key = localStorage.getItem('ra_key');
+			const container = document.getElementById('ra-user-stats');
+
+			if (!user || !key || !container) return;
+
+			try {
+				const raApi = await import("https://esm.sh/@retroachievements/api");
+				const { buildAuthorization, getUserSummary } = raApi;
+				const authorization = buildAuthorization({ username: user, webApiKey: key });
+
+				// Request minimal payload counts (1 game/achievement) to quickly query rank
+				const data = await window.safeApiCall(getUserSummary, authorization, { 
+					username: user,
+					recentGamesCount: 1,
+					recentAchievementsCount: 1,
+					t: Date.now() 
+				});
+
+				if (data && data.rank) {
+					const cleanRankNumber = parseInt(String(data.rank).replace(/,/g, ''), 10);
+					if (!isNaN(cleanRankNumber) && typeof window.updateAndRenderRankChart === 'function') {
+						// Update only the chart component
+						window.updateAndRenderRankChart(container, cleanRankNumber);
+						
+						// Silently keep cached summary in sync for future manual page actions
+						const cachedSummary = JSON.parse(localStorage.getItem('ra_api_summary'));
+						if (cachedSummary) {
+							cachedSummary.rank = data.rank;
+							localStorage.setItem('ra_api_summary', JSON.stringify(cachedSummary));
+						}
+					}
+				}
+			} catch (err) {
+				console.error("Background rank check failed:", err);
+			}
+		}
     </script>
 </body>
 </html>
