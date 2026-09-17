@@ -1,3 +1,21 @@
+// Global State Declarations
+window.userLibrary = {};
+window.completedData = {};
+window.masteredData = {};
+
+let gamePool = {};
+let currentWheelItems = [];
+let selectedConsole = null;
+let selectedGame = null;
+let rotation = 0;
+let isSpinning = false;
+let isEditing = false;
+let collapsedGroups = {};
+
+let raCompletedGamesCache = JSON.parse(localStorage.getItem('ra_api_completed')) || [];
+window.wtpGamesCache = [];
+window.wtpActiveTab = null;
+
 // Creates or opens the database
 const dbPromise = idb.openDB('GamesLibraryDB', 1, {
 	upgrade(db) {
@@ -4438,130 +4456,76 @@ function fetchEventsAndHubs(raApi, authorization) {
 }
 
 async function bootApp() {
-	document.getElementById('ra-username').value = localStorage.getItem('ra_user') || '';
-	document.getElementById('ra-api-key').value = localStorage.getItem('ra_key') || '';
+    document.getElementById('ra-username').value = localStorage.getItem('ra_user') || '';
+    document.getElementById('ra-api-key').value = localStorage.getItem('ra_key') || '';
 
-	const db = await dbPromise;
+    const db = await dbPromise;
 
-	// ONE-TIME MIGRATION FROM LOCALSTORAGE IF APPLICABLE
-	let rawLibrary = JSON.parse(localStorage.getItem('userLibrary_v3'));
-	if (rawLibrary) {
-		for (const con of Object.keys(rawLibrary)) {
-			for (let g of rawLibrary[con]) {
-				let obj = typeof g === 'string' ? { name: g, raId: "", imgId: "", maxAch: 0 } : { ...g };
-				if (!obj.id) obj.id = Math.random().toString(36).substr(2, 9);
-				if (obj.imgId) obj.imgId = cleanImg(obj.imgId);
-				obj.consoleName = con;
-				await db.put('games', obj);
-			}
-		}
-		localStorage.removeItem('userLibrary_v3');
-	}
+    // STEP 1: One-time migration from localStorage to IndexedDB if needed
+    let rawLibrary = JSON.parse(localStorage.getItem('userLibrary_v3'));
+    if (rawLibrary) {
+        for (const con of Object.keys(rawLibrary)) {
+            for (let g of rawLibrary[con]) {
+                let obj = typeof g === 'string' ? { name: g, raId: "", imgId: "", maxAch: 0 } : { ...g };
+                if (!obj.id) obj.id = Math.random().toString(36).substr(2, 9);
+                if (obj.imgId) obj.imgId = cleanImg(obj.imgId);
+                obj.consoleName = con;
+                await db.put('games', obj);
+            }
+        }
+        localStorage.removeItem('userLibrary_v3');
+    }
 
-	// 1. POPULATE USERLIBRARY FROM INDEXEDDB
-	const allGamesFromDB = await db.getAll('games');
-	window.userLibrary = {};
-	allGamesFromDB.forEach(g => {
-		const conName = g.consoleName || 'Unknown';
-		if (!window.userLibrary[conName]) window.userLibrary[conName] = [];
-		window.userLibrary[conName].push(g);
-	});
+    // STEP 2: Populate userLibrary from IndexedDB safely
+    const allGamesFromDB = await db.getAll('games');
+    window.userLibrary = {};
+    allGamesFromDB.forEach(g => {
+        const conName = g.consoleName || 'Unknown';
+        if (!window.userLibrary[conName]) window.userLibrary[conName] = [];
+        window.userLibrary[conName].push(g);
+    });
 
-	// 2. NOW MAP COMPLETED AND MASTERED DATA (userLibrary is now populated!)
-	let rawCompleted = JSON.parse(localStorage.getItem('completedData_v3')) || {};
-	let completedModified = false;
-	
-	let rawMastered = JSON.parse(localStorage.getItem('masteredData_v3')) || {};
-	let masteredModified = false;
-	
-	Object.keys(rawCompleted).forEach(con => {
-		window.completedData[con] = rawCompleted[con].map(item => {
-			let existsById = window.userLibrary[con]?.some(g => g.id === item);
-			if (!existsById) {
-				let libGame = window.userLibrary[con]?.find(g => g.name === item);
-				if (libGame) {
-					completedModified = true;
-					return libGame.id;
-				}
-			}
-			return item;
-		});
-	});
-	if (completedModified) localStorage.setItem('completedData_v3', JSON.stringify(window.completedData));
+    // STEP 3: Map Completed Data (Now that userLibrary is loaded)
+    let rawCompleted = JSON.parse(localStorage.getItem('completedData_v3')) || {};
+    let completedModified = false;
+    
+    Object.keys(rawCompleted).forEach(con => {
+        window.completedData[con] = rawCompleted[con].map(item => {
+            let existsById = window.userLibrary[con]?.some(g => g.id === item);
+            if (!existsById) {
+                let libGame = window.userLibrary[con]?.find(g => g.name === item);
+                if (libGame) {
+                    completedModified = true;
+                    return libGame.id;
+                }
+            }
+            return item;
+        });
+    });
+    if (completedModified) localStorage.setItem('completedData_v3', JSON.stringify(window.completedData));
 
-	Object.keys(rawMastered).forEach(con => {
-		window.masteredData[con] = rawMastered[con].map(item => {
-			let existsById = window.userLibrary[con]?.some(g => g.id === item);
-			if (!existsById) {
-				let libGame = window.userLibrary[con]?.find(g => g.name === item);
-				if (libGame) {
-					masteredModified = true;
-					return libGame.id;
-				}
-			}
-			return item;
-		});
-	});
-	if (masteredModified) localStorage.setItem('masteredData_v3', JSON.stringify(window.masteredData));
+    // STEP 4: Map Mastered Data (Now that userLibrary is loaded)
+    let rawMastered = JSON.parse(localStorage.getItem('masteredData_v3')) || {};
+    let masteredModified = false;
 
-	// 3. RENDER UI
-	rebuildPool();
-	renderSidebar();
-	
-	const filterAch = document.getElementById('achievements-spin-filter').checked;
-	const filterDamageless = document.getElementById('damageless-spin-filter').checked;
-	const filterSpeedrun = document.getElementById('speedrun-spin-filter').checked;
+    Object.keys(rawMastered).forEach(con => {
+        window.masteredData[con] = rawMastered[con].map(item => {
+            let existsById = window.userLibrary[con]?.some(g => g.id === item);
+            if (!existsById) {
+                let libGame = window.userLibrary[con]?.find(g => g.name === item);
+                if (libGame) {
+                    masteredModified = true;
+                    return libGame.id;
+                }
+            }
+            return item;
+        });
+    });
+    if (masteredModified) localStorage.setItem('masteredData_v3', JSON.stringify(window.masteredData));
 
-	const availableConsoles = Object.keys(gamePool).filter(con =>
-		con !== 'Events' &&
-		gamePool[con].some(g =>
-			(!filterAch || (g.maxAch && parseInt(g.maxAch, 10) > 0)) &&
-			(!filterDamageless || !g.damagelessIDs || parseInt(g.damagelessIDs.length, 10) === 0) &&
-			(!filterSpeedrun || !g.speedrunIDs || parseInt(g.speedrunIDs.length, 10) === 0)
-		)
-	);
-
-	currentWheelItems = shuffleArray(availableConsoles);
-	drawWheel(currentWheelItems);
-
-	const user = localStorage.getItem('ra_user');
-	const key = localStorage.getItem('ra_key');
-	
-	if (user && key) {
-		try {
-			const raApi = await import("https://esm.sh/@retroachievements/api");
-			const authorization = raApi.buildAuthorization({ username: user, webApiKey: key });
-
-			const consoleReq = await fetch(`https://retroachievements.org/API/API_GetConsoleIDs.php?z=${user}&y=${key}`);
-			const consoleData = await consoleReq.json();
-
-			consoleData.forEach(c => {
-				const existingKey = Object.keys(CONSOLE_IMAGES).find(k => CONSOLE_IMAGES[k] === c.IconURL) || 
-									Object.keys(RA_CONSOLE_IDS).find(k => RA_CONSOLE_IDS[k] === c.ID);
-				const shortName = existingKey || c.IconURL.split('/').pop().replace('.png', '').toUpperCase();
-
-				if (!RA_CONSOLE_IDS[shortName]) RA_CONSOLE_IDS[shortName] = c.ID;
-				if (!CONSOLE_FULL_NAMES[shortName]) CONSOLE_FULL_NAMES[shortName] = c.Name;
-				if (!CONSOLE_IMAGES[shortName]) CONSOLE_IMAGES[shortName] = c.IconURL;
-				if (!CONSOLE_COLORS[shortName]) CONSOLE_COLORS[shortName] = "#808080"; 
-				
-				CONSOLE_METADATA[shortName] = {
-					active: c.Active,
-					isGameSystem: c.IsGameSystem
-				};
-			});
-
-			fetchUserStats(true);
-
-			// FIRE AND FORGET: Start pulling IDs 100 and 101 in the background
-			fetchEventsAndHubs(raApi, authorization);
-
-			renderSidebar();
-			
-		} catch(e) {
-			console.error("Boot sequence API error:", e);
-		}
-	}
+    // STEP 5: Safe to render UI elements now
+    rebuildPool();
+    renderSidebar(); 
 }
 
 bootApp(); 
