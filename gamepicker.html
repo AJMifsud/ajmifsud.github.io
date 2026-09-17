@@ -12,7 +12,6 @@
 </head>
 <body>
     <div id="bg-fade-layer" style="position:fixed; top:0; left:0; width:100%; height:100%; background-size:cover; background-position:center; z-index:-1; opacity:0; transition:opacity 0.8s ease; pointer-events:none;"></div>
-    
     <div id="image-viewer-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center; cursor:pointer;" onclick="this.style.display='none'">
         <img id="image-viewer-img" style="max-width:90%; max-height:90%; object-fit:contain; border-radius:8px; box-shadow:0 0 20px rgba(0,0,0,0.8);">
     </div>
@@ -26,45 +25,41 @@
             <div id="extended-progress-bar"></div>
             <div id="extended-progress-text">Updating extended game information - 0%</div>
         </div>
-		
+        
 		<div class="search-wrapper">
             <input type="text" id="game-search" role="search" placeholder="Search library..." autocomplete="off">
             <span id="clear-search-btn">✕</span>
         </div>
 
         <div id="search-results-container"></div>
-
 		<div id="stats-container"></div>
-		
-        <div id="spin-options">
+		<div id="spin-options">
 			<div style="display: flex; gap: 5px; margin-right: auto;">
 				<input type="checkbox" id="achievements-spin-filter" name="achievements" value="Achievements" checked>
 				<label for="achievements-spin-filter" style="margin-right: auto;">Hide games with no achievements</label>
 			</div>
-			
-            <div style="display: flex; gap: 5px; margin-right: auto;">
+			<div style="display: flex; gap: 5px; margin-right: auto;">
 				<input type="checkbox" id="damageless-spin-filter" name="damageless" value="Damageless">
 				<label for="damageless-spin-filter" style="margin-right: auto;">Hide games with damageless achievements</label>
-			
-            </div>
-			
-            <div style="display: flex; gap: 5px; margin-right: auto;">
+			</div>
+			<div style="display: flex; gap: 5px; margin-right: auto;">
 				<input type="checkbox" id="speedrun-spin-filter" name="speedrun" value="Speedrun">
 				<label for="speedrun-spin-filter" style="margin-right: auto;">Hide games with speedrun achievements</label>
 			</div>
 		</div>
-        
         <div class="library-sort-wrapper">
             <select id="library-sort-select" onchange="renderSidebar()">
                 <option value="console">Sort by Console</option>
-                <option value="time">Sort by Average Mastery Time</option>
-                <option value="hc_time">Sort by Average Time to Beat (Hardcore)</option>
-                <option value="percentage">Sort by Percentage Complete</option>
+                <option value="title">Sort by Title</option>
+                <option value="developer">Sort by Developer</option>
+                <option value="publisher">Sort by Publisher</option>
+                <option value="release_year">Sort by Release Year</option>
                 <option value="achievements">Sort by Number of Achievements</option>
                 <option value="points">Sort by Number of Points</option>
-                <option value="genre">Sort by Genre</option>
+                <option value="hc_time">Sort by Average Time to Beat (Hardcore)</option>
+                <option value="time">Sort by Average Mastery Time</option>
                 <option value="pph_hc">Sort by Average Points/Hour (Hardcore)</option>
-                <option value="release_year">Sort by Release Year</option>
+                <option value="genre">Filter by Genre</option>
             </select>
         </div>
 		
@@ -74,8 +69,7 @@
             <button class="ui-btn btn-ghost" onclick="openManager()">Manage Library</button>
             <button class="ui-btn btn-primary" onclick="processExtendedFetchQueue()">Update All Games</button>
         </div>
-		
-        <div id="sidebar-expand-arrow" onclick="toggleSidebarHeight()">
+		<div id="sidebar-expand-arrow" onclick="toggleSidebarHeight()">
             <span class="expand-icon">▼</span>
         </div>
     </div>
@@ -99,18 +93,15 @@
 				<div class="controls" id="ctrl-console">
 					<button class="ui-btn btn-primary" onclick="spinForConsole()"><span class="btn-icon">&#10227;</span> Spin Consoles</button>
 				</div>
-				
-                <div class="controls hidden" id="ctrl-game-ready">
+				<div class="controls hidden" id="ctrl-game-ready">
 					<button class="ui-btn btn-ghost" onclick="resetToConsole()"><span class="btn-icon-small">&#9664;</span> Back to Consoles</button>
 					<button class="ui-btn btn-primary" onclick="spinForGame()"><span class="btn-icon">&#10227;</span> Spin Games</button>
 				</div>
-				
-                <div class="controls hidden" id="ctrl-wheel-spinning">
+				<div class="controls hidden" id="ctrl-wheel-spinning">
 					<button class="ui-btn btn-ghost" disabled><span class="btn-icon-small">&#9664;</span> Back to Consoles</button>
 					<button class="ui-btn btn-primary" disabled><span class="btn-icon">&#10227;</span> Spin Games</button>
 				</div>
-				
-                <div class="controls hidden" id="ctrl-result">
+				<div class="controls hidden" id="ctrl-result">
 					<button class="ui-btn btn-ghost" onclick="resetToConsole()"><span class="btn-icon-small">&#9664;</span> Back to Consoles</button>
 					<button class="ui-btn btn-primary" onclick="spinForGame()"><span class="btn-icon">&#10227;</span> Re-Spin Games</button>
 					<!--<button class="ui-btn btn-success" onclick="completeGame('completed')"><span class="btn-icon">&#127894;</span> Mark Completed</button>
@@ -133,7 +124,6 @@
                         <label style="font-size: 0.7rem; text-transform: uppercase;">System / Console</label>
                         <select id="modify-console-select" onchange="handleConsoleChange()" style="margin-bottom:0;"></select>
                     </div>
-                    
                     <div style="flex: 1; display: flex; align-items: flex-end;">
                         <button class="ui-btn btn-primary" style="width: 100%; height: 42px;" onclick="runScanner()">Scan Local Folders</button>
                     </div>
@@ -144,7 +134,6 @@
                         <h4 style="margin:0; color:var(--accent);">Scanner Results</h4>
                         <button class="ui-btn btn-ghost" style="padding: 4px 8px; font-size: 0.6rem;" onclick="closeScanner()">Cancel</button>
                     </div>
-                    
                     <div class="mgmt-list-scroll" id="scanner-tree-root"></div>
                     <button class="ui-btn btn-success" style="margin-top:10px; flex-shrink: 0;" onclick="importScannedGames()">Import Selected Items</button>
                 </div>
@@ -153,9 +142,7 @@
                     <div class="mgmt-list-item" style="border-bottom: 2px solid var(--border); font-weight:bold; color:var(--primary); font-size:0.7rem; text-transform: uppercase; flex-shrink: 0;">
                         <span>Title</span><span>RA ID</span><span>API</span><span>Action</span>
                     </div>
-                    
                     <div class="mgmt-list-scroll" id="modify-game-list"></div>
-                    
                     <div style="margin-top: 15px; display: flex; gap: 10px; flex-shrink: 0;">
                         <select id="add-game-console-select" style="flex: 1; margin-bottom: 0; padding: 10px;"></select>
                         <button class="ui-btn btn-success" style="flex: 1;" onclick="addEmptyGame()">&#10010; Add Game</button>
