@@ -714,6 +714,10 @@ window.updateHistoryItemDOM = function(game, conName) {
 		rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${game.genre}</span>`;
 	} else if (sortMode === 'pph_hc') {
 		rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${game.pointsPerHourHC}</span>`;
+	} else if (sortMode === 'developer') {
+		rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${game.developer}</span>`;
+	} else if (sortMode === 'publisher') {
+		rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${game.publisher}</span>`;
 	} else {
 		if (isMastered) rightText = '👑';
 		else if (isCompleted) rightText = '🎖️';
@@ -1261,6 +1265,10 @@ function createSidebarListItemHtml(game, con, options = {}) {
 		rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${pct.toFixed(1)}%</span>`;
 	} else if (sortMode === 'points') {
 		rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${game.pts || 0} Pts</span>`;
+	} else if (sortMode === 'developer') {
+		rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${game.developer}</span>`;
+	} else if (sortMode === 'publisher') {
+		rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${game.publisher}</span>`;
 	} else {
 		if (isMastered) rightText = '👑';
 		else if (isCompleted) rightText = '🎖️';
@@ -1591,6 +1599,12 @@ function renderSidebarByGroup(allGames, sortMode, currentlyOpenId, currentlyOpen
 			else if (pph <= 100) groupName = "81 - 100 Points per Hour";
 			else if (pph <= 115) groupName = "101 - 115 Points per Hour";
 			else groupName = "116+ Points per Hour";
+		} else if (sortMode === 'title') {
+			groupName = (g.name || '').replace(/~([^~]+)~/g, '').trim().charAt(0).toUpperCase() || "Unknown";
+		} else if (sortMode === 'developer') {
+			groupName = (g.developer || '').trim().charAt(0).toUpperCase() || "Unknown";
+		} else if (sortMode === 'publisher') {
+			groupName = (g.publisher || '').trim().charAt(0).toUpperCase() || "Unknown";
 		}
 		if (!groups[groupName]) groups[groupName] = [];
 		groups[groupName].push(g);
@@ -1613,6 +1627,9 @@ function renderSidebarByGroup(allGames, sortMode, currentlyOpenId, currentlyOpen
 		if (sortMode === 'points') return ptsOrder.indexOf(a) - ptsOrder.indexOf(b);
 		if (sortMode === 'pph_hc') return pphOrder.indexOf(a) - pphOrder.indexOf(b);
 		if (sortMode === 'release_year') return releaseOrder.indexOf(a) - releaseOrder.indexOf(b);
+		if (sortMode === 'title') return a.localeCompare(b);
+		if (sortMode === 'developer') return a.localeCompare(b);
+		if (sortMode === 'publisher') return a.localeCompare(b);
 		
 		return (parseInt(a.replace(/[^0-9]/g, '')) || 0) - (parseInt(b.replace(/[^0-9]/g, '')) || 0);
 	});
@@ -1643,6 +1660,15 @@ function renderSidebarByGroup(allGames, sortMode, currentlyOpenId, currentlyOpen
 		});				
 		else if (sortMode === 'release_year') games.sort((a, b) => {
 			return (a.released || '').localeCompare(b.released || '') || cleanCompare(a, b);
+		});			
+		else if (sortMode === 'title') games.sort((a, b) => {
+			return cleanCompare(a, b);
+		});			
+		else if (sortMode === 'developer') games.sort((a, b) => {
+			return (a.developer || '').localeCompare(b.developer || '') || cleanCompare(a, b);
+		});			
+		else if (sortMode === 'publisher') games.sort((a, b) => {
+			return (a.publisher || '').localeCompare(b.publisher || '') || cleanCompare(a, b);
 		});
 		else games.sort(cleanCompare);
 		
@@ -2594,6 +2620,7 @@ function buildUserHeaderHTML(data, user) {
 
 	if (data.motto) html += `<p style="margin: 4px 0 0 0; color: #94a3b8; font-size: 0.75rem; font-style: italic;">"${data.motto}"</p>`;
 	const memSince = data.memberSince || data.MemberSince;
+	console.log(memSince)
 	if (memSince) html += `<p style="margin: 4px 0 0 0; color: #94a3b8; font-size: 0.75rem;"><strong style="color:white;">Member Since:</strong> ${memSince}</p>`;
 	html += `</div></div>`;
 
@@ -2713,14 +2740,16 @@ async function buildCompletionChartsHTML() {
 			if (genre.toLowerCase() === 'not available' || genre.toLowerCase() === 'unknown' || genre === '') {
 				genre = 'Unknown';
 			}
-			genreCounts[genre] = (genreCounts[genre] || 0) + 1;
-			if (!genreGames[genre]) genreGames[genre] = [];
-			genreGames[genre].push(gameTitle);
+			if (!genreCounts[genre]) genreCounts[genre] = { mastered: 0, completed: 0 };
+			genreCounts[genre][catKey]++;
+			if (!genreGames[genre]) genreGames[genre] = { mastered: [], completed: [] };
+			genreGames[genre][catKey].push(gameTitle);
 			
 			// Count by Console
-			consoleCounts[cName] = (consoleCounts[cName] || 0) + 1;
-			if (!consoleGames[cName]) consoleGames[cName] = [];
-			consoleGames[cName].push(gameTitle);
+			if (!consoleCounts[cName]) consoleCounts[cName] = { mastered: 0, completed: 0 };
+			consoleCounts[cName][catKey]++;
+			if (!consoleGames[cName]) consoleGames[cName] = { mastered: [], completed: [] };
+			consoleGames[cName][catKey].push(gameTitle);
 			
 			// Count by Publisher (Normalize "Not Available" / "Unknown")
 			const rawPublisher = getPublisher(gameId);
@@ -2728,9 +2757,10 @@ async function buildCompletionChartsHTML() {
 			if (publisher.toLowerCase() === 'not available' || publisher.toLowerCase() === 'unknown' || publisher === '') {
 				publisher = 'Unknown';
 			}
-			publisherCounts[publisher] = (publisherCounts[publisher] || 0) + 1;
-			if (!publisherGames[publisher]) publisherGames[publisher] = [];
-			publisherGames[publisher].push(gameTitle);
+			if (!publisherCounts[publisher]) publisherCounts[publisher] = { mastered: 0, completed: 0 };
+			publisherCounts[publisher][catKey]++;
+			if (!publisherGames[publisher]) publisherGames[publisher] = { mastered: [], completed: [] };
+			publisherGames[publisher][catKey].push(gameTitle);
 			
 			// Count by Developer (Normalize "Not Available" / "Unknown")
 			const rawDeveloper = getDeveloper(gameId);
@@ -2738,9 +2768,10 @@ async function buildCompletionChartsHTML() {
 			if (developer.toLowerCase() === 'not available' || developer.toLowerCase() === 'unknown' || developer === '') {
 				developer = 'Unknown';
 			}
-			developerCounts[developer] = (developerCounts[developer] || 0) + 1;
-			if (!developerGames[developer]) developerGames[developer] = [];
-			developerGames[developer].push(gameTitle);
+			if (!developerCounts[developer]) developerCounts[developer] = { mastered: 0, completed: 0 };
+			developerCounts[developer][catKey]++;
+			if (!developerGames[developer]) developerGames[developer] = { mastered: [], completed: [] };
+			developerGames[developer][catKey].push(gameTitle);
 
 			// Cross-reference with rawLibrary to recover missing release dates
 			let rYear = 'Unknown';
@@ -2753,9 +2784,10 @@ async function buildCompletionChartsHTML() {
 			}
 			
 			if (rYear !== 'Unknown') {
-				yearCounts[rYear] = (yearCounts[rYear] || 0) + 1;
-				if (!yearGames[rYear]) yearGames[rYear] = [];
-				yearGames[rYear].push(gameTitle);
+				if (!yearCounts[rYear]) yearCounts[rYear] = { mastered: 0, completed: 0 };
+				yearCounts[rYear][catKey]++;
+				if (!yearGames[rYear]) yearGames[rYear] = { mastered: [], completed: [] };
+				yearGames[rYear][catKey].push(gameTitle);
 			}
 		}
 	});
@@ -2769,11 +2801,11 @@ async function buildCompletionChartsHTML() {
 	
 	if (years.length === 0 && genres.length === 0 && consoles.length === 0 && publishers.length === 0) return '';
 
-	const maxYear = Math.max(0, ...Object.values(yearCounts));
-	const maxGenre = Math.max(0, ...Object.values(genreCounts));
-	const maxConsole = Math.max(0, ...Object.values(consoleCounts));
-	const maxPublisher = Math.max(0, ...Object.values(publisherCounts));
-	const maxDeveloper = Math.max(0, ...Object.values(developerCounts));
+	const maxYear = Math.max(0, ...Object.values(yearCounts).map(v => v.mastered + v.completed));
+	const maxGenre = Math.max(0, ...Object.values(genreCounts).map(v => v.mastered + v.completed));
+	const maxConsole = Math.max(0, ...Object.values(consoleCounts).map(v => v.mastered + v.completed));
+	const maxPublisher = Math.max(0, ...Object.values(publisherCounts).map(v => v.mastered + v.completed));
+	const maxDeveloper = Math.max(0, ...Object.values(developerCounts).map(v => v.mastered + v.completed));
 	const maxDay = Math.max(0, ...dayNames.map(d => dayCounts[d].mastered + dayCounts[d].completed));
 	const maxMonth = Math.max(0, ...monthNames.map(m => monthCounts[m].mastered + monthCounts[m].completed));
 
@@ -2781,19 +2813,33 @@ async function buildCompletionChartsHTML() {
 	const generateBarChart = (title, keys, dataMap, maxVal, gamesMap, hasToggle = false) => {
 		
 		let columnsHtml = keys.map(key => {
-			const count = dataMap[key];
-			const pct = maxVal > 0 ? (count / maxVal) * 100 : 0;
+			const mCount = dataMap[key].mastered;
+			const cCount = dataMap[key].completed;
+			const total = mCount + cCount;
+			const mPct = maxVal > 0 ? (mCount / maxVal) * 100 : 0;
+			const cPct = maxVal > 0 ? (cCount / maxVal) * 100 : 0;
+			
 			const safeClass = `column-safe-${key.replace(/[^a-zA-Z0-9]/g, '_')}`;
 			
-			const gamesList = gamesMap[key] ? gamesMap[key].join('&#10;• ') : '';
-			const tooltipText = `${key} (${count}):&#10;• ${gamesList}`;
+			const mList = gamesMap[key].mastered.join('&#10;• ').replace(/~([^~]+)~\s?/g, '').trim();
+			const cList = gamesMap[key].completed.join('&#10;• ').replace(/~([^~]+)~\s?/g, '').trim();
+			let tooltipText = `${key} (${total})`;
+			if (mCount > 0) tooltipText += `&#10;🏆 Mastered (${mCount}):&#10;• ${mList}`;
+			if (cCount > 0) tooltipText += `&#10;🎖 Completed (${cCount}):&#10;• ${cList}`;
+			
 			const cleanKey = key.replace(/\//g, '/ ');
 			
+			const topRadius = cPct === 0 ? '4px 4px 0 0' : '4px 4px 0 0'; 
+			const bottomRadius = mPct === 0 ? '4px 4px 0 0' : '0';
+
 			return `
 			<div class="${safeClass}" style="display: flex; flex-direction: column; width: 55px; flex-shrink: 0; align-items: center;">
-				<div style="position: relative; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; width: 100%; height: 150px; border-bottom: 1px solid var(--border);">
-					<span style="font-size: 0.65rem; color: #94a3b8; position: absolute; bottom: calc(${pct}% + 4px);">${count}</span>
-					<div style="background: var(--primary); width: 25px; height: ${pct}%; border-radius: 4px 4px 0 0; min-height: 2px; transition: height 0.3s;" title="${tooltipText}"></div>
+				<div style="position: relative; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; width: 100%; height: 150px; border-bottom: 1px solid var(--border);" title="${tooltipText}">
+					<span style="font-size: 0.65rem; color: #94a3b8; position: absolute; bottom: calc(${mPct + cPct}% + 4px);">${total > 0 ? total : ''}</span>
+					<!-- Mastered (Yellow) -->
+					<div style="background: #eab308; width: 25px; height: ${mPct}%; border-radius: ${topRadius}; min-height: ${mPct > 0 ? '2px' : '0'}; transition: height 0.3s; margin-bottom: 0;"></div>
+					<!-- Completed (Blue) -->
+					<div style="background: #3b82f6; width: 25px; height: ${cPct}%; border-radius: ${bottomRadius}; min-height: ${cPct > 0 ? '2px' : '0'}; transition: height 0.3s;"></div>
 				</div>
 				<div style="display: flex; justify-content: flex-end; margin-top: 10px; width: 100%;">
 					<span style="font-size: 0.55rem; color: #64748b; transform: rotate(-45deg); transform-origin: bottom; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; width: 75px; margin-right: 15px; line-height: 1.1; text-align: right; padding-top: 5px;" title="${cleanKey}">${cleanKey}</span>
@@ -2823,7 +2869,7 @@ async function buildCompletionChartsHTML() {
 					<div style="border-top: 1px solid transparent; width: 100%;"></div> 
 				</div>
 				<div style="overflow-x: auto; overflow-y: hidden; padding-bottom: 35px; padding-top: 20px; position: relative; z-index: 1;">
-					<div style="display: flex; flex-wrap: nowrap; padding: 0 10px 0 25px; min-width: max-content;">
+					<div style="display: flex; flex-wrap: nowrap; padding: 0 10px 0 25px; min-width: 100%; width: max-content; justify-content: space-around; box-sizing: border-box;">
 						${columnsHtml}
 					</div>
 				</div>
@@ -2851,8 +2897,9 @@ async function buildCompletionChartsHTML() {
 				const mPct = maxVal > 0 ? (mCount / maxVal) * 100 : 0;
 				const cPct = maxVal > 0 ? (cCount / maxVal) * 100 : 0;
 				
-				const mList = gamesMap[key].mastered.join('&#10;• ');
-				const cList = gamesMap[key].completed.join('&#10;• ');
+				const mList = gamesMap[key].mastered.join('&#10;• ').replace(/~([^~]+)~\s?/g, '').trim();
+				const cList = gamesMap[key].completed.join('&#10;• ').replace(/~([^~]+)~\s?/g, '').trim();
+				console.log('mlist', mList)
 				let tooltipText = `${key} (${total})`;
 				if (mCount > 0) tooltipText += `&#10;🏆 Mastered (${mCount}):&#10;• ${mList}`;
 				if (cCount > 0) tooltipText += `&#10;🎖 Completed (${cCount}):&#10;• ${cList}`;
@@ -2891,7 +2938,7 @@ async function buildCompletionChartsHTML() {
 			<div class="day-view" style="display: block; position: relative;">
 				${buildBackgroundLines(maxDay)}
 				<div style="overflow-x: auto; overflow-y: hidden; padding-bottom: 35px; padding-top: 20px; position: relative; z-index: 1;">
-					<div style="display: flex; flex-wrap: nowrap; padding: 0 10px 0 25px; min-width: max-content;">
+					<div style="display: flex; flex-wrap: nowrap; padding: 0 10px 0 25px; min-width: 100%; width: max-content; justify-content: space-around; box-sizing: border-box;">
 						${buildStackedColumns(dayNames, dayCounts, dayGames, maxDay)}
 					</div>
 				</div>
@@ -2901,7 +2948,7 @@ async function buildCompletionChartsHTML() {
 			<div class="month-view" style="display: none; position: relative;">
 				${buildBackgroundLines(maxMonth)}
 				<div style="overflow-x: auto; overflow-y: hidden; padding-bottom: 35px; padding-top: 20px; position: relative; z-index: 1;">
-					<div style="display: flex; flex-wrap: nowrap; padding: 0 10px 0 25px; min-width: max-content;">
+					<div style="display: flex; flex-wrap: nowrap; padding: 0 10px 0 25px; min-width: 100%; width: max-content; justify-content: space-around; box-sizing: border-box;">
 						${buildStackedColumns(monthNames, monthCounts, monthGames, maxMonth)}
 					</div>
 				</div>
@@ -2912,11 +2959,11 @@ async function buildCompletionChartsHTML() {
 	
 	return `
 	<div id="completion-graphs" style="display: grid; gap: 10px; margin-bottom: 15px; grid-template-columns: repeat(auto-fit, minmax(1fr, 1fr));">
-		${consoles.length > 1 ? generateBarChart('Completions by Console', consoles, consoleCounts, maxConsole, consoleGames) : '<div>Not enough information to display a chart. Add games to the library or update library metadata.</div>'}
-		${years.length > 1 ? generateBarChart('Completions by Release Year', years, yearCounts, maxYear, yearGames) : '<div>Not enough information to display a chart. Add games to the library or update library metadata.</div>'}
-		${genres.length > 1 ? generateBarChart('Completions by Genre', genres, genreCounts, maxGenre, genreGames, true) : '<div>Not enough information to display a chart. Add games to the library or update library metadata.</div>'}
-		${publishers.length > 1 ? generateBarChart('Completions by Publisher', publishers, publisherCounts, maxPublisher, publisherGames, true) : '<div>Not enough information to display a chart. Add games to the library or update library metadata.</div>'}
-		${developers.length > 1 ? generateBarChart('Completions by Developer', developers, developerCounts, maxDeveloper, developerGames, true) : '<div>Not enough information to display a chart. Add games to the library or update library metadata.</div>'}
+		${consoles.length > 1 ? generateBarChart('Completions by Console', consoles, consoleCounts, maxConsole, consoleGames) : ''}
+		${years.length > 1 ? generateBarChart('Completions by Release Year', years, yearCounts, maxYear, yearGames) : ''}
+		${genres.length > 1 ? generateBarChart('Completions by Genre', genres, genreCounts, maxGenre, genreGames, true) : ''}
+		${publishers.length > 1 ? generateBarChart('Completions by Publisher', publishers, publisherCounts, maxPublisher, publisherGames, true) : ''}
+		${developers.length > 1 ? generateBarChart('Completions by Developer', developers, developerCounts, maxDeveloper, developerGames, true) : ''}
 		${(maxDay > 0 || maxMonth > 0) ? generateStackedTimeChart() : ''}
 	</div>`;
 }
