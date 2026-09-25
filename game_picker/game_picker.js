@@ -261,11 +261,15 @@ window.generateGameInfoHtml = function(data, raId, excludeScreenshots = false) {
 				if (ach.type == "missable"){
 					icons += '<strong title="Missable">❕</strong>';
 				}
-				if (data.damagelessIDs.includes(ach.id)){
-					icons += icons ? '<strong title="Damageless"> ☠️</strong>' : '<strong title="Damageless">☠️</strong>';
+				if (data.damagelessIDs) {
+					if (data.damagelessIDs.includes(ach.id)){
+						icons += icons ? '<strong title="Damageless"> ☠️</strong>' : '<strong title="Damageless">☠️</strong>';
+					}
 				}
-				if (data.speedrunIDs.includes(ach.id)){
-					icons += icons ? '<strong title="Speedrun"> ⏲️</strong>' : '<strong title="Speedrun">⏲️</strong>';
+				if (data.speedrunIDs) {
+					if (data.speedrunIDs.includes(ach.id)){
+						icons += icons ? '<strong title="Speedrun"> ⏲️</strong>' : '<strong title="Speedrun">⏲️</strong>';
+					}
 				}
 				const awdCas = ach.numAwarded || ach.NumAwarded || 0;
 				const awdHC = ach.numAwardedHardcore || ach.NumAwardedHardcore || 0;
@@ -432,6 +436,21 @@ window.generateGameInfoHtml = function(data, raId, excludeScreenshots = false) {
 		}
 		html += `</div>`;
 	}
+	const achIds = [];
+	achList.forEach(ach => {
+		achIds.push(ach.id);
+	});
+	if (achIds.length > 0) {
+	html += `
+		<details style="margin:5px 0 0 0; font-size:0.7rem; color: #ffffff; background: #2a2a2a; border-radius: 5px;">
+			<summary style="cursor: pointer; padding: 5px; list-style: none; font-weight: bold; text-align: center;">
+				Achievements ▼
+			</summary>
+			<div style="padding: 5px; background: rgba(0,0,0,0.15); border-top: 1px solid rgba(255,255,255,0.2);">
+				${generateAchDetails(achIds)}
+			</div>
+		</details>`;
+	}
 	
 	if(data.forumTopicId || data.forumTopicID  || data.ForumTopicId || data.ForumTopicID) {
 		html += `<a href="https://retroachievements.org/forums/topic/${data.forumTopicId || data.forumTopicID  || data.ForumTopicId || data.ForumTopicID}" target="_blank" style="display:flex; margin-top: 5px; align-items:center; justify-content:center; background:#2a2a2a; color:white; padding:10px; border-radius:6px; text-decoration:none; font-weight:bold; font-size:0.8rem; flex-shrink:0;">
@@ -578,7 +597,6 @@ async function fetchExtendedDataForGame(raApi, authorization, gameId) {
 
 		// Changed to getGameInfoAndUserProgress and added the username parameter[cite: 1]
 		const data = await window.safeApiCall(raApi.getGameInfoAndUserProgress, authorization, { username: user, gameId: parseInt(gameId) });
-		
 		if (!data) return null;
 		try { 
 			if (typeof raApi.getGameProgression === 'function') {
@@ -840,10 +858,10 @@ window.processExtendedFetchQueue = async function() {
 					let storedAchievements = null;
 
 					// REGEX: Catches common phrases used for "no damage" achievements (case-insensitive)
-					const damagelessRegex = /without taking (any )?damage|without (being|getting) (hit|harmed|damaged|hurt)|without taking a hit|without taking (any )?health damage|without receiving (any )?health damage|without receiving (any )?damage|without suffering (any )?damage|without sustaining (any )?damage|taking no damage|taking zero damage|no damage taken|zero damage taken|no hits taken|taking no hits|without getting hit|without being hit/i;
+					const damagelessRegex = /taking (any )?damage|(being|getting) (hit|harmed|damaged|hurt)|taking a hit|taking (any )?health damage|receiving (any )?health damage|receiving (any )?damage|suffering (any )?damage|sustaining (any )?damage|taking no damage|taking zero damage|no damage taken|zero damage taken|no hits taken|taking no hits|getting hit|being hit|damageless/i;
 
 					// REGEX: Updated to handle timestamp formats like "1:58" where unit words (seconds/minutes) are omitted
-					const speedrunRegex = /(?:within|in under|under|in less than|with a time of|(?:complete|finish|beat|clear)\b.*?\bin) \d+(?::\d+){0,2}(?:\.\d+)?(?: (?:seconds|minutes|secs|mins|hours))?|\d+(?::\d+){0,2}(?:\.\d+)? (?:or less|or fewer)|with \d+(?::\d+){0,2}(?:\.\d+)?(?: (?:seconds|minutes|secs|mins|hours))? (?:remaining|left)/i;
+					const speedrunRegex = /(?:\bwithin\b|\bin(?: under)?\b|\bunder\b|\bin less than\b|with a time of|(?:complete|finish|beat|clear)\b.*?\bin) (?:\d+(?:\.\d+)? (?:seconds?|minutes?|secs?|mins?|hours?)(?: \d+ (?:seconds?|secs?))?|\d+(?::\d+){1,2}(?:\.\d+)?(?: (?:seconds?|minutes?|secs?|mins?|hours?))?)|(?:\d+(?:\.\d+)? (?:seconds?|minutes?|secs?|mins?|hours?)|\d+(?::\d+){1,2}(?:\.\d+)?(?: (?:seconds?|minutes?|secs?|mins?|hours?))?) (?:or less|or fewer)|with (?:\d+(?:\.\d+)? (?:seconds?|minutes?|secs?|mins?|hours?)(?: \d+ (?:seconds?|secs?))?|\d+(?::\d+){1,2}(?:\.\d+)?(?: (?:seconds?|minutes?|secs?|mins?|hours?))?) (?:remaining|left)/i;
 
 					if (ext.achievements || ext.Achievements) {
 						storedAchievements = ext.achievements || ext.Achievements;
@@ -1732,16 +1750,19 @@ function renderSidebar() {
 			const hasAch = g.maxAch !== "" && Number(g.maxAch) !== 0;
 			if (hasAch) totalAchGames++;
 
-			// Evaluate if this game gets hidden (using else-if prevents double-counting)
 			let isHidden = false;
 			
 			if (filterAch && (!g.maxAch || parseInt(g.maxAch) === 0)) {
 				hiddenNoAch++;
 				isHidden = true;
-			} else if (filterDamageless && g.damagelessIDs && parseInt(g.damagelessIDs.length) > 0) {
+			}
+			
+			if (filterDamageless && g.damagelessIDs && parseInt(g.damagelessIDs.length) > 0) {
 				hiddenDamageless++;
 				isHidden = true;
-			} else if (filterSpeedrun && g.speedrunIDs && parseInt(g.speedrunIDs.length) > 0) {
+			} 
+			
+			if (filterSpeedrun && g.speedrunIDs && parseInt(g.speedrunIDs.length) > 0) {
 				hiddenSpeedrun++;
 				isHidden = true;
 			}
@@ -1759,9 +1780,9 @@ function renderSidebar() {
 
 	// 2. Build the Tooltip & Stats Container HTML
 	let tooltipLines = [];
-	if (hiddenNoAch > 0) tooltipLines.push(`${hiddenNoAch}: No Achievements`);
-	if (hiddenDamageless > 0) tooltipLines.push(`${hiddenDamageless}: Damageless`);
-	if (hiddenSpeedrun > 0) tooltipLines.push(`${hiddenSpeedrun}: SpeedRun`);
+	if (hiddenNoAch > 0) tooltipLines.push(`No Achievements: ${hiddenNoAch}`);
+	if (hiddenDamageless > 0) tooltipLines.push(`Damageless: ${hiddenDamageless}`);
+	if (hiddenSpeedrun > 0) tooltipLines.push(`SpeedRun: ${hiddenSpeedrun}`);
 	
 	// Join with &#10; to force a new line inside an HTML title attribute
 	const tooltipText = tooltipLines.join('&#10;');
@@ -1844,24 +1865,6 @@ function renderSidebar() {
 	setTimeout(() => {
 		if (currentlyOpenId) window.activeSidebarInfo = document.getElementById(`sidebar-info-${currentlyOpenId}`);
 	}, 0);
-}
-
-function handleQuickComplete(con, gameId, status = 'completed') {
-	if (!completedData[con]) completedData[con] = [];
-	if (!masteredData[con]) masteredData[con] = [];
-	
-	completedData[con] = completedData[con].filter(id => id !== gameId);
-	masteredData[con] = masteredData[con].filter(id => id !== gameId);
-
-	if (status === 'mastered') {
-		masteredData[con].push(gameId);
-	} else {
-		completedData[con].push(gameId);
-	}
-	
-	localStorage.setItem('completedData_v3', JSON.stringify(completedData));
-	localStorage.setItem('masteredData_v3', JSON.stringify(masteredData));
-	rebuildPool(); renderSidebar(); resetToConsole();
 }
 
 function removeHistoryEntry(con, id) {
@@ -2620,7 +2623,6 @@ function buildUserHeaderHTML(data, user) {
 
 	if (data.motto) html += `<p style="margin: 4px 0 0 0; color: #94a3b8; font-size: 0.75rem; font-style: italic;">"${data.motto}"</p>`;
 	const memSince = data.memberSince || data.MemberSince;
-	console.log(memSince)
 	if (memSince) html += `<p style="margin: 4px 0 0 0; color: #94a3b8; font-size: 0.75rem;"><strong style="color:white;">Member Since:</strong> ${memSince}</p>`;
 	html += `</div></div>`;
 
@@ -2821,11 +2823,11 @@ async function buildCompletionChartsHTML() {
 			
 			const safeClass = `column-safe-${key.replace(/[^a-zA-Z0-9]/g, '_')}`;
 			
-			const mList = gamesMap[key].mastered.join('&#10;• ').replace(/~([^~]+)~\s?/g, '').trim();
-			const cList = gamesMap[key].completed.join('&#10;• ').replace(/~([^~]+)~\s?/g, '').trim();
+			const mList = gamesMap[key].mastered.join('&#10;&#8195;• ').replace(/~([^~]+)~\s?/g, '').trim();
+			const cList = gamesMap[key].completed.join('&#10;&#8195;• ').replace(/~([^~]+)~\s?/g, '').trim();
 			let tooltipText = `${key} (${total})`;
-			if (mCount > 0) tooltipText += `&#10;🏆 Mastered (${mCount}):&#10;• ${mList}`;
-			if (cCount > 0) tooltipText += `&#10;🎖 Completed (${cCount}):&#10;• ${cList}`;
+			if (mCount > 0) tooltipText += `&#10;🏆 Mastered (${mCount}):&#10;&#8195;• ${mList}`;
+			if (cCount > 0) tooltipText += `&#10;🎖 Completed (${cCount}):&#10;&#8195;• ${cList}`;
 			
 			const cleanKey = key.replace(/\//g, '/ ');
 			
@@ -2876,7 +2878,7 @@ async function buildCompletionChartsHTML() {
 			</div>
 		</div>`;
 	};
-
+	
 	// 5. Helper to generate Stacked Time Charts (Day/Month Toggle)
 	const generateStackedTimeChart = () => {
 		const buildBackgroundLines = (maxVal) => `
@@ -2897,12 +2899,11 @@ async function buildCompletionChartsHTML() {
 				const mPct = maxVal > 0 ? (mCount / maxVal) * 100 : 0;
 				const cPct = maxVal > 0 ? (cCount / maxVal) * 100 : 0;
 				
-				const mList = gamesMap[key].mastered.join('&#10;• ').replace(/~([^~]+)~\s?/g, '').trim();
-				const cList = gamesMap[key].completed.join('&#10;• ').replace(/~([^~]+)~\s?/g, '').trim();
-				console.log('mlist', mList)
+				const mList = gamesMap[key].mastered.join('&#10;&#8195;• ').replace(/~([^~]+)~\s?/g, '').trim();
+				const cList = gamesMap[key].completed.join('&#10;&#8195;• ').replace(/~([^~]+)~\s?/g, '').trim();
 				let tooltipText = `${key} (${total})`;
-				if (mCount > 0) tooltipText += `&#10;🏆 Mastered (${mCount}):&#10;• ${mList}`;
-				if (cCount > 0) tooltipText += `&#10;🎖 Completed (${cCount}):&#10;• ${cList}`;
+				if (mCount > 0) tooltipText += `&#10;🏆 Mastered (${mCount}):&#10;&#8195;• ${mList}`;
+				if (cCount > 0) tooltipText += `&#10;🎖 Completed (${cCount}):&#10;&#8195;• ${cList}`;
 
 				const topRadius = cPct === 0 ? '4px 4px 0 0' : '4px 4px 0 0'; 
 				const bottomRadius = mPct === 0 ? '4px 4px 0 0' : '0';
@@ -3172,7 +3173,7 @@ async function renderSummary(data, user) {
 	if (userAwardsDiv) userAwardsDiv.innerHTML = `<div id="ra-user-awards"><p style="font-size:0.75rem; color:#94a3b8;">Loading...</p></div>`;
 
 	statsHtml += `<h4 style="margin-top:20px; border-bottom:1px solid var(--border); padding-bottom:5px; margin-bottom: 10px; display: flex;justify-content: space-between; align-items: center;">Want to Play
-	<button class="ui-btn btn-success" style="padding:8px; font-size:0.75rem;" onclick="importWantToPlayGames()">Add ${typeof wtpGamesCache !== 'undefined' ? wtpGamesCache.length : 0} Games to Library</button></h4>`;
+	<button id="add-wtp-btn" class="ui-btn btn-success" style="padding:8px; font-size:0.75rem;" onclick="importWantToPlayGames()">Add ${typeof wtpGamesCache !== 'undefined' ? wtpGamesCache.length : 0} Games to Library</button></h4>`;
 	statsHtml += `<div id="ra-want-to-play-header"></div>`;
 	statsHtml += `<div id="ra-want-to-play" class="mgmt-list-scroll" style="max-height: 250px; border:none; background:transparent; padding-top: 0px;"><p style="font-size:0.75rem; color:#94a3b8;">Loading...</p></div>`;
 
@@ -3237,6 +3238,7 @@ async function renderSummary(data, user) {
 window.renderWantToPlayList = function(list, activeConsole = null) {
 	const headerContainer = document.getElementById('ra-want-to-play-header');
 	const wtpContainer = document.getElementById('ra-want-to-play');
+	const wtpBtn = document.getElementById('add-wtp-btn');
 	
 	// Make sure both containers exist before proceeding
 	if (!wtpContainer || !headerContainer) return;
@@ -3280,6 +3282,8 @@ window.renderWantToPlayList = function(list, activeConsole = null) {
 		listHtml += `</ul>`;
 		
 		wtpContainer.innerHTML = listHtml;
+		let btnText = 'Add ' + list.length + ' Games to Library';
+		wtpBtn.innerHTML = btnText;
 		
 	} else {
 		// Clear the header and show the empty message
@@ -3512,7 +3516,6 @@ async function renderUserAwards(masteredList, completedList, beatenHardcoreList,
 	for (const g of progressList) {
 		// Query the 'raId' index you created instead of the primary 'id' key
 		const progressedGame = await db.getFromIndex('games', 'raId', String(g.gameId));
-		console.log(progressedGame)
 		hasAwards = true;
 		const icon = g.imageIcon || g.ImageIcon;
 		const title = g.title || g.Title;
@@ -3567,22 +3570,22 @@ function renderCompletedTabs(activeTab) {
 	const progressList = [];
 
 	raCompletedGamesCache.forEach(g => {
-		if (g.calculatedCategory === "mastered") {
-			masteredList.push(g);
-		} else if (g.calculatedCategory === "completed") {
-			completedList.push(g);
-		} else if (g.calculatedCategory === "progress") {
-			switch (g.highestAwardKind) {
-				case "beaten-hardcore":
-					beatenHardcoreList.push(g);
-					break;
-				case "beaten-softcore":
-					beatenSoftcoreList.push(g);
-					break;
-				case null:
-					progressList.push(g);
-					break;
-			}
+		switch (g.highestAwardKind) {
+			case "mastered":
+				masteredList.push(g);
+				break;
+			case "completed":
+				completedList.push(g);
+				break;
+			case "beaten-hardcore":
+				beatenHardcoreList.push(g);
+				break;
+			case "beaten-softcore":
+				beatenSoftcoreList.push(g);
+				break;
+			case null:
+				progressList.push(g);
+				break;
 		}
 	});
 	
@@ -4420,7 +4423,6 @@ function fetchEventsAndHubs(raApi, authorization) {
 	})
 	.then(data => {
 		window.console100Games = data;
-		console.log("Hubs successfully loaded into memory.");
 	})
 	.catch(err => console.error("Failed to background fetch Hubs:", err));
 
@@ -4432,7 +4434,6 @@ function fetchEventsAndHubs(raApi, authorization) {
 	})
 	.then(data => {
 		window.console101Games = data;
-		console.log("Events successfully loaded into memory.");
 	})
 	.catch(err => console.error("Failed to background fetch Events", err));
 }
