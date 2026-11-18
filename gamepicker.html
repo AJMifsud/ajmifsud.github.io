@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Retro Game Picker Pro</title>
-	<link rel="icon" type="image/x-icon" href="game_picker/game_picker_favicon.png">
+	<link rel="icon" type="image/x-icon" href="game_picker/images/game_picker_favicon.png">
 	<link rel="stylesheet" type="text/css" href="game_picker/style.css">
 	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
@@ -35,7 +35,7 @@
 		<div id="stats-container"></div>
 		<div id="spin-options">
 			<div style="display: flex; gap: 5px; margin-right: auto;">
-				<input type="checkbox" id="achievements-spin-filter" name="achievements" value="Achievements" checked>
+				<input type="checkbox" id="achievements-spin-filter" name="achievements" value="Achievements">
 				<label for="achievements-spin-filter" style="margin-right: auto;">Hide games with no achievements</label>
 			</div>
 			<div style="display: flex; gap: 5px; margin-right: auto;">
@@ -178,7 +178,7 @@
                     <h3 class="modal-headers" style="margin:0;">User Stats</h3>
                     <button class="ui-btn btn-primary" style="padding: 6px 12px; font-size: 0.6rem;" onclick="fetchUserStats(true)">Refresh Stats</button>
                 </div>
-                <div id="ra-user-stats" class="mgmt-list-scroll" style="padding-bottom: 20px; background: transparent; overflow: auto;">
+                <div id="ra-user-stats" class="mgmt-list-scroll" style="padding-bottom: 20px; background: var(--bg); overflow: auto;">
                     <p style="font-size: 0.8rem; color: #64748b; font-style: italic;">Enter your API details to view stats.</p>
                 </div>
             </div>
@@ -199,7 +199,9 @@
 	
 	<div id="ra-sidebar">
         <div id="ra-sidebar-header" style="display: flex;align-items: center; justify-content: center;"><button id="sync-awards-btn" class="ui-btn btn-success" style="font-size:0.6rem;padding:5px;" onclick="syncRACompletedGames()">Add to Library</button><div style="display: flex; align-items: center; flex-grow: 1; justify-content: center;" onclick="toggleRASidebarHeight()"><img src="https://static.retroachievements.org/assets/images/ra-icon.webp" alt="RetroAchievements" style="max-height: 21px;"><h4 style="margin:0; display:flex; justify-content: space-between; align-items: center;">Awards</h4></div><span class="expand-icon" onclick="toggleRASidebarHeight()">▼</span></div>
-		<div id="user-awards"></div>
+		<div id="user-awards">
+			<div id="ra-user-awards"></div>
+		</div>
     </div>
 </body>
 </html>

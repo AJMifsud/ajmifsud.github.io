@@ -176,32 +176,39 @@ function toggleSidebarHeight() {
 
 function toggleRASidebarHeight() {
 	const raSidebar = document.getElementById('ra-sidebar');
-	if (raSidebar) {
-		raSidebar.classList.toggle('expanded');
+	const completed = JSON.parse(localStorage.getItem('ra_api_completed'));
+	if (raSidebar && !raSidebar.classList.contains('expanded')) {
+		if (completed) {
+			raCompletedGamesCache = completed;
+			renderUserAwards();
+		}
+		raSidebar.classList.add('expanded');
+	} else if (raSidebar) {
+		raSidebar.classList.remove('expanded');
 	}
 }
 
 window.generateGameInfoHtml = function(data, raId, excludeScreenshots = false) {
 	let html = '';
-	const rawBox = data.imageBoxArt || data.ImageBoxArt;
-	html += `<div style="display:flex; gap:15px; margin-bottom:15px; justify-content:center; align-items:center; flex-shrink:0; flex-wrap: wrap;">`;
-	if (rawBox) {
-		const boxSrc = `https://media.retroachievements.org${rawBox.startsWith('/') ? rawBox : '/Images/'+rawBox}`;
-		html += `<img src="${boxSrc}" style="width:120px; border-radius:8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); object-fit:contain; cursor:pointer;" onclick="openImageViewer('${boxSrc}')">`;
-	}
-	const rawIcon = data.imageIcon || data.ImageIcon;
-	if (rawIcon) {
-		const iconSrc = `https://media.retroachievements.org${rawIcon.startsWith('/') ? rawIcon : '/Images/'+rawIcon}`;
-		html += `<img src="${iconSrc}" style="width:64px; height:64px; border-radius:8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); object-fit:cover; cursor:pointer;" onclick="openImageViewer('${iconSrc}')">`;
-	}
-	html += `</div>`;
-	
 	html += `<div style="text-align:center; margin-bottom:10px; flex-shrink:0;">`;
 	
 	const tagMatches = data.title.match(/~([^~]+)~/g);
 	const cleanName = (data.title || '').replace(/~([^~]+)~/g, '').trim();
 	
 	html += `<h3 style="margin:0; color:var(--primary); font-size:1.1rem; cursor:pointer; text-decoration:underline;" onclick="window.open('https://retroachievements.org/game/${raId}', '_blank')">${cleanName || 'Unknown Title'}</h3>`;
+	
+	const rawBox = data.imageBoxArt || data.ImageBoxArt;
+	html += `<div style="display:flex; gap:15px; margin: 10px 0px; justify-content:center; align-items:center; flex-shrink:0; flex-wrap: wrap;">`;
+	if (rawBox) {
+		const boxSrc = `https://media.retroachievements.org${rawBox.startsWith('/') ? rawBox : '/Images/'+rawBox}.png`;
+		html += `<img src="${boxSrc}" style="width:120px; border-radius:8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); object-fit:contain; cursor:pointer;" onclick="openImageViewer('${boxSrc}')">`;
+	}
+	const rawIcon = data.imageIcon || data.ImageIcon;
+	if (rawIcon) {
+		const iconSrc = `https://media.retroachievements.org${rawIcon.startsWith('/') ? rawIcon : '/Images/'+rawIcon}.png`;
+		html += `<img src="${iconSrc}" style="width:64px; height:64px; border-radius:8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); object-fit:cover; cursor:pointer;" onclick="openImageViewer('${iconSrc}')">`;
+	}
+	html += `</div>`;
 	
 	if (tagMatches) {
 		if (tagMatches.length > 0) {
@@ -225,13 +232,13 @@ window.generateGameInfoHtml = function(data, raId, excludeScreenshots = false) {
 	const publisher = data.publisher || data.Publisher;
 
 	if (developer) {
-		html += `<span style="margin:5px auto 0 auto; font-size:0.7rem; color:#94a3b8;">Developer • ${developer}</span>`;
+		html += `<span style="margin:5px auto 0 auto; font-size:0.7rem; color:#94a3b8; width: 49%;">Developer • ${developer}</span>`;
 	}
 	if (developer && publisher) {
 		html += `<span style="margin:5px 0 0 0; font-size:0.7rem; color:#94a3b8;"> | </span>`;
 	}
 	if (publisher) {
-		html += `<span style="margin:5px auto 0 auto; font-size:0.7rem; color:#94a3b8;">Publisher • ${publisher}</span>`;
+		html += `<span style="margin:5px auto 0 auto; font-size:0.7rem; color:#94a3b8; width: 49%;">Publisher • ${publisher}</span>`;
 	}
 	html += `</div>`;
 
@@ -244,60 +251,113 @@ window.generateGameInfoHtml = function(data, raId, excludeScreenshots = false) {
 	// Helper to generate the internal expanded list HTML
 	const generateAchDetails = (ids) => {
 		if (!ids || ids.length === 0) return '';
+		
+		const achievements = ids
+			.map(id => achList.find(a => String(a.id || a.ID) === String(id)))
+			.filter(Boolean);
+
+		achievements.sort((a, b) => {
+			const earnedA = Boolean(a.dateEarned || a.dateEarnedHardcore || a.DateEarned || a.DateEarnedHardcore);
+			const earnedB = Boolean(b.dateEarned || b.dateEarnedHardcore || b.DateEarned || b.DateEarnedHardcore);
+
+			if (earnedA !== earnedB) {
+				return earnedA ? -1 : 1;
+			}
+
+			const orderA = (a.displayOrder !== undefined && a.displayOrder !== null) ? a.displayOrder : (a.DisplayOrder !== undefined && a.DisplayOrder !== null ? a.DisplayOrder : 0);
+			const orderB = (b.displayOrder !== undefined && b.displayOrder !== null) ? b.displayOrder : (b.DisplayOrder !== undefined && b.DisplayOrder !== null ? b.DisplayOrder : 0);
+			
+			if (orderA !== orderB) {
+				return orderA - orderB;
+			}
+			
+			const idA = Number(a.id || a.ID || 0);
+			const idB = Number(b.id || b.ID || 0);
+			return idA - idB;
+		});
+
 		let detailsHtml = '<div style="margin-top:5px; display:flex; flex-direction:column; gap:5px; text-align:left;">';
-		ids.forEach(id => {
-			const ach = achList.find(a => String(a.id || a.ID) === String(id));
-			if (ach) {
-				const title = ach.title || ach.Title || 'Unknown';
-				const desc = ach.description || ach.Description || 'No description';
-				const pts = ach.points || ach.Points || 0;
-				let icons = '';
-				let badgeStyle ='filter: blur(1px) grayscale(1);';
-				if (ach.dateEarnedHardcore){
-					badgeStyle = 'border: 2px solid #eab308;';
-				} else if (ach.dateEarned){
-					badgeStyle = 'border: 2px solid #3b82f6;';
+		achievements.forEach(ach => {
+			const title = ach.title || ach.Title || 'Unknown';
+			const desc = ach.description || ach.Description || 'No description';
+			const pts = ach.points || ach.Points || 0;
+			let icons = '';
+			let dateEarnedDisplay = '';
+			let badgeStyle ='filter: blur(1px) grayscale(1);';
+			dateEarnedDisplay = '';
+
+			if (ach.dateEarnedHardcore) {
+				badgeStyle = 'border: 2px solid #eab308;';
+			} else if (ach.dateEarned) {
+				badgeStyle = 'border: 2px solid #3b82f6;';
+			}
+			if (ach.dateEarned && ach.dateEarned !== ach.dateEarnedHardcore) {
+				const achDateEarned = new Date(ach.dateEarned.replace(" ", "T")).toLocaleString(undefined, {
+					year: 'numeric',
+					month: '2-digit',
+					day: '2-digit',
+					hour: '2-digit',
+					minute: '2-digit',
+					hour12: true
+				});
+				dateEarnedDisplay += `<span style="color: #3b82f6;">Date Earned (Casual): ${achDateEarned}</span>`;
+			}
+			if (ach.dateEarnedHardcore) {
+				const achDateEarnedHardcore = new Date(ach.dateEarnedHardcore.replace(" ", "T")).toLocaleString(undefined, {
+					year: 'numeric',
+					month: '2-digit',
+					day: '2-digit',
+					hour: '2-digit',
+					minute: '2-digit',
+					hour12: true
+				});
+				dateEarnedDisplay += `${dateEarnedDisplay ? '<br>' : ''}<span style="color: #eab308;">Date Earned (Hardcore): ${achDateEarnedHardcore}</span>`;
+			}
+			if (ach.type == "missable"){
+				icons += '<strong title="Missable">❕</strong>';
+			}
+			if (ach.type == "progression"){
+				icons += '<svg title="Progression" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path stroke="none" d="M0 0h24v24H0z" fill="none" stroke-width="2px"></path><path d="M10 20.777a8.942 8.942 0 0 1 -2.48 -.969" fill="none" stroke-width="2px"></path><path d="M14 3.223a9.003 9.003 0 0 1 0 17.554" fill="none" stroke-width="2px"></path><path d="M4.579 17.093a8.961 8.961 0 0 1 -1.227 -2.592" fill="none" stroke-width="2px"></path><path d="M3.124 10.5c.16 -.95 .468 -1.85 .9 -2.675l.169 -.305" fill="none" stroke-width="2px"></path><path d="M6.907 4.579a8.954 8.954 0 0 1 3.093 -1.356" fill="none" stroke-width="2px"></path><path d="M9 12l2 2l4 -4" fill="none" stroke-width="2px"></path></svg>';
+			}
+			if (ach.type == "win_condition"){
+				icons += '<svg title="Win Condition" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor"><g clip-path="url(#clip0_339_416)"><path d="M10.0002 1.66675V4.79175M5.8335 1.66675V7.91675M14.1668 1.66675V7.91675" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path><path d="M10 16.7708L6.875 18.3333L7.39583 14.6874L5.3125 12.6041L8.4375 12.0833L10 8.95825L11.5625 12.0833L14.6875 12.6041L12.6042 14.6874L13.125 18.3333L10 16.7708Z" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path></g><defs><clipPath id="clip0_339_416"><rect width="20" height="20"></rect></clipPath></defs></svg>';
+			}
+			if (data.damagelessIDs) {
+				if (data.damagelessIDs.includes(ach.id)){
+					icons += icons ? '<strong title="Damageless"> ☠️</strong>' : '<strong title="Damageless">☠️</strong>';
 				}
-				if (ach.type == "missable"){
-					icons += '<strong title="Missable">❕</strong>';
+			}
+			if (data.speedrunIDs) {
+				if (data.speedrunIDs.includes(ach.id)){
+					icons += icons ? '<strong title="Speedrun"> ⏲️</strong>' : '<strong title="Speedrun">⏲️</strong>';
 				}
-				if (data.damagelessIDs) {
-					if (data.damagelessIDs.includes(ach.id)){
-						icons += icons ? '<strong title="Damageless"> ☠️</strong>' : '<strong title="Damageless">☠️</strong>';
-					}
-				}
-				if (data.speedrunIDs) {
-					if (data.speedrunIDs.includes(ach.id)){
-						icons += icons ? '<strong title="Speedrun"> ⏲️</strong>' : '<strong title="Speedrun">⏲️</strong>';
-					}
-				}
-				const awdCas = ach.numAwarded || ach.NumAwarded || 0;
-				const awdHC = ach.numAwardedHardcore || ach.NumAwardedHardcore || 0;
-				
-				const pctCas = numDistCas > 0 ? ((awdCas / numDistCas) * 100).toFixed(2) : '0.00';
-				const pctHC = numDistHC > 0 ? ((awdHC / numDistHC) * 100).toFixed(2) : '0.00';
-				
-				detailsHtml += `
-					<div style="background:rgba(0,0,0,0.3); padding:6px; border-radius:4px; font-size:0.65rem;">
-						<div style="display: flex; flex-direction: row; gap: 5px; align-items: center;">
-							<a href="https://retroachievements.org/achievement/${ach.id}" target="_blank"><img src="https://media.retroachievements.org/Badge/${ach.badgeName}.png" style="max-width: 42px; max-height: 42px; border-radius: 4px; ${badgeStyle}" alt="badge"></a>
-							<div style="display: flex; flex-direction: column; width: 100%;">
-								<div style="display: flex; gap: 3px; font-weight:bold; color:var(--accent); margin-bottom:2px;"><a href="https://retroachievements.org/achievement/${ach.id}" target="_blank" style="color: inherit;">${title} </a><span style="color:#cbd5e1; font-weight:normal; white-space: nowrap;">(${pts} pts)</span><span style="display:flex; gap:3px; margin-left:auto; color:#cbd5e1; font-weight:normal;">${icons}</span></div>
-								<div style="color:#cbd5e1; margin-bottom:4px; font-style:italic;">${desc}</div>
-							</div>
-						</div>
-						<div style="display:flex; justify-content:space-between; font-size:0.6rem; color:#94a3b8;">
-							<span>Casual: ${awdCas} / ${numDistCas} (${pctCas}%)</span>
-							<span>Hardcore: ${awdHC} / ${numDistHC} (${pctHC}%)</span>
+			}
+			const awdCas = ach.numAwarded || ach.NumAwarded || 0;
+			const awdHC = ach.numAwardedHardcore || ach.NumAwardedHardcore || 0;
+			
+			const pctCas = numDistCas > 0 ? ((awdCas / numDistCas) * 100).toFixed(2) : '0.00';
+			const pctHC = numDistHC > 0 ? ((awdHC / numDistHC) * 100).toFixed(2) : '0.00';
+			
+			detailsHtml += `
+				<div style="background:rgba(0,0,0,0.3); padding:6px; border-radius:4px; font-size:0.65rem;">
+					<div style="display: flex; flex-direction: row; gap: 5px; align-items: center;">
+						<a href="https://retroachievements.org/achievement/${ach.id}" target="_blank"><img src="https://media.retroachievements.org/Badge/${ach.badgeName}.png" style="max-width: 42px; max-height: 42px; border-radius: 4px; ${badgeStyle}" alt="badge"></a>
+						<div style="display: flex; flex-direction: column; width: 100%;">
+							<div style="display: flex; gap: 3px; font-weight:bold; color:var(--accent); margin-bottom:2px;"><a href="https://retroachievements.org/achievement/${ach.id}" target="_blank" style="color: inherit;">${title} </a><span style="color:#cbd5e1; font-weight:normal; white-space: nowrap;">(${pts} pts)</span><span style="display:flex; gap:3px; margin-left:auto; color:#cbd5e1; font-weight:normal;">${icons}</span></div>
+							<div style="color:#cbd5e1; margin-bottom:4px; font-style:italic;">${desc}</div>
 						</div>
 					</div>
-				`;
-			}
+					<div style="display:flex; justify-content:space-between; font-size:0.6rem; color:#94a3b8;">
+						<span>Casual: ${awdCas} / ${numDistCas} (${pctCas}%)</span>
+						<span>Hardcore: ${awdHC} / ${numDistHC} (${pctHC}%)</span>
+					</div>
+					${dateEarnedDisplay}
+				</div>
+			`;
 		});
 		detailsHtml += '</div>';
 		return detailsHtml;
 	};
-
 	if(data.missableIDs && data.missableIDs.length > 0) {
 		let missableLabel = data.missableIDs.length > 1 ? "Achievements" : "Achievement";
 		html += `
@@ -305,7 +365,7 @@ window.generateGameInfoHtml = function(data, raId, excludeScreenshots = false) {
 			<summary style="cursor: pointer; padding: 5px; list-style: none; font-weight: bold; text-align: center;">
 				❕ Game has ${data.missableIDs.length} Missable ${missableLabel} ▼
 			</summary>
-			<div style="padding: 5px; background: rgba(0,0,0,0.15); border-top: 1px solid rgba(255,255,255,0.2);">
+			<div style="padding: 5px; background: rgba(0,0,0,0.15); border-top: 1px solid rgba(255,255,255,0.2); overflow-y: auto; max-height: 460px;">
 				${generateAchDetails(data.missableIDs)}
 			</div>
 		</details>`;
@@ -318,7 +378,7 @@ window.generateGameInfoHtml = function(data, raId, excludeScreenshots = false) {
 			<summary style="cursor: pointer; padding: 5px; list-style: none; font-weight: bold; text-align: center;">
 				☠️ Game has ${data.damagelessIDs.length} Damageless ${damagelessLabel} ▼
 			</summary>
-			<div style="padding: 5px; background: rgba(0,0,0,0.15); border-top: 1px solid rgba(255,255,255,0.2);">
+			<div style="padding: 5px; background: rgba(0,0,0,0.15); border-top: 1px solid rgba(255,255,255,0.2); overflow-y: auto; max-height: 460px;">
 				${generateAchDetails(data.damagelessIDs)}
 			</div>
 		</details>`;
@@ -331,7 +391,7 @@ window.generateGameInfoHtml = function(data, raId, excludeScreenshots = false) {
 			<summary style="cursor: pointer; padding: 5px; list-style: none; font-weight: bold; text-align: center;">
 				⏲️ Game has ${data.speedrunIDs.length} SpeedRun ${speedrunLabel} ▼
 			</summary>
-			<div style="padding: 5px; background: rgba(0,0,0,0.15); border-top: 1px solid rgba(255,255,255,0.2);">
+			<div style="padding: 5px; background: rgba(0,0,0,0.15); border-top: 1px solid rgba(255,255,255,0.2); overflow-y: auto; max-height: 460px;">
 				${generateAchDetails(data.speedrunIDs)}
 			</div>
 		</details>`;
@@ -383,6 +443,10 @@ window.generateGameInfoHtml = function(data, raId, excludeScreenshots = false) {
 	} else {
 		genre = genre.replace(/\s*,\s*/g, ", ");
 	}
+	let timePlayed = null;
+	if (data.userTotalPlaytime){
+		timePlayed = formatTime(data.userTotalPlaytime);
+	}
 	const timeBeat = formatTime(data.medianTimeToBeat);
 	const timeBeatHC = formatTime(data.medianTimeToBeatHardcore);
 	const timeComp = formatTime(data.medianTimeToComplete);
@@ -411,7 +475,9 @@ window.generateGameInfoHtml = function(data, raId, excludeScreenshots = false) {
 	</div>`;
 	
 	html += `<div style="background:#0f172a; padding:12px; border-radius:6px; border:1px solid var(--border); font-size:0.75rem; margin-bottom: 5px; flex-shrink:0;">`;
-	html += `<div style="display:flex; justify-content:space-between; margin-bottom:6px;"><span style="color:#94a3b8;">Time to Beat (Casual):</span> <strong style="text-align:right;">${timeBeat}</strong></div>`;
+	if (timePlayed != null){
+		html += `<div style="display:flex; justify-content:space-between; margin-bottom:6px;"><span style="color:#94a3b8;">Total User Play Time:</span> <strong style="text-align:right;">${timePlayed}</strong></div>`;
+	}
 	html += `<div style="display:flex; justify-content:space-between; margin-bottom:6px;"><span style="color:#94a3b8;">Time to Beat (Hardcore):</span> <strong style="text-align:right;">${timeBeatHC}</strong></div>`;
 	html += `<div style="display:flex; justify-content:space-between; margin-bottom:6px;"><span style="color:#94a3b8;">Time to Complete (Casual):</span> <strong style="text-align:right;">${timeComp}</strong></div>`;
 	html += `<div style="display:flex; justify-content:space-between; margin-bottom:6px;"><span style="color:#94a3b8;">Time to Master (Hardcore):</span> <strong style="text-align:right;">${timeMaster}</strong></div>`;
@@ -426,12 +492,12 @@ window.generateGameInfoHtml = function(data, raId, excludeScreenshots = false) {
 		html += `<div id="screenshots" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom: 15px; justify-content: center;">`;
 		const imgTitle = data.imageTitle || data.ImageTitle;
 		if (imgTitle) {
-			const titleSrc = `https://media.retroachievements.org${imgTitle.startsWith('/') ? imgTitle : '/Images/'+imgTitle}`;
+			const titleSrc = `https://media.retroachievements.org${imgTitle.startsWith('/') ? imgTitle : '/Images/'+imgTitle}.png`;
 			html += `<div><span style="font-size: 0.75rem; color: #94a3b8;">Title Screen</span><img src="${titleSrc}" style="width:100%; border-radius:6px; border:1px solid var(--border); cursor:pointer; flex-shrink:1;" onclick="openImageViewer('${titleSrc}')"></div>`;
 		}
 		const imgIngame = data.imageIngame || data.ImageIngame;
 		if (imgIngame) {
-			const ingameSrc = `https://media.retroachievements.org${imgIngame.startsWith('/') ? imgIngame : '/Images/'+imgIngame}`;
+			const ingameSrc = `https://media.retroachievements.org${imgIngame.startsWith('/') ? imgIngame : '/Images/'+imgIngame}.png`;
 			html += `<div><span style="font-size: 0.75rem; color: #94a3b8;">In-Game Screenshot</span><img src="${ingameSrc}" style="width:100%; border-radius:6px; border:1px solid var(--border); cursor:pointer; flex-shrink:1;" onclick="openImageViewer('${ingameSrc}')"></div>`;
 		}
 		html += `</div>`;
@@ -446,7 +512,7 @@ window.generateGameInfoHtml = function(data, raId, excludeScreenshots = false) {
 			<summary style="cursor: pointer; padding: 5px; list-style: none; font-weight: bold; text-align: center;">
 				Achievements ▼
 			</summary>
-			<div style="padding: 5px; background: rgba(0,0,0,0.15); border-top: 1px solid rgba(255,255,255,0.2);">
+			<div style="padding: 5px; background: rgba(0,0,0,0.15); border-top: 1px solid rgba(255,255,255,0.2); overflow-y: auto; max-height: 460px;">
 				${generateAchDetails(achIds)}
 			</div>
 		</details>`;
@@ -586,21 +652,26 @@ window.generateGameInfoHtml = function(data, raId, excludeScreenshots = false) {
 	return html;
 };
 
-async function fetchExtendedDataForGame(raApi, authorization, gameId) {
+async function fetchExtendedDataForGame(gameId, raId) {
 	try {
-		// The new endpoint requires a username, so we grab it from storage
+		// 1. Initialize Credentials & API Context
 		const user = localStorage.getItem('ra_user');
-		if (!user) {
-			console.error("Username is required for getGameInfoAndUserProgress");
+		const key = localStorage.getItem('ra_key');
+		if (!user || !key) {
+			console.error("Username and API key are required for getGameInfoAndUserProgress");
 			return null;
 		}
 
-		// Changed to getGameInfoAndUserProgress and added the username parameter[cite: 1]
-		const data = await window.safeApiCall(raApi.getGameInfoAndUserProgress, authorization, { username: user, gameId: parseInt(gameId) });
+		const raApi = await import("https://esm.sh/@retroachievements/api");
+		const authorization = raApi.buildAuthorization({ username: user, webApiKey: key });
+
+		// 2. Fetch Core Data & Progression using raId for API requests
+		const data = await window.safeApiCall(raApi.getGameInfoAndUserProgress, authorization, { username: user, gameId: parseInt(raId) });
 		if (!data) return null;
+		
 		try { 
 			if (typeof raApi.getGameProgression === 'function') {
-				const prog = await window.safeApiCall(raApi.getGameProgression, authorization, { gameId: parseInt(gameId) });
+				const prog = await window.safeApiCall(raApi.getGameProgression, authorization, { gameId: parseInt(raId) });
 				if(prog) {
 					data.medianTimeToBeat = prog.medianTimeToBeat;
 					data.medianTimeToBeatHardcore = prog.medianTimeToBeatHardcore;
@@ -609,44 +680,163 @@ async function fetchExtendedDataForGame(raApi, authorization, gameId) {
 				}
 			}
 		} catch(e) {
-			console.warn("getGameProgression unavailable for this game id:", gameId);
+			console.warn("getGameProgression unavailable for this raId:", raId);
 		}
 
+		// 3. Process Data, Calculate Points, and Extract Specific Achievement IDs
 		let calculatedPoints = 0;
+		let missableIDs = [];
+		let progressionIDs = [];
+		let winIDs = [];
+		let damagelessIDs = [];
+		let speedrunIDs = [];
+
+		const damagelessRegex = /taking (any )?damage|(being|getting) (hit|harmed|damaged|hurt)|taking a hit|taking (any )?health damage|receiving (any )?health damage|receiving (any )?damage|suffering (any )?damage|sustaining (any )?damage|taking no damage|taking zero damage|no damage taken|zero damage taken|no hits taken|taking no hits|getting hit|being hit|damageless/i;
+		const speedrunRegex = /(?:\bwithin\b|\bin(?: under)?\b|\bunder\b|\bin less than\b|with a time of|(?:complete|finish|beat|clear)\b.*?\bin) (?:\d+(?:\.\d+)? (?:seconds?|minutes?|secs?|mins?|hours?)(?: \d+ (?:seconds?|secs?))?|\d+(?::\d+){1,2}(?:\.\d+)?(?: (?:seconds?|minutes?|secs?|mins?|hours?))?)|(?:\d+(?:\.\d+)? (?:seconds?|minutes?|secs?|mins?|hours?)|\d+(?::\d+){1,2}(?:\.\d+)?(?: (?:seconds?|minutes?|secs?|mins?|hours?))?) (?:or less|or fewer)|with (?:\d+(?:\.\d+)? (?:seconds?|minutes?|secs?|mins?|hours?)(?: \d+ (?:seconds?|secs?))?|\d+(?::\d+){1,2}(?:\.\d+)?(?: (?:seconds?|minutes?|secs?|mins?|hours?))?) (?:remaining|left)/i;
+
 		if (data.achievements || data.Achievements) {
 			const achs = data.achievements || data.Achievements;
 			const achList = Array.isArray(achs) ? achs : Object.values(achs);
-			achList.forEach(ach => calculatedPoints += parseInt(ach.points || ach.Points || 0));
+			
+			achList.forEach(ach => {
+				calculatedPoints += parseInt(ach.points || ach.Points || 0);
+				
+				const desc = ach.description || ach.Description || "";
+				const achId = ach.ID !== undefined ? ach.ID : ach.id;
+				
+				if (achId !== undefined) {
+					if (ach.type == "missable") missableIDs.push(achId);
+					if (ach.type == "progression") progressionIDs.push(achId);
+					if (ach.type == "win_condition") winIDs.push(achId);
+					if (damagelessRegex.test(desc)) damagelessIDs.push(achId);
+					if (speedrunRegex.test(desc)) speedrunIDs.push(achId);
+				}
+			});
 		}
-		
-		return {
-			consoleId: data.consoleId || data.ConsoleId || data.ConsoleID,
-			maxAch: data.numAchievements || data.NumAchievements || 0,
-			achievements: data.achievements,
-			pts: calculatedPoints || data.points || data.Points || 0,
-			genre: data.genre || data.Genre || "Unknown",
-			timeToMaster: parseInt(data.medianTimeToMaster) || 0,
-			timeToBeatHardcore: parseInt(data.medianTimeToBeatHardcore) || 0,
-			timeToBeat: parseInt(data.medianTimeToBeat) || 0,
-			timeToComplete: parseInt(data.medianTimeToComplete) || 0,
+
+		// 4. Format Genre String
+		let rawGenre = (data.genre || data.Genre);
+		if (rawGenre === "Unknown" || !rawGenre) rawGenre = "Not Available";
+		const processedGenre = String(rawGenre).split(',').map(genreStr => {
+			let cleanGenre = genreStr.trim();
+			let lowerGenre = cleanGenre.toLowerCase();
+			if (lowerGenre === "action adventure" || lowerGenre === "action-adventure" || lowerGenre === "action/adventure") {
+				return "Action-Adventure";
+			}
+			return cleanGenre;
+		});
+
+		// 5. Look up Target Console 
+		const consoleId = data.consoleId || data.ConsoleId || data.ConsoleID;
+		let consoleName = data.consoleName || data.ConsoleName || "Unknown";
+		if (typeof RA_CONSOLE_IDS !== 'undefined') {
+			for (const [conName, conId] of Object.entries(RA_CONSOLE_IDS)) {
+				if (conId === consoleId) {
+					consoleName = conName;
+					break;
+				}
+			}
+		}
+
+		// 6. Map Core Variables for Math Checks
+		const maxAch = data.numAchievements || data.NumAchievements || 0;
+		const pts = calculatedPoints || data.points || data.Points || 0;
+		const timeToMaster = parseInt(data.medianTimeToMaster) || 0;
+		const timeToBeatHardcore = parseInt(data.medianTimeToBeatHardcore) || 0;
+		const timeToBeat = parseInt(data.medianTimeToBeat) || 0;
+		const timeToComplete = parseInt(data.medianTimeToComplete) || 0;
+		const players = data.numDistinctPlayersCasual || data.NumDistinctPlayersCasual || 0;
+
+		// 7. Calculate Points Per Hour (PPH)
+		const pointsPerHourHC = pts / ((timeToMaster / 60) / 60);
+		const pointsPerHourSC = pts / ((timeToComplete / 60) / 60);
+
+		// 8. Retrieve Existing DB Entry to Preserve Core Local Attributes
+		const db = await dbPromise;
+		const existingGame = await db.get('games', gameId);
+
+		const imageBoxArt = typeof cleanImg === 'function' ? cleanImg(data.imageBoxArt || data.ImageBoxArt) : (data.imageBoxArt || data.ImageBoxArt);
+		const imageIcon = typeof cleanImg === 'function' ? cleanImg(data.imageIcon || data.ImageIcon) : (data.imageIcon || data.ImageIcon);
+
+		// 9. Construct Updated Game Object (Ensuring gameId & raId remain unchanged)
+		const updatedGame = {
+			...(existingGame || {}),
+			...data,
+			id: gameId,                                      // Ensure primary key id remains unchanged
+			raId: (existingGame && existingGame.raId) ? existingGame.raId : raId, // Ensure raId is preserved and not changed
+			consoleId: consoleId,
+			consoleName: consoleName,
+			maxAch: maxAch,
+			achievements: data.achievements || data.Achievements || null,
+			pts: pts,
+			genre: processedGenre,
+			timeToMaster: timeToMaster,
+			timeToBeatHardcore: timeToBeatHardcore,
+			timeToBeat: timeToBeat,
+			timeToComplete: timeToComplete,
 			developer: data.developer || data.Developer || "Unknown",
 			publisher: data.publisher || data.Publisher || "Unknown",
 			released: data.released || data.Released || "Unknown",
-			players: data.numDistinctPlayersCasual || data.NumDistinctPlayersCasual || 0,
-			imageTitle: cleanImg(data.imageTitle || data.ImageTitle),
-			imageIngame: cleanImg(data.imageIngame || data.ImageIngame),
-			imageBoxArt: cleanImg(data.imageBoxArt || data.ImageBoxArt),
-			imageIcon: cleanImg(data.imageIcon || data.ImageIcon),
+			players: players,
+			imageTitle: typeof cleanImg === 'function' ? cleanImg(data.imageTitle || data.ImageTitle) : (data.imageTitle || data.ImageTitle),
+			imageIngame: typeof cleanImg === 'function' ? cleanImg(data.imageIngame || data.ImageIngame) : (data.imageIngame || data.ImageIngame),
+			imageBoxArt: imageBoxArt,
+			imageIcon: imageIcon,
+			imgId: (existingGame && existingGame.imgId) ? existingGame.imgId : (imageIcon || null),
 			flags: data.flags || data.Flags || null,
 			forumTopicID: data.forumTopicId || data.forumTopicID || data.ForumTopicId || data.ForumTopicID || null,
 			guideURL: data.guideUrl || data.guideURL || data.GuideUrl || data.GuideURL || null,
 			raUpdated: data.updated || data.Updated || null,
-			consoleName: data.consoleName || data.ConsoleName || "Unknown",
 			parentGameID: data.parentGameId || data.parentGameID || data.ParentGameId || data.ParentGameID || null,
 			numDistinctPlayersCasual: data.numDistinctPlayersCasual || data.NumDistinctPlayersCasual || 0,
 			numDistinctPlayersHardcore: data.numDistinctPlayersHardcore || data.NumDistinctPlayersHardcore || 0,
-			userTotalPlaytime: data.userTotalPlaytime || data.UserTotalPlaytime || 0
+			userTotalPlaytime: data.userTotalPlaytime || data.UserTotalPlaytime || 0,
+			missableIDs: missableIDs,
+			progressionIDs: progressionIDs,
+			winIDs: winIDs,
+			damagelessIDs: damagelessIDs,
+			speedrunIDs: speedrunIDs,
+			pointsPerHourHC: pointsPerHourHC,
+			pointsPerHourSC: pointsPerHourSC,
+			extendedFetched: true,
+			lastUpdated: Date.now(),
+			progressedSinceLastCheck: false
 		};
+
+		// 10. Centralized Persistence into IndexedDB
+		try {
+			await db.put('games', updatedGame);
+
+			// Update window.userLibrary for this specific game
+			if (!window.userLibrary) window.userLibrary = {};
+			const conName = updatedGame.consoleName || 'Unknown';
+			if (!window.userLibrary[conName]) {
+				window.userLibrary[conName] = [];
+			}
+
+			// Check if the game already exists in the library array to update it or avoid duplicates
+			const existingIndex = window.userLibrary[conName].findIndex(
+				g => (g.id === updatedGame.id) || (g.ID === updatedGame.ID) || (g.gameId === updatedGame.gameId)
+			);
+
+			if (existingIndex !== -1) {
+				window.userLibrary[conName][existingIndex] = updatedGame;
+			} else {
+				window.userLibrary[conName].push(updatedGame);
+			}
+		} catch (dbErr) {
+			console.error(`Could not store extended data to IndexedDB for gameId ${gameId}:`, dbErr);
+		}
+		
+		// Refresh active game info panel if currently expanded
+		const sidebarDiv = document.getElementById(`sidebar-info-${gameId}`);
+		if (sidebarDiv) {
+			if (typeof window.updateSidebarGameInfo === 'function') {
+				window.updateSidebarGameInfo(updatedGame, consoleName);
+			}
+		}
+
+		return updatedGame;
 	} catch(e) {
 		console.error("Failed fetching extended data for gameId:", gameId, e);
 		return null;
@@ -671,14 +861,19 @@ let raCompletedGamesCache = JSON.parse(localStorage.getItem('ra_api_completed'))
 window.wtpGamesCache = [];
 window.wtpActiveTab = null;
 
-window.updateHistoryItemDOM = function(game, conName) {
+window.updateSidebarGameInfo = function(game, conName) {
 	const li = document.getElementById(`history-item-${game.id}`);
 	if (!li) return;
+	
+	// Check if the game's history item / wrapper is open and active
+	const wrapper = document.getElementById(`history-list-wrapper-${game.id}`);
+	const isOpen = wrapper && wrapper.querySelector('.sidebar-info-wrapper').style.gridTemplateRows === '1fr';
+	
 	const sortElement = document.getElementById('library-sort-select');
 	const sortMode = sortElement ? sortElement.value : 'console';
 
-	const isCompleted = completedData[conName] && completedData[conName].includes(game.id);
-	const isMastered = masteredData[conName] && masteredData[conName].includes(game.id);
+	const isCompleted = game.highestAwardKind === "completed";
+	const isMastered = game.highestAwardKind === "mastered";
 	const raData = raCompletedGamesCache.find(ra => String(ra.gameId || ra.GameID || ra.id) === String(game.raId));
 
 	let numAchTotal = 0;
@@ -719,53 +914,57 @@ window.updateHistoryItemDOM = function(game, conName) {
 	}
 
 	let rightText = '';
+	
+	if (isMastered) rightText = '👑 ';
+	else if (isCompleted) rightText = '🎖️ ';
+	
 	if (sortMode === 'time') {
-		rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${formatTime(game.timeToMaster)}</span>`;
+		rightText += `<span style="font-size:0.6rem; color:#94a3b8;">${formatTime(game.timeToMaster)}</span>`;
 	} else if (sortMode === 'hc_time') {
-		rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${formatTime(game.timeToBeatHardcore)}</span>`;
+		rightText += `<span style="font-size:0.6rem; color:#94a3b8;">${formatTime(game.timeToBeatHardcore)}</span>`;
 	} else if (sortMode === 'percentage') {
 		let pct = game.maxAch > 0 ? (numAchTotal / game.maxAch) * 100 : 0;
-		rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${pct.toFixed(1)}%</span>`;
+		rightText += `<span style="font-size:0.6rem; color:#94a3b8;">${pct.toFixed(1)}%</span>`;
 	} else if (sortMode === 'points') {
-		rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${game.pts} Pts</span>`;
+		rightText += `<span style="font-size:0.6rem; color:#94a3b8;">${game.pts} Pts</span>`;
 	} else if (sortMode === 'genre') {
-		rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${game.genre}</span>`;
+		rightText += `<span style="font-size:0.6rem; color:#94a3b8;">${game.genre}</span>`;
 	} else if (sortMode === 'pph_hc') {
-		rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${game.pointsPerHourHC}</span>`;
+		rightText += `<span style="font-size:0.6rem; color:#94a3b8;">${game.pointsPerHourHC}</span>`;
 	} else if (sortMode === 'developer') {
-		rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${game.developer}</span>`;
+		rightText += `<span style="font-size:0.6rem; color:#94a3b8;">${game.developer}</span>`;
 	} else if (sortMode === 'publisher') {
-		rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${game.publisher}</span>`;
-	} else {
-		if (isMastered) rightText = '👑';
-		else if (isCompleted) rightText = '🎖️';
-		else rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${numAchTotal} / ${trueMax}</span>`;
-	}
+		rightText += `<span style="font-size:0.6rem; color:#94a3b8;">${game.publisher}</span>`;
+	} else rightText += `<span style="font-size:0.6rem; color:#94a3b8;">${numAchTotal} / ${trueMax}</span>`;
+	
 
 	const rightContainer = document.getElementById(`history-item-right-text-${game.id}`);
 	if (rightContainer) {
 		rightContainer.innerHTML = rightText;
 	}
 
-	if (window.activeSidebarInfo && window.activeSidebarInfo.id === `sidebar-info-${game.id}`) {
+	const infoDiv = document.getElementById(`sidebar-info-${game.id}`);
+	// Only execute generateGameInfoHtml if the item is open and active
+	if (infoDiv && isOpen) {
 		let data = {
-			title: game.name,
-			// Track game's internal console ID through to HTML builder
-			consoleId: game.consoleId || game.consoleID || game.conId || game.conID || game.console_id || '',
-			imageBoxArt: game.imageBoxArt ? `${game.imageBoxArt}.png` : (game.imgId ? `${game.imgId}.png` : null),
-			imageIcon: game.imgId ? `${game.imgId}.png` : null,
+			id: game.id,
+			consoleName: game.consoleName || conName || "Unknown",
+			title: game.name || game.title,
+			imageBoxArt: game.imageBoxArt ? `${game.imageBoxArt}` : (game.imgId ? `${game.imgId}` : null),
+			imageIcon: game.imgId ? `${game.imgId}` : null,
 			publisher: game.publisher || "Unknown",
 			developer: game.developer || "Unknown",
 			released: game.released || "Unknown",
 			numAchievements: game.maxAch || 0,
-			missableIDs: game.missableIDs || 0,
-			damagelessIDs: game.damagelessIDs || 0,
-			speedrunIDs: game.speedrunIDs || 0,
+			achievements: game.achievements || null,
+			missableIDs: game.missableIDs || [],
+			damagelessIDs: game.damagelessIDs || [],
+			speedrunIDs: game.speedrunIDs || [],
 			points: game.pts || 0,
 			genre: game.genre || "Unknown",
-			numDistinctPlayersCasual: game.players || 0,
-			imageTitle: game.imageTitle ? `${game.imageTitle}.png` : null,
-			imageIngame: game.imageIngame ? `${game.imageIngame}.png` : null,
+			players: game.players || 0,
+			imageTitle: game.imageTitle ? `${game.imageTitle}` : null,
+			imageIngame: game.imageIngame ? `${game.imageIngame}` : null,
 			medianTimeToBeat: game.timeToBeat || 0,
 			medianTimeToBeatHardcore: game.timeToBeatHardcore || 0,
 			medianTimeToComplete: game.timeToComplete || 0,
@@ -774,14 +973,20 @@ window.updateHistoryItemDOM = function(game, conName) {
 			forumTopicID: game.forumTopicId || game.forumTopicID || game.ForumTopicId || game.ForumTopicID || null,
 			guideURL: game.guideUrl || game.guideURL || game.GuideUrl || game.GuideURL || null,
 			raUpdated: game.updated || game.Updated || null,
-			consoleName: game.consoleName || game.ConsoleName || "Unknown",
 			parentGameID: game.parentGameId || game.parentGameID || game.ParentGameId || game.ParentGameID || null,
 			numDistinctPlayersCasual: game.numDistinctPlayersCasual || game.NumDistinctPlayersCasual || 0,
 			numDistinctPlayersHardcore: game.numDistinctPlayersHardcore || game.NumDistinctPlayersHardcore || 0,
 			userTotalPlaytime: game.userTotalPlaytime || game.UserTotalPlaytime || 0
 		};
-		window.activeSidebarInfo.innerHTML = generateGameInfoHtml(data, game.raId, true);
+		infoDiv.innerHTML = window.generateGameInfoHtml(data, game.raId, true);
+
+		// Scroll the history item into view within #history-container
+		const historyContainer = document.getElementById('history-container');
+		if (historyContainer && historyContainer.contains(li)) {
+			li.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+		}
 	}
+	
 };
 
 let isFetchingExtended = false;
@@ -790,52 +995,47 @@ window.processExtendedFetchQueue = async function() {
 	isFetchingExtended = true;
 	
 	const user = localStorage.getItem('ra_user');
-	const key = localStorage.getItem('ra_key');
-	if (!user || !key) { isFetchingExtended = false; return; }
+	if (!user) { isFetchingExtended = false; return; }
 	
-	let raApi, authorization;
-	try {
-		raApi = await import("https://esm.sh/@retroachievements/api");
-		authorization = raApi.buildAuthorization({ username: user, webApiKey: key });
-	} catch(e) { isFetchingExtended = false; return; }
-
 	let gamesToProcess = [];
 	const now = Date.now();
-	const oneWeekMs = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+	const oneWeekMs = 7 * 24 * 60 * 60 * 1000;
 
-	// Open connection to your IndexedDB
+	// Open connection to IndexedDB
 	const db = await dbPromise; 
 
 	// Fetch every single game from the 'games' store efficiently in one go
 	const allGamesFromDB = await db.getAll('games'); 
 
 	for (const g of allGamesFromDB) {
-		// Extract the console name directly from the saved game object 
-		// since we are no longer iterating through the userLibrary console keys
 		const con = g.consoleName || 'Unknown';
 		
-		// FIX: Extremely strict completeness check.
-		// It will only skip the queue if ALL data points exist and are valid.
-		const hasCoreData = g.imageBoxArt && g.developer && g.genre && g.genre !== "Unknown";
+		const hasCoreData = g.imageBoxArt && g.developer && g.genre && g.genre !== "Unknown" && g.genre !== "Not Available";
 		const hasStats = g.maxAch !== undefined && g.pts !== undefined;
 		const hasProgression = g.timeToBeat !== undefined && g.timeToMaster !== undefined;
 		
 		const hasAllData = hasCoreData && hasStats && hasProgression;
 		const hasData = g.extendedFetched === true && hasAllData;
 		
-		// Robust numeric parsing to prevent NaN math errors
 		const parsedTime = parseInt(g.lastUpdated, 10);
 		const updatedRecently = !isNaN(parsedTime) && (now - parsedTime < oneWeekMs);
 
 		if (g.raId) {
 			if (!hasData || !updatedRecently) {
-				console.log(`[Queue Include] ${g.name || g.raId} - hasData: ${hasData}, updatedRecently: ${updatedRecently}`);
+				// console.log(`[Queue Include] ${g.name || g.raId} - hasData: ${hasData}, updatedRecently: ${updatedRecently}`);
 				gamesToProcess.push({ game: g, con: con });
 			} else {
-				console.log(`[Queue Skip] ${g.name || g.raId} is up to date.`);
+				// console.log(`[Queue Skip] ${g.name || g.raId} is up to date.`);
 			}
 		}
 	}
+
+	// Sort the queue alphabetically by console name, then alphabetically by game name
+	gamesToProcess.sort((a, b) => {
+		const conCompare = (a.con || '').localeCompare(b.con || '');
+		if (conCompare !== 0) return conCompare;
+		return (a.game.name || '').localeCompare(b.game.name || '');
+	});
 
 	const totalToFetch = gamesToProcess.length;
 	let fetchedCount = 0;
@@ -849,113 +1049,16 @@ window.processExtendedFetchQueue = async function() {
 		for (let i = 0; i < totalToFetch; i++) {
 			const { game: g, con: conName } = gamesToProcess[i];
 			try {
-				console.log(`[Queue Fetch] Requesting API data for ${g.name || g.raId}...`);
-				const ext = await fetchExtendedDataForGame(raApi, authorization, g.raId);
+				// console.log(`[Queue Fetch] Requesting API data for ${g.name || g.raId}...`);
+				
+				// API fetching, mapping, and database updating are fully handled inside fetchExtendedDataForGame
+				const ext = await fetchExtendedDataForGame(g.id, g.raId);
+				
 				if (ext) {
-					let missableIDs = [];
-					let damagelessIDs = [];
-					let speedrunIDs = [];
-					let storedAchievements = null;
+					// 1. Sync updated game memory reference with ext
+					Object.assign(g, ext);
 
-					// REGEX: Catches common phrases used for "no damage" achievements (case-insensitive)
-					const damagelessRegex = /taking (any )?damage|(being|getting) (hit|harmed|damaged|hurt)|taking a hit|taking (any )?health damage|receiving (any )?health damage|receiving (any )?damage|suffering (any )?damage|sustaining (any )?damage|taking no damage|taking zero damage|no damage taken|zero damage taken|no hits taken|taking no hits|getting hit|being hit|damageless/i;
-
-					// REGEX: Updated to handle timestamp formats like "1:58" where unit words (seconds/minutes) are omitted
-					const speedrunRegex = /(?:\bwithin\b|\bin(?: under)?\b|\bunder\b|\bin less than\b|with a time of|(?:complete|finish|beat|clear)\b.*?\bin) (?:\d+(?:\.\d+)? (?:seconds?|minutes?|secs?|mins?|hours?)(?: \d+ (?:seconds?|secs?))?|\d+(?::\d+){1,2}(?:\.\d+)?(?: (?:seconds?|minutes?|secs?|mins?|hours?))?)|(?:\d+(?:\.\d+)? (?:seconds?|minutes?|secs?|mins?|hours?)|\d+(?::\d+){1,2}(?:\.\d+)?(?: (?:seconds?|minutes?|secs?|mins?|hours?))?) (?:or less|or fewer)|with (?:\d+(?:\.\d+)? (?:seconds?|minutes?|secs?|mins?|hours?)(?: \d+ (?:seconds?|secs?))?|\d+(?::\d+){1,2}(?:\.\d+)?(?: (?:seconds?|minutes?|secs?|mins?|hours?))?) (?:remaining|left)/i;
-
-					if (ext.achievements || ext.Achievements) {
-						storedAchievements = ext.achievements || ext.Achievements;
-						const achList = Array.isArray(storedAchievements) ? storedAchievements : Object.values(storedAchievements);
-						
-						achList.forEach(ach => {									
-							const desc = ach.description || ach.Description || "";
-
-							// Push achievement ID to missableIDs array when matched
-							if (ach.type == "missable") {
-								const achId = ach.ID !== undefined ? ach.ID : ach.id;
-								if (achId !== undefined) missableIDs.push(achId);
-							}
-
-							// Push achievement ID to damagelessIDs array when matched
-							if (damagelessRegex.test(desc)) {
-								const achId = ach.ID !== undefined ? ach.ID : ach.id;
-								if (achId !== undefined) damagelessIDs.push(achId);
-							}
-
-							// Push achievement ID to speedrunIDs array when matched
-							if (speedrunRegex.test(desc)) {
-								const achId = ach.ID !== undefined ? ach.ID : ach.id;
-								if (achId !== undefined) speedrunIDs.push(achId);
-							}
-						});
-					}
-
-					ext.missableIDs = missableIDs;
-					ext.damagelessIDs = damagelessIDs;
-					ext.speedrunIDs = speedrunIDs;
-
-					// FIX: Safely map keys handling both custom mapped names and raw RA API response names
-					g.maxAch = ext.maxAch !== undefined ? ext.maxAch : ext.numAchievements;
-					g.pts = ext.pts !== undefined ? ext.pts : ext.points;
-					g.players = ext.players !== undefined ? ext.players : ext.numDistinctPlayersCasual;
-					console.log(`Data returned for ${g.name}:`, ext);
-
-					// FIX: Intercept "Unknown", split into an array, and standardize "Action-Adventure"
-					let rawGenre = (ext.genre === "Unknown" || !ext.genre) ? "Not Available" : String(ext.genre);
-					g.genre = rawGenre.split(',').map(genreStr => {
-						let cleanGenre = genreStr.trim();
-						let lowerGenre = cleanGenre.toLowerCase();
-						if (lowerGenre === "action adventure" || lowerGenre === "action-adventure" || lowerGenre === "action/adventure") {
-							return "Action-Adventure";
-						}
-						return cleanGenre;
-					});
-
-					g.consoleId = ext.consoleId;
-					let targetCon = null;
-					for (const [conName, conId] of Object.entries(RA_CONSOLE_IDS)) {
-						if (conId === g.consoleId) {
-							targetCon = conName;
-							break;
-						}
-					}
-					g.consoleName = targetCon;
-					g.missableIDs = missableIDs;
-					g.damagelessIDs = damagelessIDs;
-					g.speedrunIDs= speedrunIDs;
-					g.timeToMaster = ext.timeToMaster;
-					g.timeToBeatHardcore = ext.timeToBeatHardcore;
-					g.timeToBeat = ext.timeToBeat;
-					g.timeToComplete = ext.timeToComplete;
-					g.developer = ext.developer;
-					g.publisher = ext.publisher;
-					g.released = ext.released;
-					g.imageTitle = ext.imageTitle;
-					g.imageIngame = ext.imageIngame;
-					g.imageBoxArt = ext.imageBoxArt;
-					if (ext.imageIcon && !g.imgId) g.imgId = ext.imageIcon;
-					g.extendedFetched = true;
-					g.lastUpdated = Date.now();
-					g.pointsPerHourHC = g.pts / ((g.timeToMaster / 60) / 60);
-					g.pointsPerHourSC = g.pts / ((g.timeToComplete / 60) / 60);
-					g.achievements = ext.achievements || null;
-					g.flags = ext.flags;
-					g.forumTopicID = ext.forumTopicID;
-					g.guideURL = ext.guideURL;
-					g.raUpdated = ext.updated;
-					g.parentGameID = ext.parentGameID;
-					g.numDistinctPlayersCasual = ext.numDistinctPlayersCasual;
-					g.numDistinctPlayersHardcore = ext.numDistinctPlayersHardcore;
-					g.userTotalPlaytime = ext.userTotalPlaytime;
-												
-					try {
-						const db = await dbPromise;
-						await db.put('games', g); // This instantly saves/updates the game in the database!
-					} catch (dbErr) {
-						console.error(`Failed to save ${g.name} to DB:`, dbErr);
-					}
-
-					// 1. Sync updated game directly to window.userLibrary in memory
+					// 2. Sync updated game directly to window.userLibrary in memory
 					if (window.userLibrary && window.userLibrary[conName]) {
 						const idx = window.userLibrary[conName].findIndex(item => 
 							(item.id && item.id === g.id) || (item.raId && item.raId === g.raId)
@@ -965,17 +1068,6 @@ window.processExtendedFetchQueue = async function() {
 						} else {
 							window.userLibrary[conName].push(g);
 						}
-					}
-
-					if (typeof window.updateHistoryItemDOM === 'function') {
-						window.updateHistoryItemDOM(g, conName);
-					}
-
-					// Refresh active game info panel if currently expanded
-					const sidebarDiv = document.getElementById(`sidebar-info-${g.id}`);
-					if (sidebarDiv && window.activeSidebarInfo === sidebarDiv) {
-						window.toggleSidebarGameInfo(g.id, g.raId, null);
-						window.toggleSidebarGameInfo(g.id, g.raId, null);
 					}
 				} else {
 					console.warn(`[Queue Warning] API returned empty data for ${g.name || g.raId}`);
@@ -989,10 +1081,10 @@ window.processExtendedFetchQueue = async function() {
 			if(pBar) pBar.style.width = pct + '%';
 			if(pText) pText.innerText = `Updating extended game information - ${pct}%`;
 			
-			// 2. Rebuild pool with updated memory state
+			// 4. Rebuild pool with updated memory state
 			if (typeof rebuildPool === 'function') rebuildPool();
 			
-			// 3. Await async sidebar render to prevent render racing
+			// 5. Await async sidebar render to prevent render racing
 			if (typeof renderSidebar === 'function') await renderSidebar();
 			
 			await new Promise(r => setTimeout(r, 500));
@@ -1001,7 +1093,7 @@ window.processExtendedFetchQueue = async function() {
 		if(pContainer) pContainer.style.display = 'none';
 	}
 	isFetchingExtended = false;
-}; 
+};
 
 window.forceUpdateAllExtended = async function() {
 	try {
@@ -1054,13 +1146,13 @@ function rebuildPool() {
 			
 			if (completedData[con]) {
 				completedData[con].forEach(completedId => {
-					const idx = gamePool[con].findIndex(g => g.id === completedId || g.name === completedId);
+					const idx = gamePool[con].findIndex(g => g.highestAwardKind == "completed");
 					if (idx > -1) gamePool[con].splice(idx, 1);
 				});
 			}
 			if (masteredData[con]) {
 				masteredData[con].forEach(masteredId => {
-					const idx = gamePool[con].findIndex(g => g.id === masteredId || g.name === masteredId);
+					const idx = gamePool[con].findIndex(g => g.highestAwardKind == "mastered");
 					if (idx > -1) gamePool[con].splice(idx, 1);
 				});
 			}
@@ -1138,6 +1230,7 @@ window.toggleSidebarGameInfo = async function(gameId, raId, element) {
 
 	if (!infoDiv || !wrapper || !item) return;
 
+	// Toggle open / close state
 	if (wrapper.style.gridTemplateRows === '1fr') {
 		wrapper.style.gridTemplateRows = '0fr';
 		infoDiv.style.opacity = '0';
@@ -1146,6 +1239,7 @@ window.toggleSidebarGameInfo = async function(gameId, raId, element) {
 		return;
 	}
 
+	// Close any other open sidebar info panel
 	if (window.activeSidebarInfo && window.activeSidebarInfo !== infoDiv) {
 		const oldWrapper = window.activeSidebarInfo.closest('.sidebar-info-wrapper');
 		const oldItem = window.activeSidebarInfo.closest('li')?.querySelector('.history-item');
@@ -1165,60 +1259,36 @@ window.toggleSidebarGameInfo = async function(gameId, raId, element) {
 	infoDiv.style.opacity = '1';
 	item.classList.add('expanded');
 
-	// FIX: Include the "not fetched yet" text in the condition so it forces a re-render
-	// when the data is finally available.
 	const needsRender = infoDiv.innerHTML.trim() === '' || 
 						infoDiv.innerHTML.includes('Loading info...') || 
 						infoDiv.innerHTML.includes('Extended info not fetched yet');
 
 	if (needsRender) {
-		// NEW: Fetch directly from IndexedDB using the primary key
 		const db = await dbPromise;
-		const foundGame = await db.get('games', gameId);
+		let foundGame = await db.get('games', gameId); 
 
-		if (!foundGame || !foundGame.extendedFetched) {
-			infoDiv.innerHTML = '<p style="color:var(--accent); font-size:0.7rem; text-align:center; padding: 10px 0;">Extended info not fetched yet. Click "Update All Games" or wait for background process.</p>';
-			return;
+		if (!foundGame || !foundGame.extendedFetched || foundGame.progressedSinceLastCheck) {
+			infoDiv.innerHTML = '<p style="color:var(--accent); font-size:0.7rem; text-align:center; padding: 10px 0;">Loading info...</p>';
+			
+			try {				
+				const extendedData = await fetchExtendedDataForGame(gameId, raId);
+				if (extendedData) {
+					foundGame = extendedData;
+				} else {
+					infoDiv.innerHTML = '<p style="color:var(--danger); font-size:0.7rem; text-align:center; padding: 10px 0;">Failed to fetch extended info.</p>';
+					return;
+				}
+			} catch (e) {
+				console.error("Error fetching extended data:", e);
+				infoDiv.innerHTML = '<p style="color:var(--danger); font-size:0.7rem; text-align:center; padding: 10px 0;">Error connecting to API.</p>';
+				return;
+			}
 		}
 
-		// Map data for generateGameInfoHtml ensuring all required keys are present
-		let data = {
-			id: foundGame.id, // Passed so YouTube lookup fallback works
-			consoleName: foundGame.consoleName, // Passed so YouTube lookup fallback works
-			title: foundGame.name || foundGame.title,
-			imageBoxArt: foundGame.imageBoxArt ? `${foundGame.imageBoxArt}.png` : (foundGame.imgId ? `${foundGame.imgId}.png` : null),
-			imageIcon: foundGame.imgId ? `${foundGame.imgId}.png` : null,
-			publisher: foundGame.publisher || "Unknown",
-			developer: foundGame.developer || "Unknown",
-			released: foundGame.released || "Unknown",
-			numAchievements: foundGame.maxAch || 0,
-			achievements: foundGame.achievements || null, // MUST be included for progress calculations
-			missableIDs: foundGame.missableIDs || [],
-			damagelessIDs: foundGame.damagelessIDs || [],
-			speedrunIDs: foundGame.speedrunIDs || [],
-			points: foundGame.pts || 0,
-			genre: foundGame.genre || "Unknown",
-			players: foundGame.players || 0,
-			imageTitle: foundGame.imageTitle ? `${foundGame.imageTitle}.png` : null,
-			imageIngame: foundGame.imageIngame ? `${foundGame.imageIngame}.png` : null,
-			medianTimeToBeat: foundGame.timeToBeat || 0,
-			medianTimeToBeatHardcore: foundGame.timeToBeatHardcore || 0,
-			medianTimeToComplete: foundGame.timeToComplete || 0,
-			medianTimeToMaster: foundGame.timeToMaster || 0,
-			flags: foundGame.flags || foundGame.Flags || null,
-			forumTopicID: foundGame.forumTopicId || foundGame.forumTopicID || foundGame.ForumTopicId || foundGame.ForumTopicID || null,
-			guideURL: foundGame.guideUrl || foundGame.guideURL || foundGame.GuideUrl || foundGame.GuideURL || null,
-			raUpdated: foundGame.updated || foundGame.Updated || null,
-			consoleName: foundGame.consoleName || foundGame.ConsoleName || "Unknown",
-			parentGameID: foundGame.parentGameId || foundGame.parentGameID || foundGame.ParentGameId || foundGame.ParentGameID || null,
-			numDistinctPlayersCasual: foundGame.numDistinctPlayersCasual || foundGame.NumDistinctPlayersCasual || 0,
-			numDistinctPlayersHardcore: foundGame.numDistinctPlayersHardcore || foundGame.NumDistinctPlayersHardcore || 0,
-			userTotalPlaytime: foundGame.userTotalPlaytime || foundGame.UserTotalPlaytime || 0
-		};
-
-		infoDiv.innerHTML = window.generateGameInfoHtml(data, raId, true);
+		// Render the panel using updateSidebarGameInfo
+		window.updateSidebarGameInfo(foundGame, foundGame.consoleName);
 	}
-}
+};
 
 function getGenres(genre) {
 	if (Array.isArray(genre)) {
@@ -1236,24 +1306,23 @@ function getGenres(genre) {
 // 1. HELPER: Generate Game List Item HTML
 // ==========================================
 function createSidebarListItemHtml(game, con, options = {}) {
-	const { sortMode = 'console', isGenreItem = false, currentlyOpenId = null, currentlyOpenHtml = '' } = options;
-
-	const isCompleted = game.isCompleted !== undefined ? game.isCompleted : (completedData[con] && completedData[con].includes(game.id));
-	const isMastered = game.isMastered !== undefined ? game.isMastered : (masteredData[con] && masteredData[con].includes(game.id));
-
-	let numAchTotal = game.numAchTotal !== undefined ? game.numAchTotal : 0;
-	let numAchHC = game.numAchHC !== undefined ? game.numAchHC : 0;
-	let numPoss = game.numAch !== undefined ? game.numAch : 0;
-
-	if (game.numAchTotal === undefined) {
-		const raData = raCompletedGamesCache.find(ra => String(ra.gameId || ra.GameID || ra.id) === String(game.raId));
-		if (raData) {
-			numPoss = parseInt(raData.progData?.numPossibleAchievements || raData.maxPossible) || 0;
-			numAchTotal = parseInt(raData.progData?.numAchieved || raData.numAwarded) || 0;
-			numAchHC = parseInt(raData.progData?.numAchievedHardcore || raData.numAwardedHardcore) || 0;
+	// Check if the item already exists in the DOM
+	const existingWrapper = document.getElementById(`history-list-wrapper-${game.id}`);
+	if (existingWrapper) {
+		if (typeof window.updateSidebarGameInfo === 'function') {
+			window.updateSidebarGameInfo(game, con);
 		}
+		// Return empty string or handle as required when updating existing DOM
+		return '';
 	}
 
+	const { sortMode = 'console', isGenreItem = false, currentlyOpenId = null, currentlyOpenHtml = '' } = options;
+	const isCompleted = game.highestAwardKind === "completed";
+	const isMastered = game.highestAwardKind === "mastered";
+
+	let numAchTotal = game.numAwardedToUser !== undefined ? game.numAwardedToUser : 0;
+	let numAchHC = game.numAwardedToUserHardcore !== undefined ? game.numAwardedToUserHardcore : 0;
+	let numPoss = game.maxAch !== undefined ? game.maxAch : 0;
 	let numAchSoftcore = Math.max(0, numAchTotal - numAchHC);
 	let trueMax = numPoss > 0 ? numPoss : (game.maxAch || '?');
 	let progressPoss = numPoss > 0 ? numPoss : (game.maxAch || 1);
@@ -1269,30 +1338,35 @@ function createSidebarListItemHtml(game, con, options = {}) {
 		: `<div style="width:24px; height:24px; margin-right:8px; border-radius:4px; flex-shrink:0; box-sizing:border-box; ${imgOutline}; display:inline-block;"></div>`;
 
 	let rightText = '';
+	let imgSpan = '';
+	
+	if (isMastered || isCompleted) {
+		imgSpan = 'class="award-icon" ';
+	} 
+	
+	if (isMastered) rightText = '👑 ';
+	else if (isCompleted) rightText = '🎖️ ';
+	
 	if (isGenreItem) {
-		rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${game.genre || 'Unknown'}</span>`;
+		rightText += `<span style="font-size:0.6rem; color:#94a3b8;">${game.genre || 'Unknown'}</span>`;
 	} else if (sortMode === 'time' && typeof formatTime === 'function') {
-		rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${formatTime(game.time)}</span>`;
+		rightText += `<span style="font-size:0.6rem; color:#94a3b8;">${formatTime(game.time)}</span>`;
 	} else if (sortMode === 'hc_time' && typeof formatTime === 'function') {
-		rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${formatTime(game.hcTime)}</span>`;
+		rightText += `<span style="font-size:0.6rem; color:#94a3b8;">${formatTime(game.hcTime)}</span>`;
 	} else if (sortMode === 'pph_hc') {
 		let pph = game.time > 0 ? (game.pts / (game.time / 3600)) : 0;
-		rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${game.time > 0 ? pph.toFixed(1) + ' PPH' : 'Unknown'}</span>`;
+		rightText += `<span style="font-size:0.6rem; color:#94a3b8;">${game.time > 0 ? pph.toFixed(1) + ' PPH' : 'Unknown'}</span>`;
 	} else if (sortMode === 'percentage') {
 		let pct = progressPoss > 0 ? (numAchTotal / progressPoss) * 100 : 0;
-		rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${pct.toFixed(1)}%</span>`;
+		rightText += `<span style="font-size:0.6rem; color:#94a3b8;">${pct.toFixed(1)}%</span>`;
 	} else if (sortMode === 'points') {
-		rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${game.pts || 0} Pts</span>`;
+		rightText += `<span style="font-size:0.6rem; color:#94a3b8;">${game.pts || 0} Pts</span>`;
 	} else if (sortMode === 'developer') {
-		rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${game.developer}</span>`;
+		rightText += `<span style="font-size:0.6rem; color:#94a3b8;">${game.developer}</span>`;
 	} else if (sortMode === 'publisher') {
-		rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${game.publisher}</span>`;
-	} else {
-		if (isMastered) rightText = '👑';
-		else if (isCompleted) rightText = '🎖️';
-		else rightText = `<span style="font-size:0.6rem; color:#94a3b8;">${numAchTotal} / ${trueMax}</span>`;
-	}
-
+		rightText += `<span style="font-size:0.6rem; color:#94a3b8;">${game.publisher}</span>`;
+	} else rightText += `<span style="font-size:0.6rem; color:#94a3b8;">${numAchTotal} / ${trueMax}</span>`;
+	
 	const genres = getGenres(game.genre);
 	const genreDataAttr = isGenreItem ? `data-genres="${genres.join("|")}"` : "";
 	const itemClass = isGenreItem ? 'history-item genre-item' : 'history-item';
@@ -1305,31 +1379,27 @@ function createSidebarListItemHtml(game, con, options = {}) {
 		? `<img src="${customConsoleImgUrl}" title="${consoleFullName}" style="height:14px; width:auto; object-fit:contain; margin-right:6px;" alt="${con} icon">`
 		: (game.consoleId ? `<img src="https://media.retroachievements.org/Images/Console/${game.consoleId}.png" style="width:16px; height:16px; margin-right:4px;" onerror="this.style.display='none'">` : ``);
 
-	// --- NEW LOGIC: Extract and style tilde tags ---
+	// --- Extract and style tilde tags ---
 	let cleanName = game.name || '';
 	let tagsHtml = '';
 	const tagMatches = cleanName.match(/~([^~]+)~/g);
 	
 	if (tagMatches) {
 		tagMatches.forEach(match => {
-			// Remove the tildes for the displayed text
 			const tagText = match.replace(/~/g, '');
-			// Append the styled badge (added minor padding and margin so it looks clean)
 			tagsHtml += `<span style="color: black; background: white; border: 0px; border-radius: 4px; padding: 2px 4px; margin-left: 5px; font-size: 0.75em; font-weight: bold;">${tagText}</span>`;
 		});
-		// Strip the tags from the main title text
 		cleanName = cleanName.replace(/~([^~]+)~/g, '').trim();
 	}
-	// -------------------------------------------------
 
 	return `
 		<li id="history-list-wrapper-${game.id}" style="display: flex; flex-direction: column; width: 100%; list-style: none; margin: 0; padding: 0;">
 			<div id="history-item-${game.id}" class="${itemClass} ${currentlyOpenId === game.id ? 'expanded' : 'collapsed'}" ${genreDataAttr} style="background-image: linear-gradient(to right, #eab308 0%, #eab308 ${yellowPct}%, #3b82f6 ${yellowPct}%, #3b82f6 ${yellowPct + bluePct}%, transparent ${yellowPct + bluePct}%);" onclick="toggleSidebarGameInfo('${game.id}', '${game.raId}', this)">
 				<div style="display:flex; width:100%; justify-content:space-between; align-items:center;">
 					<div style="display:flex; align-items:center; flex-shrink:1; min-width:0;">
-						<span id="history-item-img-${game.id}" style="display:flex;">${imgHtml}</span>
-						<span class="game-title-text" style="color:var(--text); z-index:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${cleanName}${tagsHtml}</span>
-						${sortMode !== 'console' ? `<span style="font-size:0.6rem; color:#64748b; margin-left: 6px;">${consoleIconHtml}</span>` : ''}
+						<span ${imgSpan}id="history-item-img-${game.id}" style="display:flex; width: 24px;">${imgHtml}</span>
+						<span class="game-title-text" style="color:var(--text); z-index:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-left: 5px;">${cleanName}${tagsHtml}</span>
+						${sortMode !== 'console' ? `<span style="font-size:0.6rem; color:#64748b; margin-left: 5px;">${consoleIconHtml}</span>` : ''}
 					</div>
 					<div style="display:flex; align-items:center; gap: 8px; z-index:1; flex-shrink:0;">
 						<span id="history-item-right-text-${game.id}">${rightText}</span>
@@ -1366,8 +1436,8 @@ function renderSidebarSearch(term, currentlyOpenId, currentlyOpenHtml) {
 
 	Object.keys(userLibrary).forEach(con => {
 		userLibrary[con].forEach(game => {
-			const isCompleted = completedData[con] && completedData[con].includes(game.id);
-			const isMastered = masteredData[con] && masteredData[con].includes(game.id);
+			const isCompleted = game.HighestAwardKind === "completed";
+			const isMastered = game.HighestAwardKind === "mastered";
 
 			if (game.name && game.name.toLowerCase().includes(term)) {
 				found = true;
@@ -1430,14 +1500,17 @@ function renderSidebarByConsole(currentlyOpenId, currentlyOpenHtml) {
 		const pct = Math.min(100, Math.round((comp / Math.max(1, games.length)) * 100));
 		const color = CONSOLE_COLORS[con] || 'var(--primary)';
 		const icon = CONSOLE_IMAGES[con] || '';
+		const logo = `game_picker/images/logos/${con}.png`;
 		const displayTitle = (CONSOLE_FULL_NAMES[con] || con).replace(/\//g, " / ");
+		let consoleDisplay = `<img src="${logo}" style="padding:2px 0px;max-height: 28px;max-width: 100%;" onerror="this.outerHTML='${displayTitle}'">`;
+			
 
 		let html = `
 		<div class="console-section" id="console-section-${con}">
 			<div class="console-header-bg ${isCollapsed ? 'collapsed' : 'expanded'}" onclick="toggleGroupCollapse('${con}')" style="cursor:pointer; user-select:none; transition: background 0.2s; padding: 5px; border-radius: 4px;">
 				<div class="console-header-box" style="margin-bottom: 0; border-bottom: none; padding-bottom: 0;">
 					${icon ? `<img src="${icon}" class="console-icon">` : `<span style="font-size:10px; width:32px; display:inline-block; text-align:center;">${con}</span>`}
-					<span class="console-title" style="flex-grow:1;">${displayTitle}</span>
+					<span class="console-title" style="width:100%;display: flex;justify-content: center;">${consoleDisplay}</span>
 					<span class="collapse-arrow" style="font-size:0.6rem; color:#94a3b8; transition: transform 0.3s ease; transform: rotate(${isCollapsed ? '0deg' : '180deg'}); display: inline-block;">▼</span>
 				</div>
 				<div style="display: flex; align-items: center;">
@@ -1906,7 +1979,7 @@ function updateWheelFilters() {
 		if (filterSpeedrun && g.speedrunIDs && parseInt(g.speedrunIDs.length) > 0) {
 			return false;
 		}
-
+		
 		// Passes all checked criteria (or both false = keep all)
 		return true;
 	};
@@ -2289,7 +2362,7 @@ function spinForGame() {
 		document.getElementById('speedrun-spin-filter').disabled = false;
 		
 		if(res.raId) {
-			fetchAndShowGameInfo(res.raId);
+			fetchAndShowGameInfo(res.id, res.raId);
 		}
 
 		// Delay slightly to allow the DOM to register 'display: flex' before scrolling
@@ -2305,12 +2378,10 @@ function spinForGame() {
 	});
 }
 
-async function fetchAndShowGameInfo(raId) {
+async function fetchAndShowGameInfo(gameId, raId) {
 	const panel = document.getElementById('game-info-panel');
-	const user = localStorage.getItem('ra_user');
-	const key = localStorage.getItem('ra_key');
 	
-	if (!user || !key || !raId) return;
+	if (!gameId && !raId) return;
 
 	// 1. Turn the display on (it is still 0 width and invisible due to the base CSS)
 	panel.style.display = 'flex';
@@ -2324,94 +2395,19 @@ async function fetchAndShowGameInfo(raId) {
 	panel.innerHTML = '<p style="color:var(--accent); font-size:0.8rem; text-align:center; margin-top:20px;">Gathering extended info...</p>';
 
 	try {
-		const raApi = await import("https://esm.sh/@retroachievements/api");
-		const authorization = raApi.buildAuthorization({ username: user, webApiKey: key });
-		
-		// Changed to getGameInfoAndUserProgress and added the username parameter[cite: 1]
-		const data = await window.safeApiCall(raApi.getGameInfoAndUserProgress, authorization, { username: user, gameId: parseInt(raId) });
-		try { 
-			if (typeof raApi.getGameProgression === 'function') {
-				const prog = await window.safeApiCall(raApi.getGameProgression, authorization, { gameId: parseInt(raId) });
-				if(prog) {
-					data.medianTimeToBeat = prog.medianTimeToBeat;
-					data.medianTimeToBeatHardcore = prog.medianTimeToBeatHardcore;
-					data.medianTimeToComplete = prog.medianTimeToComplete;
-					data.medianTimeToMaster = prog.medianTimeToMaster;
-				}
-			}
-		} catch(e) {
-			console.warn("Progression call failed or unavailable", e);
-		}
+		// All data fetching, mapping, and database updating is handled here
+		const data = await fetchExtendedDataForGame(gameId, raId);
 
 		if (data && (data.id || data.ID)) {
 			const bgFade = document.getElementById('bg-fade-layer');
 			const rawBox = data.imageBoxArt || data.ImageBoxArt;
 			if (rawBox) {
-				const boxArtUrl = `https://media.retroachievements.org${rawBox.startsWith('/') ? rawBox : '/Images/'+rawBox}`;
+				const boxArtUrl = `https://media.retroachievements.org${rawBox.startsWith('/') ? rawBox : '/Images/'+rawBox}.png`;
 				bgFade.style.backgroundImage = `url('${boxArtUrl}')`;
 				bgFade.style.opacity = 1;
 			}
 
-			if (selectedConsole && selectedGame) {
-				let libGame = userLibrary[selectedConsole].find(g => g.id === selectedGame.id);
-				if (libGame) {
-					libGame.maxAch = data.numAchievements || data.NumAchievements || libGame.maxAch || 0;
-					let calculatedPts = 0;
-					if (data.achievements || data.Achievements) {
-						libGame.achievements = data.achievements || data.Achievements;
-						const achs = data.achievements || data.Achievements;
-						(Array.isArray(achs) ? achs : Object.values(achs)).forEach(ach => calculatedPts += parseInt(ach.points || ach.Points || 0));
-					}
-					libGame.consoleId = data.consoleId;
-					let targetCon = null;
-					for (const [conName, conId] of Object.entries(RA_CONSOLE_IDS)) {
-						if (conId === libGame.consoleId) {
-							targetCon = conName;
-							break;
-						}
-					}
-					libGame.consoleName = targetCon;
-					libGame.pts = calculatedPts || libGame.pts || 0;
-					libGame.genre = data.genre || data.Genre || libGame.genre || "Unknown";
-					libGame.timeToMaster = parseInt(data.medianTimeToMaster) || libGame.timeToMaster || 0;
-					libGame.timeToBeatHardcore = parseInt(data.medianTimeToBeatHardcore) || libGame.timeToBeatHardcore || 0;
-					libGame.timeToBeat = parseInt(data.medianTimeToBeat) || libGame.timeToBeat || 0;
-					libGame.timeToComplete = parseInt(data.medianTimeToComplete) || libGame.timeToComplete || 0;
-					libGame.developer = data.developer || data.Developer || libGame.developer || "Unknown";
-					libGame.publisher = data.publisher || data.Publisher || libGame.publisher || "Unknown";
-					libGame.released = data.released || data.Released || libGame.released || "Unknown";
-					libGame.players = data.numDistinctPlayersCasual || data.NumDistinctPlayersCasual || libGame.players || 0;
-					libGame.imageTitle = cleanImg(data.imageTitle || data.ImageTitle) || libGame.imageTitle;
-					libGame.imageIngame = cleanImg(data.imageIngame || data.ImageIngame) || libGame.imageIngame;
-					libGame.imageBoxArt = cleanImg(data.imageBoxArt || data.ImageBoxArt) || libGame.imageBoxArt;
-					libGame.pointsPerHourHC = libGame.pts / ((libGame.timeToMaster / 60) / 60);
-					libGame.pointsPerHourSC = libGame.pts / ((libGame.timeToComplete / 60) / 60);
-					data.pointsPerHourHC = libGame.pts / ((libGame.timeToMaster / 60) / 60);
-					data.pointsPerHourSC = libGame.pts / ((libGame.timeToComplete / 60) / 60);
-					data.missableIDs = libGame.missableIDs;
-					data.damagelessIDs = libGame.damagelessIDs;
-					data.speedrunIDs = libGame.speedrunIDs;
-					libGame.flags = data.flags || data.Flags || null;
-					libGame.forumTopicID = data.forumTopicId || data.forumTopicID || data.ForumTopicId || data.ForumTopicID || null;
-					libGame.guideURL = data.guideUrl || data.guideURL || data.GuideUrl || data.GuideURL || null;
-					libGame.raUpdated = data.updated || data.Updated || null;
-					libGame.parentGameID = data.parentGameId || data.parentGameID || data.ParentGameId || data.ParentGameID || null;
-					libGame.numDistinctPlayersCasual = data.numDistinctPlayersCasual || data.NumDistinctPlayersCasual || 0;
-					libGame.numDistinctPlayersHardcore = data.numDistinctPlayersHardcore || data.NumDistinctPlayersHardcore || 0;
-					libGame.userTotalPlaytime = data.userTotalPlaytime || data.UserTotalPlaytime || 0;
-							
-					libGame.extendedFetched = true;
-					
-					try {
-						const db = await dbPromise;
-						await db.put('games', libGame); // This instantly saves/updates the game in the database!
-					} catch (dbErr) {
-						console.error(`Failed to save ${libGame.name} to DB:`, dbErr);
-					}
-					window.updateHistoryItemDOM(libGame, selectedConsole);
-				}
-			}
-
+			// Display results utilizing the enriched data payload
 			panel.innerHTML = generateGameInfoHtml(data, raId, false);
 		} else {
 			panel.innerHTML = '<p style="color:var(--danger); font-size:0.8rem; text-align:center; margin-top:20px;">Could not load game info.</p>';
@@ -2539,9 +2535,17 @@ async function loadCachedStats() {
 
 	const summary = JSON.parse(localStorage.getItem('ra_api_summary'));
 	let wtp = JSON.parse(localStorage.getItem('ra_api_wtp'));
-	const completed = JSON.parse(localStorage.getItem('ra_api_completed'));
+
 
 	if (summary) {
+		const keysToRemove = [
+			'user', 'lastGameId', 'contribCount', 
+			'contribYield', 'permissions', 'untracked', 'id', 
+			'userWallActive', 'recentlyPlayedCount', 'ulid', 'totalRanked',
+			'awarded', 'lastGame'
+		];
+		keysToRemove.forEach(k => delete summary[k]);
+
 		await renderSummary(summary, user);
 	} else {
 		document.getElementById('ra-user-stats').innerHTML = '<p style="font-size: 0.8rem; color: #64748b; font-style: italic;">No cached stats. Click Refresh Stats to load.</p>';
@@ -2556,11 +2560,6 @@ async function loadCachedStats() {
 		});
 		window.wtpGamesCache = wtp;
 		renderWantToPlayList(wtp);
-	}
-	
-	if (completed) {
-		raCompletedGamesCache = completed;
-		renderCompletedTabs('mastered');
 	}
 }
 
@@ -2588,24 +2587,26 @@ async function fetchUserStats(forceRefresh = false) {
 			recentGamesCount: 5,
 			recentAchievementsCount: 10,
 			t: Date.now() 
-		});
+		});		
+		
+		// Triggers the actual game data fetches
+		await fetchUserWantToPlay(user, key, raApi, authorization);
+		await fetchUserCompleted(user, key, raApi, authorization);
 		
 		if (data) {
+			localStorage.setItem('ra_api_summary', JSON.stringify(data));
 			const keysToRemove = [
-				'user', 'richPresenceMsgDate', 'lastGameId', 'contribCount', 
+				'user', 'lastGameId', 'contribCount', 
 				'contribYield', 'permissions', 'untracked', 'id', 
 				'userWallActive', 'recentlyPlayedCount', 'ulid', 'totalRanked',
 				'awarded', 'lastGame'
 			];
 			keysToRemove.forEach(k => delete data[k]);
 
-			localStorage.setItem('ra_api_summary', JSON.stringify(data));
 			await renderSummary(data, user);
 		}
 
-		// Triggers the actual game data fetches
-		await fetchUserWantToPlay(user, key, raApi, authorization);
-		await fetchUserCompleted(user, key, raApi, authorization);
+
 		
 	} catch (err) {
 		console.error(err);
@@ -2614,7 +2615,7 @@ async function fetchUserStats(forceRefresh = false) {
 }
 
 function buildUserHeaderHTML(data, user) {
-	let html = `<div id="stats-box-1" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #1e293b; padding: 10px; border-radius: 8px; border: 1px solid var(--border);">`;
+	let html = `<div id="stats-box-1" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 10px; border-radius: 8px; border: 1px solid var(--border);">`;
 
 	// Left side: Avatar, Name, Motto
 	html += `<div style="display: flex; gap: 15px; align-items: center;">`;
@@ -2622,7 +2623,7 @@ function buildUserHeaderHTML(data, user) {
 	html += `<div><h2 style="margin: 0; color: var(--primary);"><a href="https://retroachievements.org/user/${user}" target="_blank" style="color: inherit;">${user}</a></h2>`;
 
 	if (data.motto) html += `<p style="margin: 4px 0 0 0; color: #94a3b8; font-size: 0.75rem; font-style: italic;">"${data.motto}"</p>`;
-	const memSince = data.memberSince || data.MemberSince;
+	const memSince = new Date((data.memberSince || data.MemberSince).replace(" ", "T")).toLocaleDateString();
 	if (memSince) html += `<p style="margin: 4px 0 0 0; color: #94a3b8; font-size: 0.75rem;"><strong style="color:white;">Member Since:</strong> ${memSince}</p>`;
 	html += `</div></div>`;
 
@@ -2630,10 +2631,10 @@ function buildUserHeaderHTML(data, user) {
 	html += `<div style="text-align: right; color: #94a3b8; font-size: 0.8rem;">`;
 	const tPoints = data.totalPoints !== undefined ? data.totalPoints : 0;
 	const tTruePoints = data.totalTruePoints !== undefined ? data.totalTruePoints : 0;
-	html += `<div style="margin-bottom: 4px; color: var(--text);"><strong>Points (Hardcore):</strong> ${tPoints} (<span title="RetroPoints: Points adjusted by achievement rarity." style="cursor:help; border-bottom:1px dotted #94a3b8;">${tTruePoints}</span>)</div>`;
+	html += `<div id="user-points-hc-display" style="margin-bottom: 4px; color: var(--text);"><strong>Points (Hardcore):</strong> ${tPoints} (<span title="RetroPoints: Points adjusted by achievement rarity." style="cursor:help; border-bottom:1px dotted #94a3b8;">${tTruePoints}</span>)</div>`;
 
 	const tSoftcore = parseInt(data.totalSoftcorePoints || 0, 10);
-	if (tSoftcore > 0) html += `<div style="margin-bottom: 4px; color: var(--text);"><strong>Points (Casual):</strong> ${tSoftcore}</div>`;
+	if (tSoftcore > 0) html += `<div id="user-points-sc-display" style="margin-bottom: 4px; color: var(--text);"><strong>Points (Casual):</strong> ${tSoftcore}</div>`;
 	if (data.rank) {
 		const urlOffset = Math.floor((data.rank - 1) / 25) * 25;
 		const rankUrl = `https://retroachievements.org/globalRanking.php?t=2&o=${urlOffset}&s=5`;
@@ -2857,17 +2858,17 @@ async function buildCompletionChartsHTML() {
 		` : '';
 
 		return `
-		<div class="chart-container" style="background: #1e293b; padding: 10px; border-radius: 8px; border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden;">
+		<div class="chart-container" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden;">
 			<div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); margin-bottom: 10px; padding-bottom: 5px;">
 				<h4 style="margin: 0; font-size: 0.8rem; color: var(--text);">${title}</h4>
 				${toggleHtml}
 			</div>
 			<div style="position: relative;">
 				<div style="position: absolute; top: 20px; left: 0; right: 0; height: 150px; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; z-index: 0; padding: 0 10px;">
-					<div style="border-top: 1px dashed rgba(148, 163, 184, 0.2); width: 100%; position: relative;"><span style="position: absolute; left: 0; top: -8px; font-size: 0.6rem; color: #64748b; background: #1e293b; padding-right: 4px;">${maxVal}</span></div>
-					<div style="border-top: 1px dashed rgba(148, 163, 184, 0.2); width: 100%; position: relative;"><span style="position: absolute; left: 0; top: -8px; font-size: 0.6rem; color: #64748b; background: #1e293b; padding-right: 4px;">${maxVal > 1 ? Math.round(maxVal * 0.75) : ''}</span></div>
-					<div style="border-top: 1px dashed rgba(148, 163, 184, 0.2); width: 100%; position: relative;"><span style="position: absolute; left: 0; top: -8px; font-size: 0.6rem; color: #64748b; background: #1e293b; padding-right: 4px;">${maxVal > 1 ? Math.round(maxVal / 2) : ''}</span></div>
-					<div style="border-top: 1px dashed rgba(148, 163, 184, 0.2); width: 100%; position: relative;"><span style="position: absolute; left: 0; top: -8px; font-size: 0.6rem; color: #64748b; background: #1e293b; padding-right: 4px;">${maxVal > 1 ? Math.round(maxVal * 0.25) : ''}</span></div>
+					<div style="border-top: 1px dashed rgba(148, 163, 184, 0.2); width: 100%; position: relative;"><span style="position: absolute; left: 0; top: -8px; font-size: 0.6rem; color: #64748b; padding-right: 4px;">${maxVal}</span></div>
+					<div style="border-top: 1px dashed rgba(148, 163, 184, 0.2); width: 100%; position: relative;"><span style="position: absolute; left: 0; top: -8px; font-size: 0.6rem; color: #64748b; padding-right: 4px;">${maxVal > 1 ? Math.round(maxVal * 0.75) : ''}</span></div>
+					<div style="border-top: 1px dashed rgba(148, 163, 184, 0.2); width: 100%; position: relative;"><span style="position: absolute; left: 0; top: -8px; font-size: 0.6rem; color: #64748b; padding-right: 4px;">${maxVal > 1 ? Math.round(maxVal / 2) : ''}</span></div>
+					<div style="border-top: 1px dashed rgba(148, 163, 184, 0.2); width: 100%; position: relative;"><span style="position: absolute; left: 0; top: -8px; font-size: 0.6rem; color: #64748b; padding-right: 4px;">${maxVal > 1 ? Math.round(maxVal * 0.25) : ''}</span></div>
 					<div style="border-top: 1px solid transparent; width: 100%;"></div> 
 				</div>
 				<div style="overflow-x: auto; overflow-y: hidden; padding-bottom: 35px; padding-top: 20px; position: relative; z-index: 1;">
@@ -2925,7 +2926,7 @@ async function buildCompletionChartsHTML() {
 		};
 
 		return `
-		<div class="chart-container" style="background: #1e293b; padding: 10px; border-radius: 8px; border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; ">
+		<div class="chart-container" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; ">
 			
 			<div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); margin-bottom: 10px; padding-bottom: 5px;">
 				<h4 style="margin: 0; font-size: 0.8rem; color: var(--text);">Completions by Completion Date</h4>
@@ -2961,10 +2962,10 @@ async function buildCompletionChartsHTML() {
 	return `
 	<div id="completion-graphs" style="display: grid; gap: 10px; margin-bottom: 15px; grid-template-columns: repeat(auto-fit, minmax(1fr, 1fr));">
 		${consoles.length > 1 ? generateBarChart('Completions by Console', consoles, consoleCounts, maxConsole, consoleGames) : ''}
-		${years.length > 1 ? generateBarChart('Completions by Release Year', years, yearCounts, maxYear, yearGames) : ''}
 		${genres.length > 1 ? generateBarChart('Completions by Genre', genres, genreCounts, maxGenre, genreGames, true) : ''}
-		${publishers.length > 1 ? generateBarChart('Completions by Publisher', publishers, publisherCounts, maxPublisher, publisherGames, true) : ''}
 		${developers.length > 1 ? generateBarChart('Completions by Developer', developers, developerCounts, maxDeveloper, developerGames, true) : ''}
+		${publishers.length > 1 ? generateBarChart('Completions by Publisher', publishers, publisherCounts, maxPublisher, publisherGames, true) : ''}
+		${years.length > 1 ? generateBarChart('Completions by Release Year', years, yearCounts, maxYear, yearGames) : ''}
 		${(maxDay > 0 || maxMonth > 0) ? generateStackedTimeChart() : ''}
 	</div>`;
 }
@@ -2972,8 +2973,16 @@ async function buildCompletionChartsHTML() {
 function buildLastPlayedHTML(data) {
 	const recentGamesSrc = data.recentlyPlayed || data.recentGames || [];
 	const mostRecentGame = Array.isArray(recentGamesSrc) && recentGamesSrc.length > 0 ? recentGamesSrc[0] : null;
-
 	let rpHeaderHtml = `<h4 style="margin: 0px; padding-bottom: 5px;">Rich Presence Msg</h4>`;
+
+	const richPresenceMsgDate = new Date(data.richPresenceMsgDate.replace(" ", "T")).toLocaleString(undefined, {
+		year: 'numeric',
+		month: '2-digit',
+		day: '2-digit',
+		hour: '2-digit',
+		minute: '2-digit',
+		hour12: true
+	});
 
 	if (mostRecentGame) {
 		const rpGameId = mostRecentGame.gameId || mostRecentGame.GameID || mostRecentGame.id || mostRecentGame.ID;
@@ -3005,9 +3014,10 @@ function buildLastPlayedHTML(data) {
 	}
 
 	return `
-	<div class="recent-stats" style="background: #1e293b; padding: 10px; border-radius: 6px; border: 1px solid var(--border); grid-column: 1 / -1;">
+	<div class="recent-stats" style="padding: 10px; border-radius: 6px; border: 1px solid var(--border); grid-column: 1 / -1;">
 		${rpHeaderHtml}
 		<div style="font-size: 0.9rem; font-weight: normal; color: var(--text); word-break: break-word;">${data.richPresenceMsg || ''}</div>
+		<span style="font-size: 0.65rem; color: #64748b;">${richPresenceMsgDate}</span>
 	</div>`;
 }
 
@@ -3024,6 +3034,14 @@ function buildRecentAchievementsHTML(achData) {
 		const achId = ach.id || ach.ID;
 		const achGameId = ach.gameId || ach.GameID;
 		const achGameTitle = ach.gameTitle || ach.GameTitle;
+		const achDateAwarded = new Date(ach.dateAwarded.replace(" ", "T")).toLocaleString(undefined, {
+			year: 'numeric',
+			month: '2-digit',
+			day: '2-digit',
+			hour: '2-digit',
+			minute: '2-digit',
+			hour12: true // Set to true for 12-hour AM/PM format
+		});
 
 		html += `
 		<div style="display: flex; gap: 10px; margin-bottom: 8px; align-items: center; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 4px;">
@@ -3033,7 +3051,7 @@ function buildRecentAchievementsHTML(achData) {
 			<div>
 				<div style="font-size: 0.8rem; font-weight: bold; color: var(--primary);"><a href="https://retroachievements.org/achievement/${achId}" target="_blank" style="color: inherit;">${ach.title}</a> <span style="color: var(--accent);">(${ach.points}pts)</span></div>
 				<div style="font-size: 0.7rem; color: #94a3b8; margin: 2px 0;">${ach.description}</div>
-				<div style="font-size: 0.65rem; color: #64748b;"><a href="https://retroachievements.org/game/${achGameId}" target="_blank" style="color: inherit;">${achGameTitle}</a> • ${ach.dateAwarded}</div>
+				<div style="font-size: 0.65rem; color: #64748b;"><a href="https://retroachievements.org/game/${achGameId}" target="_blank" style="color: inherit;">${achGameTitle}</a> • ${achDateAwarded}</div>
 			</div>
 		</div>`;
 	}
@@ -3132,7 +3150,7 @@ async function renderSummary(data, user) {
 	}
 
 	// Render remaining dynamic blocks
-	const excludedKeys = ['totalPoints', 'totalTruePoints', 'totalSoftcorePoints', 'rank', 'richPresenceMsg', 'userPic', 'status', 'memberSince', 'MemberSince', 'motto'];
+	const excludedKeys = ['totalPoints', 'totalTruePoints', 'totalSoftcorePoints', 'rank', 'richPresenceMsg', 'richPresenceMsgDate', 'userPic', 'status', 'memberSince', 'MemberSince', 'motto'];
 	const dynamicKeys = Object.keys(data).filter(k => !excludedKeys.includes(k));
 
 	dynamicKeys.forEach(k => {
@@ -3160,33 +3178,39 @@ async function renderSummary(data, user) {
 			}
 
 			statsHtml += `
-			<div class="recent-stats" style="background: #1e293b; padding: 10px; border-radius: 6px; border: 1px solid var(--border);">
+			<div class="recent-stats" style="padding: 10px; border-radius: 6px; border: 1px solid var(--border);">
 				<h4 style="margin: 0px; padding-bottom: 5px;">${formattedKey}</h4>
 				<div style="font-size: 0.9rem; font-weight: normal; color: var(--text); word-break: break-word;">${displayValue}</div>
 			</div>`;
 		}
 	});
 	statsHtml += `</div>`; // Close Grid
-
-	// 4. Footer Additions
-	const userAwardsDiv = document.getElementById('user-awards');
-	if (userAwardsDiv) userAwardsDiv.innerHTML = `<div id="ra-user-awards"><p style="font-size:0.75rem; color:#94a3b8;">Loading...</p></div>`;
-
-	statsHtml += `<h4 style="margin-top:20px; border-bottom:1px solid var(--border); padding-bottom:5px; margin-bottom: 10px; display: flex;justify-content: space-between; align-items: center;">Want to Play
+	
+	// Want to Play Games
+	statsHtml += `<div id="wtp-games" style="margin-top:10px; padding: 10px; border-radius: 6px; border: 1px solid var(--border);">`;
+	statsHtml += `<h4 style="margin-top:0; border-bottom:1px solid var(--border); padding-bottom:5px; margin-bottom: 10px; display: flex;justify-content: space-between; align-items: center;">Want to Play
 	<button id="add-wtp-btn" class="ui-btn btn-success" style="padding:8px; font-size:0.75rem;" onclick="importWantToPlayGames()">Add ${typeof wtpGamesCache !== 'undefined' ? wtpGamesCache.length : 0} Games to Library</button></h4>`;
 	statsHtml += `<div id="ra-want-to-play-header"></div>`;
 	statsHtml += `<div id="ra-want-to-play" class="mgmt-list-scroll" style="max-height: 250px; border:none; background:transparent; padding-top: 0px;"><p style="font-size:0.75rem; color:#94a3b8;">Loading...</p></div>`;
-
-	statsHtml += `<h4 style="display: none; margin-top:20px; border-bottom:1px solid var(--border); padding-bottom:5px; margin-bottom: 0;">Games in Progress</h4>`;
-	statsHtml += `<div style="display: none;" id="ra-completed"><p style="font-size:0.75rem; color:#94a3b8;">Loading...</p></div>`;
-
+	statsHtml += `</div>`;
+	
 	// Final DOM Injection
-	container.innerHTML = statsHtml;
+	container.innerHTML = statsHtml; 
 
 	// 5. External Function Triggers
 	if (data.rank && typeof window.updateAndRenderRankChart === 'function') {
 		const cleanRankNumber = parseInt(String(data.rank).replace(/,/g, ''), 10);
 		if (!isNaN(cleanRankNumber)) window.updateAndRenderRankChart(container, cleanRankNumber);
+	}
+	
+	const userAwardsDiv = document.getElementById('ra-user-awards');
+	if (userAwardsDiv) {
+		if (userAwardsDiv.innerHTML !== "" ) userAwardsDiv.innerHTML = `<p style="font-size:0.75rem; color:#94a3b8;">Loading...</p>`;
+		renderUserAwards();
+	}
+	
+	if (wtpGamesCache) {
+		window.renderWantToPlayList(wtpGamesCache);
 	}
 
 	// 6. Async Data Recovery (Preserved exactly as requested)
@@ -3211,16 +3235,10 @@ async function renderSummary(data, user) {
 
 			if (!found) {
 				try {
-					const raUser = localStorage.getItem('ra_user');
-					const raKey = localStorage.getItem('ra_key');
-					if (raUser && raKey) {
-						const raApi = await import("https://esm.sh/@retroachievements/api");
-						const authorization = raApi.buildAuthorization({ username: raUser, webApiKey: raKey });
-						const extData = await fetchExtendedDataForGame(raApi, authorization, g.gameId);
-						if (extData) {
-							maxAch = extData.maxAch || 0;
-							maxPts = extData.pts || 0;
-						}
+					const extData = await fetchExtendedDataForGame(raApi, authorization, g.raId);
+					if (extData) {
+						maxAch = extData.maxAch || 0;
+						maxPts = extData.pts || 0;
 					}
 				} catch (e) {
 					console.warn("Could not fetch extended info for game:", g.gameId);
@@ -3232,6 +3250,7 @@ async function renderSummary(data, user) {
 			if (achEl) achEl.innerHTML = `${g.numAchieved} / ${maxAch}`;
 			if (ptsEl) ptsEl.innerHTML = `${g.scoreAchieved} / ${maxPts}`;
 		});
+		
 	}
 }
 
@@ -3299,7 +3318,7 @@ async function fetchUserWantToPlay(user, key, raApi, authorization) {
 		let offset = 0;
 
 		while (true) {
-			const data = await window.safeApiCall(raApi.getUserWantToPlayList, authorization, { username: user, count: 500, offset: offset });
+			const data = await window.safeApiCall(raApi.getUserWantToPlayList, authorization, { username: user, count: 500, offset: offset }); 
 			if (data) {
 				const results = data.Results || data.results || (Array.isArray(data) ? data : []);
 				list.push(...results);
@@ -3378,7 +3397,8 @@ async function importWantToPlayGames() {
 					name: title,
 					raId: raIdStr,
 					imgId: cleanImg(icon),
-					maxAch: g.numAchievements || g.NumAchievements || 0,
+					maxAch: g.numAchievements || g.NumAchievements || g.achievementsPublished || 0,
+					pts: g.pointsTotal,
 					consoleName: targetCon, // Required for DB structural grouping
 					consoleId: conId        // Injected per your request
 				};
@@ -3410,148 +3430,165 @@ async function importWantToPlayGames() {
 		updateModifySelect();
 		renderSidebar();
 		renderModifyList();
+		updateWheelFilters();
 		alert(`Successfully imported ${importCount} game(s) from your Want to Play list!`);
 	} else {
 		alert("All games in your Want to Play list are already in your library.");
 	}
+	processExtendedFetchQueue();
 }
 
-async function renderUserAwards(masteredList, completedList, beatenHardcoreList, beatenSoftcoreList, progressList) {
+async function renderUserAwards() {
 	const db = await dbPromise;
 	const container = document.getElementById('ra-user-awards');
 	if (!container) return;
+
+	// Categorize games from the global cache directly
+	const masteredList = [];
+	const completedList = [];
+	const beatenHardcoreList = [];
+	const beatenSoftcoreList = [];
+	const progressList = [];
+
+	if (typeof raCompletedGamesCache !== 'undefined' && raCompletedGamesCache) {
+		raCompletedGamesCache.forEach(g => {
+			switch (g.highestAwardKind) {
+				case "mastered":
+					masteredList.push(g);
+					break;
+				case "completed":
+					completedList.push(g);
+					break;
+				case "beaten-hardcore":
+					beatenHardcoreList.push(g);
+					break;
+				case "beaten-softcore":
+					beatenSoftcoreList.push(g);
+					break;
+				case null:
+					progressList.push(g);
+					break;
+			}
+		});
+	}
 	
 	let html = ``;
-	if (masteredList) {
-		if (masteredList.length > 0) { 
-			html += `<div><h5 style="margin: 0;padding-bottom:5px;">👑 Mastered Games (${masteredList.length})</h5></div>`;
-			html += `<div class="awards-grid" style="display: grid; grid-template-columns:repeat(auto-fill, 68px); gap:5px; justify-content:center; border-bottom: solid 1px var(--border);
-			padding-bottom: 10px;">`;
-			let hasAwards = false;
-			
-			masteredList.forEach(g => {
-				hasAwards = true;
-				const icon = g.imageIcon || g.ImageIcon;
-				const title = g.title || g.Title;
-				const imgSrc = `https://media.retroachievements.org${icon.startsWith('/') ? icon : '/Images/' + icon}`;
-				const masteryDate = new Date(g.highestAwardDate);
-				const masteryDateText = masteryDate.toLocaleDateString();
-				html += `<a class="award-icon" href="https://retroachievements.org/game/${g.gameId}" target="_blank" style="display: flex; align-items: center; justify-content: center;">`;
-				html += `<img src="${imgSrc}" title="${title}&#10;Mastery Date: ${masteryDateText}&#10;Achievements: ${g.progData.numAchievedHardcore}/${g.progData.numPossibleAchievements}&#10;Points: ${g.progData.scoreAchievedHardcore}/${g.progData.possibleScore}" style="border-radius:4px; border: 2px solid #eab308; object-fit:cover;">`;
-				html += `</a>`;
-			});
-			
-			html += `</div>`;
-		}
-	}
-	if (completedList) {
-		if (completedList.length > 0) { 
-			html += `<div><h5 style="margin-top: 10px; margin-bottom: 0;padding-bottom:5px; ">🎖️ Completed Games (${completedList.length})</h5></div>`;			
-			html += `<div class="awards-grid" style="display: grid; grid-template-columns:repeat(auto-fill, 68px); gap:5px; justify-content:center; border-bottom: solid 1px var(--border);
-			padding-bottom: 10px;">`;	
-							
-			completedList.forEach(g => {
-				hasAwards = true;
-				const icon = g.imageIcon || g.ImageIcon;
-				const title = g.title || g.Title;
-				const imgSrc = `https://media.retroachievements.org${icon.startsWith('/') ? icon : '/Images/'+icon}`;
-				const completionDate = new Date(g.highestAwardDate);
-				const completionDateText = completionDate.toLocaleDateString();
-				html += `<a class="award-icon" href="https://retroachievements.org/game/${g.gameId}" target="_blank">`;
-				html += `<img src="${imgSrc}" title="${title}&#10;Completion Date: ${completionDateText}&#10;Achievements: ${g.progData.numAchieved}/${g.progData.numPossibleAchievements}&#10;Points: ${g.progData.scoreAchieved}/${g.progData.possibleScore}" style="border-radius:4px; border: 2px solid #3b82f6; object-fit:cover;">`;
-				html += `</a>`;
-			});
-			
-			html += `</div>`;
-		}
-	}
-	if (beatenHardcoreList) {
-		if (beatenHardcoreList.length > 0) { 
-			html += `<div><h5 style="margin-top: 10px; margin-bottom: 0;padding-bottom:5px; ">🏆 Beaten Games - Hardcore (${beatenHardcoreList.length})</h5></div>`;			
-			html += `<div class="awards-grid" style="display: grid; grid-template-columns:repeat(auto-fill, 68px); gap:5px; justify-content:center; border-bottom: solid 1px var(--border);
-			padding-bottom: 10px;">`;	
-							
-			beatenHardcoreList.forEach(g => {
-				hasAwards = true;
-				const icon = g.imageIcon || g.ImageIcon;
-				const title = g.title || g.Title;
-				const imgSrc = `https://media.retroachievements.org${icon.startsWith('/') ? icon : '/Images/'+icon}`;
-				const beatenDate = new Date(g.highestAwardDate);
-				const beatenDateText = beatenDate.toLocaleDateString();
-				html += `<a href="https://retroachievements.org/game/${g.gameId}" target="_blank">`;
-				html += `<img src="${imgSrc}" title="${title}&#10;Date Beaten: ${beatenDateText}&#10;Achievements: ${g.progData.numAchieved}/${g.progData.numPossibleAchievements}&#10;Points: ${g.progData.scoreAchieved}/${g.progData.possibleScore}" style="border-radius:4px; border: 2px solid #ffffff; object-fit:cover;">`;
-				html += `</a>`;
-			});
-			
-			html += `</div>`;
-		}
-	}
-	if (beatenSoftcoreList) {
-		if (beatenSoftcoreList.length > 0) {
-			html += `<div><h5 style="margin-top: 10px; margin-bottom: 0;padding-bottom:5px; ">🏆 Games Beaten - Softcore (${beatenSoftcoreList.length})</h5></div>`;			
-			html += `<div class="awards-grid" style="display: grid; grid-template-columns:repeat(auto-fill, 68px); gap:5px; justify-content:center; border-bottom: solid 1px var(--border);
-			padding-bottom: 10px;">`;	
-							
-			beatenSoftcoreList.forEach(g => {
-				hasAwards = true;
-				const icon = g.imageIcon || g.ImageIcon;
-				const title = g.title || g.Title;
-				const imgSrc = `https://media.retroachievements.org${icon.startsWith('/') ? icon : '/Images/'+icon}`;
-				const beatenDate = new Date(g.highestAwardDate);
-				const beatenDateText = beatenDate.toLocaleDateString();
-				html += `<a href="https://retroachievements.org/game/${g.gameId}" target="_blank">`;
-				html += `<img src="${imgSrc}" title="${title}&#10;Date Beaten: ${beatenDateText}&#10;Achievements: ${g.progData.numAchieved}/${g.progData.numPossibleAchievements}&#10;Points: ${g.progData.scoreAchieved}/${g.progData.possibleScore}" style="border-radius:4px; border: 2px solid #ffffff; object-fit:cover;">`;
-				html += `</a>`;
-			});
-			
-			html += `</div>`;
-		}
-	}
-	
-	if (progressList) html += `<div><h5 style="margin-top: 10px; margin-bottom: 0;padding-bottom:5px; ">🎮 Games in Progress (${progressList.length})</h5></div>`;			
-	html += `<div class="awards-grid" style="display: grid; grid-template-columns:repeat(auto-fill, 68px); gap:5px; justify-content:center; border-bottom: solid 1px var(--border);
-	padding-bottom: 10px;">`;	 
-	
-	// Changed from .forEach to for...of to allow 'await' to pause the loop properly
-	for (const g of progressList) {
-		// Query the 'raId' index you created instead of the primary 'id' key
-		const progressedGame = await db.getFromIndex('games', 'raId', String(g.gameId));
-		hasAwards = true;
-		const icon = g.imageIcon || g.ImageIcon;
-		const title = g.title || g.Title;
-		const imgSrc = `https://media.retroachievements.org${icon.startsWith('/') ? icon : '/Images/'+icon}`;
-		const lastAchievedDate = new Date(g.mostRecentAwardedDate);
-		const lastAchievedDateText = lastAchievedDate.toLocaleDateString();
-		let dateStarted = ''
-		let dateStartedText = '';
-		if (progressedGame) {
-			const achievements = progressedGame.achievements || progressedGame.Achievements;
-			const achList = achievements ? (Array.isArray(achievements) ? achievements : Object.values(achievements)) : [];		
-			let oldestDate = null;
-			achList.forEach(ach => {
-				[ach.dateEarned, ach.dateEarnedHardcore].forEach(earnedDate => {
-					if (earnedDate) {
-						const date = new Date(earnedDate);
+	let hasAwards = false;
 
-						if (!oldestDate || date < oldestDate) {
-							oldestDate = date;
-						}
-					}
-				});
-			});
-			dateStarted = oldestDate;
-			dateStartedText += `&#10;Date Started: ${dateStarted?.toLocaleDateString() ?? ""}`;
-		}
+	if (masteredList.length > 0) { 
+		html += `<div><h5 style="margin: 0;padding-bottom:5px;">👑 Mastered Games (${masteredList.length})</h5></div>`;
+		html += `<div class="awards-grid" style="display: grid; grid-template-columns:repeat(auto-fill, 65px); gap:5px; justify-content:center; border-bottom: solid 1px var(--border); padding-bottom: 10px;">`;
 		
+		masteredList.forEach(g => {
+			hasAwards = true;
+			const icon = g.imageIcon || g.ImageIcon;
+			const title = g.title || g.Title;
+			const imgSrc = `https://media.retroachievements.org${icon.startsWith('/') ? icon : '/Images/' + icon}`;
+			const masteryDate = new Date(g.highestAwardDate);
+			const masteryDateText = masteryDate.toLocaleDateString();
+			html += `<a class="award-icon" href="https://retroachievements.org/game/${g.gameId}" target="_blank" style="display: flex; align-items: center; justify-content: center;">`;
+			html += `<img src="${imgSrc}" title="${title}&#10;Mastery Date: ${masteryDateText}&#10;Achievements: ${g.progData.numAchievedHardcore}/${g.progData.numPossibleAchievements}&#10;Points: ${g.progData.scoreAchievedHardcore}/${g.progData.possibleScore}" style="border-radius:4px; border: 2px solid #eab308; object-fit:cover;">`;
+			html += `</a>`;
+		});
 		
-		html += `<a href="https://retroachievements.org/game/${g.gameId}" target="_blank">`;
-		html += `<img src="${imgSrc}" title="${title}${dateStartedText}&#10;Most Recent Achievement: ${lastAchievedDateText}&#10;Achievements: ${g.progData.numAchieved}/${g.progData.numPossibleAchievements}&#10;Points: ${g.progData.scoreAchieved}/${g.progData.possibleScore}" style="border-radius:4px; filter: grayscale(1); object-fit:cover;">`;
-		html += `</a>`;
+		html += `</div>`;
+	}
+
+	if (completedList.length > 0) { 
+		html += `<div><h5 style="margin-top: 10px; margin-bottom: 0;padding-bottom:5px; ">🎖️ Completed Games (${completedList.length})</h5></div>`;			
+		html += `<div class="awards-grid" style="display: grid; grid-template-columns:repeat(auto-fill, 65px); gap:5px; justify-content:center; border-bottom: solid 1px var(--border); padding-bottom: 10px;">`;	
+						
+		completedList.forEach(g => {
+			hasAwards = true;
+			const icon = g.imageIcon || g.ImageIcon;
+			const title = g.title || g.Title;
+			const imgSrc = `https://media.retroachievements.org${icon.startsWith('/') ? icon : '/Images/'+icon}`;
+			const completionDate = new Date(g.highestAwardDate);
+			const completionDateText = completionDate.toLocaleDateString();
+			html += `<a class="award-icon" href="https://retroachievements.org/game/${g.gameId}" target="_blank">`;
+			html += `<img src="${imgSrc}" title="${title}&#10;Completion Date: ${completionDateText}&#10;Achievements: ${g.progData.numAchieved}/${g.progData.numPossibleAchievements}&#10;Points: ${g.progData.scoreAchieved}/${g.progData.possibleScore}" style="border-radius:4px; border: 2px solid #3b82f6; object-fit:cover;">`;
+			html += `</a>`;
+		});
+		
+		html += `</div>`;
+	}
+
+	if (beatenHardcoreList.length > 0) { 
+		html += `<div><h5 style="margin-top: 10px; margin-bottom: 0;padding-bottom:5px; ">🏆 Beaten Games - Hardcore (${beatenHardcoreList.length})</h5></div>`;			
+		html += `<div class="awards-grid" style="display: grid; grid-template-columns:repeat(auto-fill, 65px); gap:5px; justify-content:center; border-bottom: solid 1px var(--border); padding-bottom: 10px;">`;	
+						
+		beatenHardcoreList.forEach(g => {
+			hasAwards = true;
+			const icon = g.imageIcon || g.ImageIcon;
+			const title = g.title || g.Title;
+			const imgSrc = `https://media.retroachievements.org${icon.startsWith('/') ? icon : '/Images/'+icon}`;
+			const beatenDate = new Date(g.highestAwardDate);
+			const beatenDateText = beatenDate.toLocaleDateString();
+			html += `<a href="https://retroachievements.org/game/${g.gameId}" target="_blank">`;
+			html += `<img src="${imgSrc}" title="${title}&#10;Date Beaten: ${beatenDateText}&#10;Achievements: ${g.progData.numAchieved}/${g.progData.numPossibleAchievements}&#10;Points: ${g.progData.scoreAchieved}/${g.progData.possibleScore}" style="border-radius:4px; border: 2px solid #ffffff; object-fit:cover;">`;
+			html += `</a>`;
+		});
+		
+		html += `</div>`;
+	}
+
+	if (beatenSoftcoreList.length > 0) {
+		html += `<div><h5 style="margin-top: 10px; margin-bottom: 0;padding-bottom:5px; ">🏆 Games Beaten - Softcore (${beatenSoftcoreList.length})</h5></div>`;			
+		html += `<div class="awards-grid" style="display: grid; grid-template-columns:repeat(auto-fill, 65px); gap:5px; justify-content:center; border-bottom: solid 1px var(--border); padding-bottom: 10px;">`;	
+						
+		beatenSoftcoreList.forEach(g => {
+			hasAwards = true;
+			const icon = g.imageIcon || g.ImageIcon;
+			const title = g.title || g.Title;
+			const imgSrc = `https://media.retroachievements.org${icon.startsWith('/') ? icon : '/Images/'+icon}`;
+			const beatenDate = new Date(g.highestAwardDate);
+			const beatenDateText = beatenDate.toLocaleDateString();
+			html += `<a href="https://retroachievements.org/game/${g.gameId}" target="_blank">`;
+			html += `<img src="${imgSrc}" title="${title}&#10;Date Beaten: ${beatenDateText}&#10;Achievements: ${g.progData.numAchieved}/${g.progData.numPossibleAchievements}&#10;Points: ${g.progData.scoreAchieved}/${g.progData.possibleScore}" style="border-radius:4px; border: 2px solid #ffffff; object-fit:cover;">`;
+			html += `</a>`;
+		});
+		
+		html += `</div>`;
 	}
 	
-	html += `</div>`;
-	
-	
+	if (progressList.length > 0) {
+		html += `<div><h5 style="margin-top: 10px; margin-bottom: 0;padding-bottom:5px; ">🎮 Games in Progress (${progressList.length})</h5></div>`;			
+		html += `<div class="awards-grid" style="display: grid; grid-template-columns:repeat(auto-fill, 65px); gap:5px; justify-content:center; border-bottom: solid 1px var(--border); padding-bottom: 10px;">`;	
+		
+		for (const g of progressList) {
+			const progressedGame = await db.getFromIndex('games', 'raId', String(g.gameId));
+			hasAwards = true;
+			const icon = g.imageIcon || g.ImageIcon;
+			const title = g.title || g.Title;
+			const imgSrc = `https://media.retroachievements.org${icon.startsWith('/') ? icon : '/Images/'+icon}`;
+			const lastAchievedDate = new Date(g.mostRecentAwardedDate);
+			const lastAchievedDateText = lastAchievedDate.toLocaleDateString();
+			let dateStartedText = '';
+			
+			if (progressedGame) {
+				const achievements = progressedGame.achievements || progressedGame.Achievements;
+				const achList = achievements ? (Array.isArray(achievements) ? achievements : Object.values(achievements)) : [];		
+				let oldestDate = null;
+				achList.forEach(ach => {
+					[ach.dateEarned, ach.dateEarnedHardcore].forEach(earnedDate => {
+						if (earnedDate) {
+							const date = new Date(earnedDate);
+							if (!oldestDate || date < oldestDate) {
+								oldestDate = date;
+							}
+						}
+					});
+				});
+				dateStartedText += `&#10;Date Started: ${oldestDate?.toLocaleDateString() ?? ""}`;
+			}
+			
+			html += `<a href="https://retroachievements.org/game/${g.gameId}" target="_blank">`;
+			html += `<img src="${imgSrc}" title="${title}${dateStartedText}&#10;Most Recent Achievement: ${lastAchievedDateText}&#10;Achievements: ${g.progData.numAchieved}/${g.progData.numPossibleAchievements}&#10;Points: ${g.progData.scoreAchieved}/${g.progData.possibleScore}" style="border-radius:4px; filter: grayscale(1); object-fit:cover;">`;
+			html += `</a>`;
+		}
+		
+		html += `</div>`;
+	}
 	
 	if (hasAwards) {
 		container.innerHTML = html;
@@ -3560,86 +3597,29 @@ async function renderUserAwards(masteredList, completedList, beatenHardcoreList,
 	}
 }
 
-function renderCompletedTabs(activeTab) {
-	const compContainer = document.getElementById('ra-completed');
-	if (!compContainer) return;
-	const masteredList = [];
-	const completedList = [];
-	const beatenHardcoreList = [];
-	const beatenSoftcoreList = [];
-	const progressList = [];
-
-	raCompletedGamesCache.forEach(g => {
-		switch (g.highestAwardKind) {
-			case "mastered":
-				masteredList.push(g);
-				break;
-			case "completed":
-				completedList.push(g);
-				break;
-			case "beaten-hardcore":
-				beatenHardcoreList.push(g);
-				break;
-			case "beaten-softcore":
-				beatenSoftcoreList.push(g);
-				break;
-			case null:
-				progressList.push(g);
-				break;
-		}
-	});
-	
-	renderUserAwards(masteredList, completedList, beatenHardcoreList, beatenSoftcoreList, progressList);
-
-	let html = `<div class="mgmt-list-scroll" style="max-height:355px; padding-right:5px; border:none; background:transparent;">`;
-
-	const listToRender = progressList;
-
-	if (listToRender.length > 0) {
-		html += `<ul style="list-style:none; padding:0; margin:0;">`;
-		listToRender.forEach(g => {	
-			const awDate = g.mostRecentAwardedDate || g.MostRecentAwardedDate;
-			const date = awDate ? new Date(awDate).toLocaleDateString() : 'Unknown Date';
-			const icon = g.imageIcon || g.ImageIcon;
-			const title = g.title || g.Title;
-			const conName = g.consoleName || g.ConsoleName || 'Unknown';
-			const consoleCode = Object.keys(RA_CONSOLE_IDS).find(key => RA_CONSOLE_IDS[key] === g.consoleId);
-			const conIcon = CONSOLE_IMAGES[consoleCode];
-			
-			let numAch = 0; let pts = 0;
-			if (g.progData) {
-				numAch = activeTab === 'mastered' ? (g.progData.numAchievedHardcore || 0) : (g.progData.numAchieved || 0);
-				pts = activeTab === 'mastered' ? (g.progData.scoreAchievedHardcore || 0) : (g.progData.scoreAchieved || 0);
-			}
-			const maxAch = g.progData ? (g.progData.numPossibleAchievements || '?') : '?';
-			
-			const imgSrc = `https://media.retroachievements.org${icon.startsWith('/') ? icon : '/Images/'+icon}`;
-
-			html += `<li style="font-size:0.75rem; padding:8px; margin-bottom:4px; background:#0f172a; border-radius:6px; border:1px solid var(--border); color:var(--text); display:flex; gap:12px; align-items:center;">
-				<a href="https://retroachievements.org/game/${g.gameId}" target="_blank" style="color: inherit;"><img src="${imgSrc}" style="max-width:48px; max-height:48px; border-radius:4px; flex-shrink:0; object-fit:cover;"></a>
-				<div style="flex-grow:1;">
-					<div style="font-weight:bold; font-size:0.8rem; display: flex;"><a href="https://retroachievements.org/game/${g.gameId}" target="_blank" style="color: inherit;">${title}</a> <span style="color:#64748b; font-weight:normal; font-size:0.7rem; display: flex;"><img src="${conIcon}" style="height:14px; width:auto; object-fit:contain; margin:0 5px;" alt="${g.consoleName} icon">${conName}</span></div>
-					<div style="font-size:0.65rem; color:#94a3b8; margin-top:4px;">
-						<span style="color:var(--text);">Last Progressed:</span> ${date} <br> <span style="color:var(--text);">Achievements:</span> ${numAch}/${maxAch} | <span style="color:var(--text);">Points:</span> ${pts || '0'}
-					</div>
-				</div>
-			</li>`;
-		});
-		html += `</ul>`;
-	} else {
-		html += `<p style="font-size:0.75rem; color:#64748b; text-align:center; margin-top:20px;">No games in this category.</p>`;
-	}
-	html += `</div>`;
-	compContainer.innerHTML = html;
-}
-
 async function fetchUserCompleted(user, key, raApi, authorization) {
 	const compContainer = document.getElementById('ra-completed');
 	try {
-		const completion = await window.safeApiCall(raApi.getUserCompletionProgress, authorization, { username: user });
-		if (!completion) return;
-		
-		const baseList = Array.isArray(completion) ? completion : (completion.results || Object.values(completion));
+		let completionList = [];
+		let offset = 0;
+
+		while (true) {
+			const data = await window.safeApiCall(raApi.getUserCompletionProgress, authorization, { username: user, count: 500, offset: offset });
+			if (!data) break;
+
+			const results = Array.isArray(data) ? data : (data.results || data.Results || Object.values(data));
+			if (!results || results.length === 0) break;
+
+			completionList.push(...results);
+
+			if (results.length < 500) {
+				break;
+			}
+
+			offset += 500;
+		}
+
+		const baseList = completionList;
 		if (baseList && baseList.length > 0) {
 			const gameIds = baseList.map(g => g.gameId || g.GameID || g.id);
 			
@@ -3675,24 +3655,33 @@ async function fetchUserCompleted(user, key, raApi, authorization) {
 			const db = await dbPromise;
 			const allGames = await db.getAll('games');
 			let statusesChanged = false;
-			
 			for (const cacheGame of raCompletedGamesCache) {
 				const raIdStr = String(cacheGame.gameId || cacheGame.GameID || cacheGame.id);
 				const match = allGames.find(g => g.raId === raIdStr);
 				
 				if (match) {
 					// Update database metadata
+					let awarded = false;
+					if (match.numAwardedToUserHardcore != cacheGame.numAwardedHardcore) {
+						awarded = true;
+					} 
+					if (match.numAwardedToUser !== undefined && match.numAwardedToUser != cacheGame.numAwarded) {
+						awarded = true;
+					}
+					match.progressedSinceLastCheck = awarded;
 					match.progData = cacheGame.progData;
 					match.calculatedCategory = cacheGame.calculatedCategory;
 					match.consoleId = cacheGame.extractedConsoleId || match.consoleId;
 					
 					// Store the requested completion information 
 					// Using ?? to ensure 0 values for NumAwarded don't trigger the fallback
-					match.NumAwarded = cacheGame.NumAwarded ?? cacheGame.numAwarded ?? match.NumAwarded;
-					match.NumAwardedHardcore = cacheGame.NumAwardedHardcore ?? cacheGame.numAwardedHardcore ?? match.NumAwardedHardcore;
-					match.MostRecentAwardedDate = cacheGame.MostRecentAwardedDate ?? cacheGame.mostRecentAwardedDate ?? match.MostRecentAwardedDate;
-					match.HighestAwardKind = cacheGame.HighestAwardKind ?? cacheGame.highestAwardKind ?? match.HighestAwardKind;
-					match.HighestAwardDate = cacheGame.HighestAwardDate ?? cacheGame.highestAwardDate ?? match.HighestAwardDate;
+					match.numAwarded = cacheGame.numAwarded;
+					match.numAwardedHardcore = cacheGame.numAwardedHardcore;
+					match.numToUserAwarded = cacheGame.numAwarded;
+					match.numAwardedToUserHardcore = cacheGame.numAwardedHardcore;
+					match.mostRecentAwardedDate = cacheGame.mostRecentAwardedDate;
+					match.highestAwardKind = cacheGame.highestAwardKind;
+					match.highestAwardDate = cacheGame.highestAwardDate;
 
 					await db.put('games', match);
 
@@ -3713,6 +3702,10 @@ async function fetchUserCompleted(user, key, raApi, authorization) {
 							statusesChanged = true;
 						}
 					}
+					
+					if (awarded == true) {
+						await fetchExtendedDataForGame(match.id, match.raId); 
+					}
 				}
 			}
 
@@ -3723,7 +3716,7 @@ async function fetchUserCompleted(user, key, raApi, authorization) {
 			}
 
 			localStorage.setItem('ra_api_completed', JSON.stringify(raCompletedGamesCache));
-			renderCompletedTabs('mastered');
+			renderUserAwards();
 		} else {
 			localStorage.removeItem('ra_api_completed');
 			if(compContainer) compContainer.innerHTML = `<p style="font-size:0.75rem; color:#64748b;">No completed games found.</p>`;
@@ -3735,23 +3728,10 @@ async function fetchUserCompleted(user, key, raApi, authorization) {
 }
 
 async function syncRACompletedGames() {
-	const user = localStorage.getItem('ra_user');
-	const key = localStorage.getItem('ra_key');
 	
 	const btn = document.querySelector('button[onclick="syncRACompletedGames()"]');
 	const origText = btn ? btn.innerText : '';
 	if (btn) btn.innerText = "Adding to Library...";
-	
-	if (user && key) {
-		try {
-			const raApi = await import("https://esm.sh/@retroachievements/api");
-			const authorization = raApi.buildAuthorization({ username: user, webApiKey: key });
-			await fetchUserCompleted(user, key, raApi, authorization); 
-		} catch (e) { 
-			console.error("Failed to update progress during sync", e); 
-		}
-	}
-	if (btn) btn.innerText = origText;
 
 	if (!raCompletedGamesCache || raCompletedGamesCache.length === 0) {
 		return alert("No games found to sync. Ensure you fetched API stats first.");
@@ -3795,7 +3775,13 @@ async function syncRACompletedGames() {
 				raId: raIdStr, 
 				imgId: cleanImg(icon),
 				maxAch: raGame.numAchievements || raGame.NumAchievements || raGame.maxPossible || 0,
-				consoleName: targetCon
+				consoleName: targetCon,
+				consoleId: raGame.consoleId,
+				highestAwardDate: raGame.highestAwardDate,
+				highestAwardKind: raGame.highestAwardKind,
+				numAwardedToUser: raGame.numAwarded,
+				numAwardedToUserHardcore: raGame.numAwardedHardcore
+
 			};
 			userLibrary[targetCon].push(match);
 			newlyAddedCount++;
@@ -3811,16 +3797,21 @@ async function syncRACompletedGames() {
 		}
 	}
 	
+	if (btn) btn.innerText = origText;
+	
 	await cleanupLibrary();
 	updateModifySelect();
 	renderSidebar();
 	renderModifyList();
+	updateWheelFilters();
+
 	
 	if (newlyAddedCount > 0) {
 		alert(`${newlyAddedCount} new games successfully added to Library.`);
 	} else {
 		alert(`All mastered/completed/in progress games are already in your library.`);
 	}
+	processExtendedFetchQueue();
 }
 
 function showGameSelection(games) {
@@ -3947,10 +3938,7 @@ async function fetchFromRA(con, idx) {
 	const raConsoleId = RA_CONSOLE_IDS[con];
 	if (!raConsoleId) return alert("Console mapping not found for " + con);
 
-	let raApi, authorization;
 	try {
-		raApi = await import("https://esm.sh/@retroachievements/api");
-		authorization = raApi.buildAuthorization({ username: user, webApiKey: key });
 		const data = await window.safeApiCall(raApi.getGameList, authorization, { consoleId: raConsoleId });
 
 		if (Array.isArray(data)) {
@@ -4418,8 +4406,8 @@ function fetchEventsAndHubs(raApi, authorization) {
 	// Fetch Console 100 in the background
 	raApi.getGameList(authorization, {
 		consoleId: 100,
-		shouldOnlyRetrieveGamesWithAchievements: false, // f=0 equivalent[cite: 1]
-		shouldRetrieveGameHashes: true                  // h=1 equivalent[cite: 1]
+		shouldOnlyRetrieveGamesWithAchievements: false, // f=0 equivalent
+		shouldRetrieveGameHashes: true                  // h=1 equivalent
 	})
 	.then(data => {
 		window.console100Games = data;
@@ -4429,8 +4417,8 @@ function fetchEventsAndHubs(raApi, authorization) {
 	// Fetch Console 101 in the background
 	raApi.getGameList(authorization, {
 		consoleId: 101,
-		shouldOnlyRetrieveGamesWithAchievements: false, // f=0 equivalent[cite: 1]
-		shouldRetrieveGameHashes: true                  // h=1 equivalent[cite: 1]
+		shouldOnlyRetrieveGamesWithAchievements: false, // f=0 equivalent
+		shouldRetrieveGameHashes: true                  // h=1 equivalent
 	})
 	.then(data => {
 		window.console101Games = data;
@@ -4507,7 +4495,6 @@ async function bootApp() {
 
 	// 3. RENDER UI
 	rebuildPool();
-	renderSidebar();
 	
 	const filterAch = document.getElementById('achievements-spin-filter').checked;
 	const filterDamageless = document.getElementById('damageless-spin-filter').checked;
@@ -4556,13 +4543,11 @@ async function bootApp() {
 
 			// FIRE AND FORGET: Start pulling IDs 100 and 101 in the background
 			fetchEventsAndHubs(raApi, authorization);
-
-			renderSidebar();
-			
 		} catch(e) {
 			console.error("Boot sequence API error:", e);
 		}
 	}
+	renderSidebar();
 }
 
 bootApp(); 
@@ -4571,6 +4556,11 @@ let rankChartInstance = null;
 // Renders the chart and manages the conditional local storage
 window.updateAndRenderRankChart = function(containerElement, currentRank, forceRender = false) {
 	let history = JSON.parse(localStorage.getItem('ra_rank_history')) || [];
+	const summary = JSON.parse(localStorage.getItem('ra_api_summary')) || {};
+	const topPercent = summary.totalRanked ? ((100 / summary.totalRanked) * currentRank).toFixed(2) : null;
+	if (topPercent !== null) {
+		summary.topPercent = topPercent;
+	}
 	const now = Date.now();
 	const oneHour = 60 * 60 * 1000;
 
@@ -4579,7 +4569,7 @@ window.updateAndRenderRankChart = function(containerElement, currentRank, forceR
 	if (rankDisplay) {
 		const urlOffset = Math.floor((currentRank - 1) / 25) * 25;
 		const rankUrl = `https://retroachievements.org/globalRanking.php?t=2&o=${urlOffset}&s=5`;
-		rankDisplay.innerHTML = `<strong style="color:white;">Rank:</strong> <a href="${rankUrl}" target="_blank" style="color:inherit;">${currentRank}</a>`;
+		rankDisplay.innerHTML = `<strong style="color:white;">Rank:</strong> <a href="${rankUrl}" target="_blank" style="color:inherit;">${currentRank}</a>` + (topPercent ? `<span style="color:white;"> of ${summary.totalRanked} (Top ${topPercent}%)</span>` : '');
 	}
 
 	let shouldPlot = false;
@@ -4597,9 +4587,15 @@ window.updateAndRenderRankChart = function(containerElement, currentRank, forceR
 		}
 	}
 
-	// Save full data so historical records are not purged
+	// Save full data including points and topPercent so historical records are not purged
 	if (shouldPlot) {
-		history.push({ time: now, rank: currentRank });
+		history.push({ 
+			time: now, 
+			rank: currentRank,
+			totalPoints: summary.totalPoints !== undefined ? summary.totalPoints : null,
+			totalTruePoints: summary.totalTruePoints !== undefined ? summary.totalTruePoints : null,
+			topPercent: topPercent !== undefined ? topPercent : null
+		});
 		localStorage.setItem('ra_rank_history', JSON.stringify(history));
 	}
 
@@ -4733,7 +4729,10 @@ window.updateAndRenderRankChart = function(containerElement, currentRank, forceR
 	
 	const dataPoints = displayHistory.map(entry => ({
 		x: entry.time,
-		y: entry.rank
+		y: entry.rank,
+		totalPoints: entry.totalPoints,
+		totalTruePoints: entry.totalTruePoints,
+		topPercent: entry.topPercent
 	}));
 
 	// Lock Y-Axis boundaries based on the currently displayed dataset
@@ -4746,8 +4745,7 @@ window.updateAndRenderRankChart = function(containerElement, currentRank, forceR
 		globalMaxRank += 1;
 	}
 
-
-	const user = localStorage.getItem('ra_user');
+	const user = localStorage.getItem('ra_user') || 'User';
 		
 	window.rankChartInstance = new Chart(ctx, {
 		type: 'line',
@@ -4780,15 +4778,18 @@ window.updateAndRenderRankChart = function(containerElement, currentRank, forceR
 						color: '#94a3b8',
 						callback: function(value) {
 							const d = new Date(value);
-							let hours = d.getHours();
-							const minutes = d.getMinutes().toString().padStart(2, '0');
-							const ampm = hours >= 12 ? 'PM' : 'AM';
-							hours = hours % 12;
-							hours = hours ? hours : 12; 
-							
-							const timeStr = `${hours}:${minutes} ${ampm}`;
-							const dateStr = `${d.getMonth() + 1}/${d.getDate()}`;
-							
+
+							const timeStr = d.toLocaleTimeString([], {
+								hour: 'numeric',
+								minute: '2-digit',
+								hour12: true
+							});
+
+							const dateStr = d.toLocaleDateString([], {
+								month: 'short',
+								day: 'numeric'
+							});
+
 							return [timeStr, dateStr];
 						}
 					}, 
@@ -4814,6 +4815,28 @@ window.updateAndRenderRankChart = function(containerElement, currentRank, forceR
 							hours = hours % 12;
 							hours = hours ? hours : 12;
 							return `${hours}:${minutes} ${ampm} - ${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+						},
+						label: function(context) {
+							const raw = context.raw;
+							const lines = [];
+
+							// Line 1: Username
+							lines.push(user);
+
+							// Line 2: Rank & Top Percent (if present)
+							let rankText = `Rank: ${raw.y}`;
+							if (raw.topPercent !== null && raw.topPercent !== undefined) {
+								rankText += ` (Top ${raw.topPercent}%)`;
+							}
+							lines.push(rankText);
+
+							// Line 3: Points & True Points (if present)
+							if (raw.totalPoints !== null && raw.totalPoints !== undefined && 
+							    raw.totalTruePoints !== null && raw.totalTruePoints !== undefined) {
+								lines.push(`Points: ${raw.totalPoints} (${raw.totalTruePoints})`);
+							}
+
+							return lines;
 						}
 					}
 				},
@@ -4888,7 +4911,7 @@ async function checkAndRefreshRankChartSilently() {
 	const user = localStorage.getItem('ra_user');
 	const key = localStorage.getItem('ra_key');
 	const container = document.getElementById('ra-user-stats');
-
+	const cachedSummary = JSON.parse(localStorage.getItem('ra_api_summary'));
 	if (!user || !key || !container) return;
 
 	try {
@@ -4911,9 +4934,31 @@ async function checkAndRefreshRankChartSilently() {
 				window.updateAndRenderRankChart(container, cleanRankNumber); 
 				
 				// Silently keep cached summary in sync for future manual page actions
-				const cachedSummary = JSON.parse(localStorage.getItem('ra_api_summary'));
 				if (cachedSummary) {
+					if (cachedSummary.totalPoints != data.totalPoints || cachedSummary.totalSoftcorePoints != data.totalSoftcorePoints || cachedSummary.totalTruePoints != data.totalTruePoints) {
+						const pointsHardcore = document.getElementById('user-points-hc-display');
+						const pointsCasual = document.getElementById('user-points-sc-display');
+						if (pointsHardcore) {
+							if (cachedSummary.totalPoints != data.totalPoints) {
+								let pointsHardcoreHtml = `<strong>Points (Hardcore):</strong> ${data.totalPoints} <span title="RetroPoints: Points adjusted by achievement rarity." style="cursor:help; border-bottom:1px dotted #94a3b8;">(${data.totalTruePoints})</span>`;
+								pointsHardcore.innerHTML = pointsHardcoreHtml;
+								console.log('Hardcore points updated from', cachedSummary.totalPoints, 'to', data.totalPoints)
+								console.log('RetroPoints updated from', cachedSummary.totalTruePoints, 'to', data.totalTruePoints) 
+							}
+						} if (pointsCasual) {
+							if (cachedSummary.totalSoftcorePoints != data.totalSoftcorePoints) {
+								let pointsCasualHtml = `<strong>Points (Casual):</strong> ${data.TotalSoftcorePoints}`;
+								pointsCasual.innerHTML = pointsCasualHtml;
+								console.log('Hardcore points updated from', cachedSummary.totalPoints, 'to', data.totalPoints)
+							}
+						}
+						await fetchUserCompleted(user, key, raApi, authorization);
+					}					
 					cachedSummary.rank = data.rank;
+					cachedSummary.totalPoints = data.totalPoints;
+					cachedSummary.totalTruePoints = data.totalTruePoints;
+					cachedSummary.totalSoftcorePoints = data.totalSoftcorePoints;
+
 					localStorage.setItem('ra_api_summary', JSON.stringify(cachedSummary));
 				}
 			}
