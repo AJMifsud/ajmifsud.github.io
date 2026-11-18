@@ -1500,7 +1500,7 @@ function renderSidebarByConsole(currentlyOpenId, currentlyOpenHtml) {
 		const pct = Math.min(100, Math.round((comp / Math.max(1, games.length)) * 100));
 		const color = CONSOLE_COLORS[con] || 'var(--primary)';
 		const icon = CONSOLE_IMAGES[con] || '';
-		const logo = `game_picker/images/logos/${con}.png`;
+		const logo = `game_picker/images/logos/${con.toLowerCase()}.png`;
 		const displayTitle = (CONSOLE_FULL_NAMES[con] || con).replace(/\//g, " / ");
 		let consoleDisplay = `<img src="${logo}" style="padding:2px 0px;max-height: 28px;max-width: 100%;" onerror="this.outerHTML='${displayTitle}'">`;
 			
